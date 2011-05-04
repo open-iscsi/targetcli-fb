@@ -1,0 +1,8 @@
+#!/bin/sh
+for lib in lib lib64; do
+	for python in python2.6; do
+		if [ -e /usr/${lib}/${python}/rtsadmin ]; then
+			rm -rf /usr/${lib}/${python}/rtsadmin
+		fi
+	done
+done

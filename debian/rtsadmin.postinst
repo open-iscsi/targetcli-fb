@@ -1,0 +1,17 @@
+#!/bin/sh
+for lib in lib lib64; do
+	for python in python2.6; do
+		if [ -e /usr/${lib}/${python} ]; then
+			if [ ! -e /usr/${lib}/${python}/rtsadmin ]; then
+				mkdir /usr/${lib}/${python}/rtsadmin
+				for source in /usr/share/python-support/rtsadmin/rtsadmin/*.py; do
+					ln -sf ${source} /usr/${lib}/${python}/rtsadmin/
+				done
+				python_path=$(which ${python} 2>/dev/null)
+				if [ ! -z $python_path ]; then
+					${python} -c "import compileall; compileall.compile_dir('/usr/${lib}/${python}/rtsadmin', force=1)"
+				fi
+			fi
+		fi
+	done
+done
