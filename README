@@ -18,5 +18,8 @@ Systems storage targets using the kernel LIO core target and compatible target
 fabric modules. The rtsadmin CLI is built on top of the python configshell CLI
 framework.
 
+The latest version of this prgram might be obtained at:
+http://www.risingtidesystems.com/git/
+
 To run the CLI from this directory use:
 sudo PYTHONPATH=. ./scripts/rtsadmin
