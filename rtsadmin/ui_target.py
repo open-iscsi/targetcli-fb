@@ -626,7 +626,8 @@ class UILUNs(UINode):
         lun_object = LUN(self.tpg, lun)
         lun_object.delete()
         self.log.info("Successfully deleted LUN %s." % lun)
-        self.refresh()
+        # Refresh the TPG as we need to also refresh acls MappedLUNs
+        self.parent.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
