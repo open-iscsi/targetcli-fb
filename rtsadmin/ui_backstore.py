@@ -113,6 +113,7 @@ class UIBackstores(UINode):
         ----------------
         Creates a new backstore, using the B{iblock} I{backstore_plugin}.
         '''
+        self.assert_root()
         self.log.debug("%r" % [(backstore.plugin, backstore.index)
                               for backstore in RTSRoot().backstores])
         indexes = [backstore.index for backstore in RTSRoot().backstores
@@ -188,6 +189,7 @@ class UIBackstores(UINode):
         -----------------
         That would recursively delete the B{iblock} backstore with index 2.
         '''
+        self.assert_root()
         for child in self.children:
             if child.name == backstore:
                 child.backstore.delete()
@@ -283,6 +285,7 @@ class UIBackstore(UINode):
         -------------------
         Deletes the storage object named mystorage, and all associated LUNs.
         '''
+        self.assert_root()
         for child in self.children:
             if child.name == name:
                 child.storage_object.delete()
@@ -331,6 +334,7 @@ class UIPSCSIBackstore(UIBackstore):
         SCSI device ID in the H:C:T:L format, which is not recommended as SCSI
         IDs may vary in time. 
         '''
+        self.assert_root()
         so = PSCSIStorageObject(self.backstore, name, dev)
         self.add_child(UIStorageObject(so))
         self.log.info("Created pscsi storage object %s using %s"
@@ -356,6 +360,7 @@ class UIRDDRBackstore(UIBackstore):
             - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
+        self.assert_root()
         so = RDDRStorageObject(self.backstore, name, size, self.use_wwn(wwn))
         self.add_child(UIStorageObject(so))
         self.log.info("Created rd_dr ramdisk storage object %s with size %s."
@@ -381,6 +386,7 @@ class UIRDMCPBackstore(UIBackstore):
             - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
+        self.assert_root()
         so = RDMCPStorageObject(self.backstore, name, size, self.use_wwn(wwn))
         self.add_child(UIStorageObject(so))
         self.log.info("Created rd_mcp ramdisk storage object %s with size %s."
@@ -414,6 +420,7 @@ class UIFileIOBackstore(UIBackstore):
             - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
+        self.assert_root()
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
 
@@ -445,6 +452,7 @@ class UIIBlockBackstore(UIBackstore):
         specifying whether or not we should generate a T10 wwn Serial for the
         unit (by default, yes).
         '''
+        self.assert_root()
         if wwn is None:
             wwn == True
         if wwn:

@@ -66,6 +66,7 @@ class UIFabricModule(UINode):
         ========
         B{info}
         '''
+        self.assert_root()
         target = Target(self.fabric_module, wwn, mode='create')
         wwn = target.wwn
         self.add_child(UITarget(target))
@@ -106,6 +107,7 @@ class UIFabricModule(UINode):
         ========
         B{create}
         '''
+        self.assert_root()
         target = Target(self.fabric_module, wwn, mode='lookup')
         target.delete()
         self.log.info("Deleted Target %s." % wwn)
@@ -206,6 +208,7 @@ class UIMultiTPGTarget(UINode):
         ========
         B{delete}
         '''
+        self.assert_root()
         if tag is None:
             tags = [tpg.tag for tpg in self.target.tpgs]
             for index in range(1048576):
@@ -243,6 +246,7 @@ class UIMultiTPGTarget(UINode):
         ========
         B{create}
         '''
+        self.assert_root()
         tpg = TPG(self.target, tag, mode='lookup')
         tpg.delete()
         self.log.info("Deleted TPGT %s." % tag)
@@ -308,6 +312,7 @@ class UITPG(UINode, UIAttributes, UIParameters):
         ========
         B{disable status}
         '''
+        self.assert_root()
         if self.tpg.enable:
             self.log.info("The TPGT is already enabled.")
         else:
@@ -322,6 +327,7 @@ class UITPG(UINode, UIAttributes, UIParameters):
         ========
         B{enable status}
         '''
+        self.assert_root()
         if self.tpg.enable:
             self.tpg.enable = False
             self.log.info("The TPGT has been disabled.")
@@ -381,6 +387,7 @@ class UINodeACLs(UINode):
         ========
         B{delete}
         '''
+        self.assert_root()
         spec = self.tpg.parent_target.fabric_module.spec
         if not utils.is_valid_wwn(spec['wwn_type'], wwn):
             self.log.error("'%s' is not a valid %s WWN."
@@ -404,6 +411,7 @@ class UINodeACLs(UINode):
         ========
         B{create}
         '''
+        self.assert_root()
         node_acl = NodeACL(self.tpg, wwn, mode='lookup')
         node_acl.delete()
         self.log.info("Successfully deleted Node ACL %s." % wwn)
@@ -469,6 +477,7 @@ class UINodeACL(UINode, UIAttributes, UIParameters):
         ========
         B{delete}
         '''
+        self.assert_root()
         try:
             tpg_lun = int(tpg_lun)
             mapped_lun = int(mapped_lun)
@@ -488,6 +497,7 @@ class UINodeACL(UINode, UIAttributes, UIParameters):
         ========
         B{create}
         '''
+        self.assert_root()
         mlun = MappedLUN(self.node_acl, mapped_lun)
         mlun.delete()
         self.log.info("Deleted Mapped LUN %s." % mapped_lun)
@@ -557,6 +567,7 @@ class UILUNs(UINode):
         ========
         B{delete}
         '''
+        self.assert_root()
         if lun is None:
             luns = [lun.lun for lun in self.tpg.luns]
             for index in range(1048576):
@@ -623,6 +634,7 @@ class UILUNs(UINode):
         ========
         B{create}
         '''
+        self.assert_root()
         lun_object = LUN(self.tpg, lun)
         lun_object.delete()
         self.log.info("Successfully deleted LUN %s." % lun)
@@ -717,6 +729,7 @@ class UIPortals(UINode):
         ========
         B{delete}
         '''
+        self.assert_root()
         if ip_port is None:
             # FIXME: Add a specfile parameter to determine that
             ip_port = 3260
@@ -779,6 +792,7 @@ class UIPortals(UINode):
         ========
         B{create}
         '''
+        self.assert_root()
         portal = NetworkPortal(self.tpg, ip_address, ip_port, mode='lookup')
         portal.delete()
         self.log.info("Deleted network portal %s:%s" % (ip_address, ip_port))

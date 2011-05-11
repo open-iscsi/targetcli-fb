@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from os import system
-from configshell import ConfigNode
+from configshell import ConfigNode, ExecutionError
 from rtslib import RTSLibError, RTSRoot
 
 class UINode(ConfigNode):
@@ -32,6 +32,16 @@ class UINode(ConfigNode):
                  [self.ui_type_onoff,
                   'If on, automatically enables TPGTs upon creation.']
 
+    def assert_root(self):
+        '''
+        For commands requiring root privileges, disable command if not the root
+        node's as_root attribute is False.
+        '''
+        root_node = self.get_root()
+        if hasattr(root_node, 'as_root') and not self.get_root().as_root:
+            raise ExecutionError("This privileged command is disabled: "
+                                 + "you are not root.")
+
     def ui_command_refresh(self):
         '''
         Refreshes and updates the objects tree from the current path.
@@ -43,6 +53,7 @@ class UINode(ConfigNode):
         Saves the whole configuration tree to disk so that it will be restored
         on next boot. Unless you do that, changes are lost accross reboots.
         '''
+        self.assert_root()
         self.con.display("WARNING: Saving the current configuration to disk "
                          + "will overwrite your boot settings.")
         self.con.display("The current target configuration will become the "
@@ -124,6 +135,7 @@ class UIParameters(object):
         @param value: The parameter's value
         @type value: arbitrary
         '''
+        self.assert_root()
         self._rtslib_object.set_parameter(parameter, value)
 
 class UIAttributes(object):
@@ -161,4 +173,5 @@ class UIAttributes(object):
         @param value: The attribute's value
         @type value: arbitrary
         '''
+        self.assert_root()
         self._rtslib_object.set_attribute(attribute, value)

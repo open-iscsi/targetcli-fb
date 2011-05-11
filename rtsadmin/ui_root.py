@@ -26,10 +26,11 @@ class UIRoot(UINode):
     '''
     The rtsadmin hierarchy root node.
     '''
-    def __init__(self):
+    def __init__(self, as_root=False):
         self.loaded = False
         UINode.__init__(self)
         self.name = '/'
+        self.as_root = as_root
 
     def refresh(self):
         '''
@@ -44,7 +45,7 @@ class UIRoot(UINode):
                     self.log.info("Using %s fabric module." \
                                   % fabric_module.name)
                     self.add_child(UIFabricModule(fabric_module))
-                else:
+                elif self.as_root:
                     try:
                         for step in fabric_module.load(yield_steps=True):
                             (action, taken, desc) = step
