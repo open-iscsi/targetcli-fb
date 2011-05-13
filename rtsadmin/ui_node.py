@@ -29,8 +29,8 @@ class UINode(ConfigNode):
         ConfigNode.__init__(self)
         self.cfs_cwd = RTSRoot.configfs_dir
         self._configuration_groups['global']['auto_enable_tpgt'] = \
-                 [self.ui_type_onoff,
-                  'If on, automatically enables TPGTs upon creation.']
+                 [self.ui_type_bool,
+                  'If true, automatically enables TPGTs upon creation.']
 
     def assert_root(self):
         '''
