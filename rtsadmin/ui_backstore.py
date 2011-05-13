@@ -460,7 +460,7 @@ class UIIBlockBackstore(UIBackstore):
         '''
         self.assert_root()
         so = IBlockStorageObject(self.backstore, name, dev,
-                                 self.prm_wwn(generate_wwn))
+                                 self.prm_gen_wwn(generate_wwn))
         self.add_child(UIStorageObject(so))
         self.log.info("Created iblock storage object %s using %s."
                       % (name, dev))
