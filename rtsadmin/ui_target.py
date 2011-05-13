@@ -69,7 +69,10 @@ class UIFabricModule(UINode):
         self.assert_root()
         target = Target(self.fabric_module, wwn, mode='create')
         wwn = target.wwn
-        self.add_child(UITarget(target))
+        if target.has_feature('tpgts'):
+            self.add_child(UIMultiTPGTarget(target))
+        else:
+            self.add_child(UITarget(target))
         self.log.info("Created target %s." % wwn)
 
     def ui_complete_create(self, parameters, text, current_param):
