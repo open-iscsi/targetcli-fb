@@ -54,7 +54,7 @@ class UIFabricModule(UINode):
     def ui_command_create(self, wwn=None):
         '''
         Creates a new target. The I{wwn} format depends on the transport(s)
-        supported by the fabric module. If the I{wwn} is ommited, then a 
+        supported by the fabric module. If the I{wwn} is ommited, then a
         target will be created using either a randomly generated WWN of the
         proper type, or the first unused WWN in the list of possible WWNs if
         one is available. If WWNs are constrained to a list (i.e. for hardware
@@ -155,7 +155,7 @@ class UIFabricModule(UINode):
                           % spec['wwn_type'])
         self.log.info("Fabric module specfile: %s"
                       % self.fabric_module.spec_file)
-        self.log.info("Fabric module features: %s" 
+        self.log.info("Fabric module features: %s"
                       % ', '.join(spec['features']))
         self.log.info("Corresponding kernel module: %s"
                       % spec['kernel_module'])
@@ -399,7 +399,7 @@ class UINodeACLs(UINode):
             self.log.error(msg)
             return
         else:
-            self.log.info("Successfully created Node ACL for %s" 
+            self.log.info("Successfully created Node ACL for %s"
                           % node_acl.node_wwn)
             self.add_child(UINodeACL(node_acl))
 

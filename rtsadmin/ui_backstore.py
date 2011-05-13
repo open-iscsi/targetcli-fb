@@ -32,7 +32,7 @@ class UIBackstores(UINode):
     def __init__(self):
         UINode.__init__(self)
         self.name = 'backstores'
-        self.cfs_cwd = "%s/core" % self.cfs_cwd 
+        self.cfs_cwd = "%s/core" % self.cfs_cwd
         self.refresh()
 
     def refresh(self):
@@ -92,7 +92,7 @@ class UIBackstores(UINode):
         underlying real block device. FILEIO is using struct file to serve
         block I/O with various methods (synchronous or asynchronous) and
         (buffered or direct).
-        
+
         B{rd_dr}
         -------
         This I{backstore_plugin} provides the same level of SCSI emulation than
@@ -326,13 +326,13 @@ class UIPSCSIBackstore(UIBackstore):
     PSCSI backstore UI.
     '''
     def ui_command_create(self, name, dev):
-        '''     
+        '''
         Creates a PSCSI storage object, with supplied name and SCSI device. The
         SCSI device I{dev} can either be a path name to the device, in which
         case it is recommended to use the /dev/disk/by-id hierarchy to have
         consistent naming should your physical SCSI system be modified, or an
         SCSI device ID in the H:C:T:L format, which is not recommended as SCSI
-        IDs may vary in time. 
+        IDs may vary in time.
         '''
         self.assert_root()
         so = PSCSIStorageObject(self.backstore, name, dev)
@@ -373,7 +373,7 @@ class UIRDMCPBackstore(UIBackstore):
     RDMCP backstore UI.
     '''
     def ui_command_create(self, name, size, generate_wwn=None):
-        '''     
+        '''
         Creates an RDMCP storage object. I{size} is the size of the ramdisk,
         and the optional I{generate_wwn} parameter is a boolean specifying
         whether or not we should generate a T10 wwn Serial for the unit (by
