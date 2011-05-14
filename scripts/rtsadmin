@@ -22,6 +22,7 @@ All rights reserved.
 
 from os import getuid
 from rtsadmin import UIRoot
+from rtslib import RTSLibError
 from configshell import ConfigShell
 
 class RTSAdmin(ConfigShell):
@@ -62,8 +63,12 @@ def main():
         shell.con.display('You are not root, disabling privileged commands.')
         shell.con.display('')
 
-    root_node.refresh()
-    shell.run_interactive()
+    try:
+        root_node.refresh()
+    except RTSLibError, error:
+        shell.con.display(shell.con.render_text(str(error), 'red'))
+    else:
+        shell.run_interactive()
 
 if __name__ == "__main__":
     main()
