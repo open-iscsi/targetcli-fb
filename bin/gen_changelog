@@ -31,8 +31,10 @@ TS=$(date +%Y%m%d%H%M%S)
 
 if [ -z $COMMIT ]; then
 	VERSION="${LAST_TAG}"
+	RH_VERSION="${LAST_TAG}"
 else
 	VERSION="${LAST_TAG}-${TS}.${COMMIT}"
+	RH_VERSION="${LAST_TAG}.${TS}.${COMMIT}"
 fi
 
 sed -i "s/__version__ = .*/__version__ = '${VERSION}'/g" ${SRCPKG}/__init__.py
@@ -43,3 +45,8 @@ echo "  * Generated package." >> debian/changelog
 echo >> debian/changelog
 echo " -- ${NAME} <${EMAIL}>  ${DATE}" >> debian/changelog
 
+RH_SPEC="redhat/rtsadmin.spec"
+cp redhat/rtsadmin.spec.tmpl $RH_SPEC
+sed -i "s/Version:\( *\).*/Version:\1${RH_VERSION}/g" $RH_SPEC
+echo "* $(date +'%a %b %d %Y') ${NAME} <${EMAIL}> - ${RH_VERSION}" >> $RH_SPEC
+echo "- Generated package." >> $RH_SPEC

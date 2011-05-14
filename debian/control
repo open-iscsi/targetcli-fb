@@ -2,12 +2,12 @@ Source: rtsadmin
 Section: python
 Priority: optional
 Maintainer: Jerome Martin <jxm@risingtidesystems.com>
-Build-Depends: debhelper(>= 5.0.1), python2.6, build-essential, python-dev, python2.6-dev, python-epydoc, zlib1g-dev, python-configshell, upx-ucl
+Build-Depends: debhelper(>= 5.0.1), python2.6, build-essential, python-dev, python2.6-dev, python-epydoc, zlib1g-dev, python-configshell, upx-ucl, python-rtslib
 Standards-Version: 3.8.1
 
 Package: rtsadmin
 Architecture: all
-Depends: python (>= 2.6)|python2.6, python-configshell
+Depends: python (>= 2.6)|python2.6, python-configshell, python-rtslib
 Suggests: rtsadmin-doc
 Conflicts: rtsadmin-frozen
 Description: CLI for the RisingTide Systems target, with complete sources.

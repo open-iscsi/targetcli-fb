@@ -17,15 +17,16 @@ NAME = rtsadmin
 LIB = /usr/share
 DOC = ${LIB}/doc/
 SETUP = ./setup.py
-CLEAN = ./bin/clean
 GENDOC = ./bin/gendoc
+RPMVERSION = $$(grep Version: redhat/rtsadmin.spec | awk '{print $$2}')
 
 all: usage
 usage:
 	@echo "Usage:"
+	@echo "  make deb         - Builds debian packages."
+	@echo "  make rpm         - Builds redhat packages."
 	@echo "  make clean       - Cleanup the local repository"
-	@echo "  make packages    - Generate the Debian and RPM packages"
-	@echo
+	@echo "  make cleanall    - Cleanup the local repository and packages"
 	@echo "Developer targets:"
 	@echo "  make doc         - Generate the documentation"
 	@echo "  make sdist       - Build the source tarball"
@@ -47,37 +48,46 @@ installdocs: doc
 
 clean:
 	${CLEAN}
+	rm -fv rtsadmin/*.pyc rtsadmin/*.html
+	rm -frv doc
+	rm -frv rtsadmin.egg-info MANIFEST build
+	rm -frv pdf html
+	rm -frv debian/tmp
+	rm -fv build-stamp
+	rm -fv dpkg-buildpackage.log dpkg-buildpackage.version
+	rm -frv *.rpm warnrtsadmin.txt buildrtsadmin
+	rm -fv debian/*.debhelper.log debian/*.debhelper debian/*.substvars debian/files
+	rm -fvr debian/rtsadmin-frozen/ debian/rtsadmin-python2.5/
+	rm -fvr debian/rtsadmin-python2.6/ debian/rtsadmin/ debian/rtsadmin-doc/
+	rm -fv redhat/*.spec *.spec
 	./bin/gen_changelog_cleanup
+	echo "Finished cleanup."
 
-packages: clean doc
+cleanall: clean
+	rm -frv dist
+
+deb: doc
 	./bin/gen_changelog
 	dpkg-buildpackage -rfakeroot | tee dpkg-buildpackage.log
-	head -1 debian/changelog  | awk '{print $$2}' | tr -d "()\n" > dpkg-buildpackage.version
 	./bin/gen_changelog_cleanup
+	grep "source version" dpkg-buildpackage.log | awk '{print $$4}' > dpkg-buildpackage.version
 	@test -e dist || mkdir dist
 	mv ../${NAME}_$$(cat dpkg-buildpackage.version).dsc dist
 	mv ../${NAME}_$$(cat dpkg-buildpackage.version)_*.changes dist
 	mv ../${NAME}_$$(cat dpkg-buildpackage.version).tar.gz dist
 	mv ../*${NAME}*$$(cat dpkg-buildpackage.version)*.deb dist
-	@test -e build || mkdir build
-	cd build; alien --scripts -k -g -r ../dist/rtsadmin-doc_$$(cat ../dpkg-buildpackage.version)_all.deb
-	cd build/rtsadmin-doc-*; mkdir usr/share/doc/packages
-	cd build/rtsadmin-doc-*; mv usr/share/doc/rtsadmin-doc usr/share/doc/packages/
-	cd build/rtsadmin-doc-*; perl -pi -e "s,/usr/share/doc/rtsadmin-doc,/usr/share/doc/packages/rtsadmin-doc,g" *.spec
-	cd build/rtsadmin-doc-*; perl -pi -e "s,%%{ARCH},noarch,g" *.spec
-	cd build/rtsadmin-doc-*; perl -pi -e "s,%post,%posttrans,g" *.spec
-	cd build/rtsadmin-doc-*; rpmbuild --buildroot $$PWD -bb *.spec
-	cd build; alien --scripts -k -g -r ../dist/rtsadmin_$$(cat ../dpkg-buildpackage.version)_all.deb; cd ..
-	cd build/rtsadmin*; mkdir usr/share/doc/packages
-	cd build/rtsadmin*; mv usr/share/doc/rtsadmin usr/share/doc/packages/
-	cd build/rtsadmin*; perl -pi -e "s,/usr/share/doc/rtsadmin,/usr/share/doc/packages/rtsadmin,g" *.spec
-	cd build/rtsadmin*; perl -pi -e 's/Group:/Requires: python >= 2.5, python-rtslib\nConflicts: rtsadmin-frozen\nGroup:/g' *.spec
-	cd build/rtsadmin*; perl -pi -e "s,%%{ARCH},noarch,g" *.spec
-	cd build/rtsadmin*; perl -pi -e "s,%post,%posttrans,g" *.spec
-	cd build/rtsadmin*; rpmbuild --buildroot $$PWD -bb *.spec
-	rm -rf build/rtsadmin*$$(cat dpkg-buildpackage.version)
-	mv build/*.rpm dist
-	rm dpkg-buildpackage.log dpkg-buildpackage.version
+	./bin/gen_changelog_cleanup
+
+rpm:
+	./bin/gen_changelog
+	echo Building RPM version ${RPMVERSION}
+	mkdir -p ~/rpmbuild/SOURCES/
+	git archive master --prefix rtsadmin-${RPMVERSION}/ | gzip > ~/rpmbuild/SOURCES/rtsadmin-${RPMVERSION}.tar.gz
+	rpmbuild -ba redhat/*.spec
+	@test -e dist || mkdir dist
+	mv ~/rpmbuild/SRPMS/rtsadmin-${RPMVERSION}*.src.rpm dist/
+	mv ~/rpmbuild/RPMS/noarch/rtsadmin-${RPMVERSION}*.rpm dist/
+	./bin/gen_changelog_cleanup
 
 sdist: clean doc
 	${SETUP} sdist
