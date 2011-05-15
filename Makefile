@@ -57,11 +57,12 @@ clean:
 	rm -fv dpkg-buildpackage.log dpkg-buildpackage.version
 	rm -frv *.rpm warnrtsadmin.txt buildrtsadmin
 	rm -fv debian/*.debhelper.log debian/*.debhelper debian/*.substvars debian/files
-	rm -fvr debian/rtsadmin-frozen/ debian/rtsadmin-python2.5/
+	rm -fvr debian/rtsadmin-python2.5/
 	rm -fvr debian/rtsadmin-python2.6/ debian/rtsadmin/ debian/rtsadmin-doc/
 	rm -fv redhat/*.spec *.spec
+	rm -frv rtsadmin-*
 	./bin/gen_changelog_cleanup
-	echo "Finished cleanup."
+	@echo "Finished cleanup."
 
 cleanall: clean
 	rm -frv dist
@@ -78,15 +79,23 @@ deb: doc
 	mv ../*${NAME}*$$(cat dpkg-buildpackage.version)*.deb dist
 	./bin/gen_changelog_cleanup
 
-rpm:
+rpm: doc
 	./bin/gen_changelog
-	echo Building RPM version ${RPMVERSION}
+	@echo Building RPM version ${RPMVERSION}
 	mkdir -p ~/rpmbuild/SOURCES/
-	git archive master --prefix rtsadmin-${RPMVERSION}/ | gzip > ~/rpmbuild/SOURCES/rtsadmin-${RPMVERSION}.tar.gz
+	mkdir -p build
+	git archive master --prefix rtsadmin/ > build/rtsadmin.tar
+	cd build; tar mxf rtsadmin.tar; rm rtsadmin.tar
+	cp rtsadmin/__init__.py build/rtsadmin/rtsadmin
+	cp -r doc build/rtsadmin/
+	mv build/rtsadmin rtsadmin-${RPMVERSION}
+	tar zcf ~/rpmbuild/SOURCES/rtsadmin-${RPMVERSION}.tar.gz rtsadmin-${RPMVERSION}
+	rm -fr rtsadmin-${RPMVERSION}
 	rpmbuild -ba redhat/*.spec
 	@test -e dist || mkdir dist
 	mv ~/rpmbuild/SRPMS/rtsadmin-${RPMVERSION}*.src.rpm dist/
-	mv ~/rpmbuild/RPMS/noarch/rtsadmin-${RPMVERSION}*.rpm dist/
+	mv ~/rpmbuild/RPMS/*/rtsadmin-${RPMVERSION}*.rpm dist/
+	mv ~/rpmbuild/RPMS/noarch/rtsadmin-doc-${RPMVERSION}*.rpm dist/
 	./bin/gen_changelog_cleanup
 
 sdist: clean doc

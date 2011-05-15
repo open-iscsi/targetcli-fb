@@ -18,6 +18,15 @@ Vendor:         RisingTide Systems
 %description
 RisingTide Systems generic SCSI target CLI shell.
 
+%package doc
+Summary:       PDF user manual for rtsadmin.
+Group:         Documentation
+BuildRequires: epydoc, python-docutils
+BuildArch:     noarch
+
+%description doc
+PDF user manual for rtsadmin.
+
 %prep
 %setup -q -n %{oname}-%{version}
 
@@ -27,6 +36,8 @@ RisingTide Systems generic SCSI target CLI shell.
 %install
 rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root %{buildroot}
+mkdir -p %{buildroot}/usr/share/doc/rtsadmin-doc-%{version}
+cp -r doc/*.pdf doc/README doc/COPYING %{buildroot}/usr/share/doc/rtsadmin-doc-%{version}/
 
 %clean
 rm -rf %{buildroot}
@@ -36,5 +47,9 @@ rm -rf %{buildroot}
 %{python_sitelib}
 %{_bindir}/rtsadmin
 %doc COPYING README
+
+%files doc
+%defattr(-,root,root,-)
+/usr/share/doc/rtsadmin-doc-%{version}
 
 %changelog
