@@ -59,7 +59,7 @@ clean:
 	rm -fv debian/*.debhelper.log debian/*.debhelper debian/*.substvars debian/files
 	rm -fvr debian/rtsadmin-python2.5/
 	rm -fvr debian/rtsadmin-python2.6/ debian/rtsadmin/ debian/rtsadmin-doc/
-	rm -fv redhat/*.spec *.spec
+	rm -fv redhat/*.spec *.spec redhat/sed* sed*
 	rm -frv rtsadmin-*
 	./bin/gen_changelog_cleanup
 	@echo "Finished cleanup."
