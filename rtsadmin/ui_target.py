@@ -69,10 +69,13 @@ class UIFabricModule(UIRTSLibNode):
         target = Target(self.rtsnode, wwn, mode='create')
         wwn = target.wwn
         if target.has_feature('tpgts'):
-            self.add_child(UIMultiTPGTarget(target))
+            ui_target = UIMultiTPGTarget(target)
+            self.add_child(ui_target)
+            self.log.info("Created target %s." % wwn)
+            ui_target.ui_command_create()
         else:
             self.add_child(UITarget(target))
-        self.log.info("Created target %s." % wwn)
+            self.log.info("Created target %s." % wwn)
 
     def ui_complete_create(self, parameters, text, current_param):
         '''
