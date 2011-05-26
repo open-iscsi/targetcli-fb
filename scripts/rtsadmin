@@ -40,7 +40,8 @@ class RTSAdmin(ConfigShell):
                      'tree_status_mode': True,
                      'tree_round_nodes': True,
                      'tree_show_root': True,
-                     'auto_enable_tpgt': True
+                     'auto_enable_tpgt': True,
+                     'auto_add_mapped_luns': True
                     }
 
 def main():
