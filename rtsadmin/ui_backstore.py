@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ui_node import UINode, UIAttributes, UIParameters
+from ui_node import UINode, UIAttributes, UIParameters, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
@@ -225,20 +225,19 @@ class UIBackstores(UINode):
         else:
             return completions
 
-class UIBackstore(UINode):
+class UIBackstore(UIRTSLibNode):
     '''
     A backstore UI.
     '''
     def __init__(self, backstore):
-        UINode.__init__(self)
-        self.backstore = backstore
+        UIRTSLibNode.__init__(self, backstore)
         self.name = backstore.name
         self.cfs_cwd = backstore.path
         self.refresh()
 
     def refresh(self):
         self._children = set([])
-        for storage_object in self.backstore.storage_objects:
+        for storage_object in self.rtsnode.storage_objects:
             self.add_child(UIStorageObject(storage_object))
 
     def summary(self):
@@ -271,8 +270,9 @@ class UIBackstore(UINode):
         '''
         Displays the version of the current backstore's plugin.
         '''
-        self.con.display("Backstore plugin %s %s"
-                         % (self.backstore.plugin, self.backstore.version))
+        self.con.display("Backstore plugin %s %s" \
+                         % (self.rtsnode.plugin,
+                            self.rtsnode.version))
 
     def ui_command_delete(self, name):
         '''
@@ -335,7 +335,7 @@ class UIPSCSIBackstore(UIBackstore):
         IDs may vary in time.
         '''
         self.assert_root()
-        so = PSCSIStorageObject(self.backstore, name, dev)
+        so = PSCSIStorageObject(self.rtsnode, name, dev)
         self.add_child(UIStorageObject(so))
         self.log.info("Created pscsi storage object %s using %s"
                       % (name, dev))
@@ -362,7 +362,7 @@ class UIRDDRBackstore(UIBackstore):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        so = RDDRStorageObject(self.backstore, name, size,
+        so = RDDRStorageObject(self.rtsnode, name, size,
                                self.prm_gen_wwn(generate_wwn))
         self.add_child(UIStorageObject(so))
         self.log.info("Created rd_dr ramdisk storage object %s with size %s."
@@ -390,7 +390,7 @@ class UIRDMCPBackstore(UIBackstore):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        so = RDMCPStorageObject(self.backstore, name, size,
+        so = RDMCPStorageObject(self.rtsnode, name, size,
                                 self.prm_gen_wwn(generate_wwn))
         self.add_child(UIStorageObject(so))
         self.log.info("Created rd_mcp ramdisk storage object %s with size %s."
@@ -431,14 +431,15 @@ class UIFileIOBackstore(UIBackstore):
                 or is_disk_partition(file_or_dev)
 
         if size is None and is_dev:
-            so = FileIOStorageObject(self.backstore, name, file_or_dev,
+            so = FileIOStorageObject(self.rtsnode, name, file_or_dev,
                                      gen_wwn=self.prm_gen_wwn(generate_wwn),
                                      buffered_mode=self.prm_buffered(buffered))
             self.log.info("Created fileio storage object %s with size %s."
                           % (name, size))
             self.add_child(UIStorageObject(so))
         elif size is not None and not is_dev:
-            so = FileIOStorageObject(self.backstore, name, file_or_dev, size,
+            so = FileIOStorageObject(self.rtsnode, name, file_or_dev,
+                                     size,
                                      gen_wwn=self.prm_gen_wwn(generate_wwn),
                                      buffered_mode=self.prm_buffered(buffered))
             self.log.info("Created fileio storage object %s." % name)
@@ -459,26 +460,25 @@ class UIIBlockBackstore(UIBackstore):
         for the unit (by default, yes).
         '''
         self.assert_root()
-        so = IBlockStorageObject(self.backstore, name, dev,
+        so = IBlockStorageObject(self.rtsnode, name, dev,
                                  self.prm_gen_wwn(generate_wwn))
         self.add_child(UIStorageObject(so))
         self.log.info("Created iblock storage object %s using %s."
                       % (name, dev))
 
-class UIStorageObject(UINode, UIAttributes):
+class UIStorageObject(UIRTSLibNode, UIAttributes):
     '''
     A storage object UI.
     '''
     def __init__(self, storage_object):
-        UINode.__init__(self)
+        UIRTSLibNode.__init__(self, storage_object)
         UIAttributes.__init__(self, storage_object)
-        self.storage_object = storage_object
         self.name = storage_object.name
         self.cfs_cwd = storage_object.path
         self.refresh()
 
     def summary(self):
-        so = self.storage_object
+        so = self.rtsnode
         if so.backstore.plugin.startswith("rd"):
             path = "ramdisk"
         else:

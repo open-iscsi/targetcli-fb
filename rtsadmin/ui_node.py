@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from os import system
 from configshell import ConfigNode, ExecutionError
-from rtslib import RTSLibError, RTSRoot
+from rtslib import RTSLibError, RTSLibNotInCFS, RTSRoot
 
 class UINode(ConfigNode):
     '''
@@ -87,6 +87,10 @@ class UINode(ConfigNode):
         try:
             result = ConfigNode.execute_command(self, command,
                                                 pparams, kparams)
+        except RTSLibNotInCFS:
+            self.log.debug("Detected configFS tree changes, refreshing.")
+            self.get_root().refresh()
+            return self.execute_command(command, pparams, kparams)
         except RTSLibError, msg:
             self.log.error(msg)
         else:
@@ -104,6 +108,32 @@ class UINode(ConfigNode):
         description, is_healthy = self.summary()
         self.log.info("Status for %s: %s" % (self.path, description))
 
+class UIRTSLibNode(UINode):
+    '''
+    A subclass of UINode for nodes with an underlying RTSLib object.
+    '''
+    def __init__(self, rtslib_object):
+        '''
+        Call from the class that inherits this, with the rtslib object that
+        should be checked upon.
+        '''
+        UINode.__init__(self)
+        self.rtsnode = rtslib_object
+
+    def execute_command(self, command, pparams=[], kparams={}):
+        '''
+        Overrides the parent's execute_command() to check if the underlying
+        RTSLib object still exists before returning.
+        '''
+        if not self.rtsnode.exists:
+            self.log.error("The underlying rtslib object for "
+                           + "%s does not exist." % self.path)
+            root = self.get_root()
+            root.refresh()
+            return root
+        else:
+            return UINode.execute_command(self, command, pparams, kparams)
+
 class UIParameters(object):
     '''
     A completely virtual class to implement UI methods for setting/getting
@@ -115,9 +145,9 @@ class UIParameters(object):
         Call from the class that inherits this, with the rtslib object that
         should be queried for parameters.
         '''
-        self._rtslib_object = rtslib_object
+        self.rtsnode = rtslib_object
         self._configuration_groups['parameter'] = {}
-        for parameter in self._rtslib_object.list_parameters():
+        for parameter in self.rtsnode.list_parameters():
             self._configuration_groups['parameter'][parameter] = \
                     [self.ui_type_string, "The %s parameter." % parameter]
 
@@ -129,7 +159,7 @@ class UIParameters(object):
         @return: The parameter's value
         @rtype: arbitrary
         '''
-        return self._rtslib_object.get_parameter(parameter)
+        return self.rtsnode.get_parameter(parameter)
 
     def ui_setgroup_parameter(self, parameter, value):
         '''
@@ -140,7 +170,7 @@ class UIParameters(object):
         @type value: arbitrary
         '''
         self.assert_root()
-        self._rtslib_object.set_parameter(parameter, value)
+        self.rtsnode.set_parameter(parameter, value)
 
 class UIAttributes(object):
     '''
@@ -153,9 +183,9 @@ class UIAttributes(object):
         Call from the class that inherits this, with the rtslib object that
         should be queried for attributes.
         '''
-        self._rtslib_object = rtslib_object
+        self.rtsnode = rtslib_object
         self._configuration_groups['attribute'] = {}
-        for attribute in self._rtslib_object.list_attributes():
+        for attribute in self.rtsnode.list_attributes():
             self._configuration_groups['attribute'][attribute] = \
                     [self.ui_type_string, "The %s attribute." % attribute]
 
@@ -167,7 +197,7 @@ class UIAttributes(object):
         @return: The attribute's value
         @rtype: arbitrary
         '''
-        return self._rtslib_object.get_attribute(attribute)
+        return self.rtsnode.get_attribute(attribute)
 
     def ui_setgroup_attribute(self, attribute, value):
         '''
@@ -178,4 +208,4 @@ class UIAttributes(object):
         @type value: arbitrary
         '''
         self.assert_root()
-        self._rtslib_object.set_attribute(attribute, value)
+        self.rtsnode.set_attribute(attribute, value)

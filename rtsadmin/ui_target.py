@@ -17,25 +17,24 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ui_node import UINode, UIAttributes, UIParameters
+from ui_node import UINode, UIRTSLibNode, UIAttributes, UIParameters
 from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
 from rtslib import RTSRoot, Target, TPG, LUN
 
-class UIFabricModule(UINode):
+class UIFabricModule(UIRTSLibNode):
     '''
     A fabric module UI.
     '''
     def __init__(self, fabric_module):
-        UINode.__init__(self)
+        UIRTSLibNode.__init__(self, fabric_module)
         self.name = fabric_module.name
-        self.fabric_module = fabric_module
         self.cfs_cwd = fabric_module.path
         self.refresh()
 
     def refresh(self):
         self._children = set([])
-        for target in self.fabric_module.targets:
+        for target in self.rtsnode.targets:
             self.log.debug("Found target %s under fabric module %s."
                            % (target.wwn, target.fabric_module))
             if target.has_feature('tpgts'):
@@ -67,7 +66,7 @@ class UIFabricModule(UINode):
         B{info}
         '''
         self.assert_root()
-        target = Target(self.fabric_module, wwn, mode='create')
+        target = Target(self.rtsnode, wwn, mode='create')
         wwn = target.wwn
         if target.has_feature('tpgts'):
             self.add_child(UIMultiTPGTarget(target))
@@ -87,9 +86,9 @@ class UIFabricModule(UINode):
         @return: Possible completions
         @rtype: list of str
         '''
-        spec = self.fabric_module.spec
+        spec = self.rtsnode.spec
         if current_param == 'wwn' and spec['wwn_list'] is not None:
-            existing_wwns = [child.wwn for child in self.fabric_module.targets]
+            existing_wwns = [child.wwn for child in self.rtsnode.targets]
             completions = [wwn for wwn in spec['wwn_list']
                            if wwn.startswith(text)
                            if wwn not in existing_wwns]
@@ -111,7 +110,7 @@ class UIFabricModule(UINode):
         B{create}
         '''
         self.assert_root()
-        target = Target(self.fabric_module, wwn, mode='lookup')
+        target = Target(self.rtsnode, wwn, mode='lookup')
         target.delete()
         self.log.info("Deleted Target %s." % wwn)
         self.refresh()
@@ -145,11 +144,11 @@ class UIFabricModule(UINode):
         transports(s) and accepted B{wwn} format(s), as long as supported
         features.
         '''
-        spec = self.fabric_module.spec
+        spec = self.rtsnode.spec
         self.log.info("Fabric module name: %s"
                       % self.name)
         self.log.info("ConfigFS path: %s"
-                      % self.fabric_module.path)
+                      % self.rtsnode.path)
         if spec['wwn_list'] is not None:
             self.log.info("Allowed WWNs list (%s type): %s"
                           % (spec['wwn_type'], ', '.join(spec['wwn_list'])))
@@ -157,7 +156,7 @@ class UIFabricModule(UINode):
             self.log.info("Supported WWN type: %s"
                           % spec['wwn_type'])
         self.log.info("Fabric module specfile: %s"
-                      % self.fabric_module.spec_file)
+                      % self.rtsnode.spec_file)
         self.log.info("Fabric module features: %s"
                       % ', '.join(spec['features']))
         self.log.info("Corresponding kernel module: %s"
@@ -168,27 +167,26 @@ class UIFabricModule(UINode):
         Displays the target fabric module version.
         '''
         version = "Target fabric module %s: %s" \
-                % (self.fabric_module.name, self.fabric_module.version)
+                % (self.rtsnode.name, self.rtsnode.version)
         self.con.display(version.strip())
 
-class UIMultiTPGTarget(UINode):
+class UIMultiTPGTarget(UIRTSLibNode):
     '''
     A generic target UI that has multiple TPGs.
     '''
     def __init__(self, target):
-        UINode.__init__(self)
-        self.target = target
+        UIRTSLibNode.__init__(self, target)
         self.name = target.wwn
         self.cfs_cwd = target.path
         self.refresh()
 
     def refresh(self):
         self._children = set([])
-        for tpg in self.target.tpgs:
+        for tpg in self.rtsnode.tpgs:
             self.add_child(UITPG(tpg))
 
     def summary(self):
-        if not self.target.fabric_module.is_valid_wwn(self.target.wwn):
+        if not self.rtsnode.fabric_module.is_valid_wwn(self.rtsnode.wwn):
             description = "INVALID WWN"
             is_healthy = False
         else:
@@ -213,7 +211,7 @@ class UIMultiTPGTarget(UINode):
         '''
         self.assert_root()
         if tag is None:
-            tags = [tpg.tag for tpg in self.target.tpgs]
+            tags = [tpg.tag for tpg in self.rtsnode.tpgs]
             for index in range(1048576):
                 if index not in tags and index > 0:
                     tag = index
@@ -234,7 +232,7 @@ class UIMultiTPGTarget(UINode):
                     self.log.error("The TPG Tag must be >0.")
                     return
 
-        tpg = TPG(self.target, tag, mode='create')
+        tpg = TPG(self.rtsnode, tag, mode='create')
         if self.prefs['auto_enable_tpgt']:
             tpg.enable = True
         self.log.info("Successfully created TPG %s." % tpg.tag)
@@ -250,7 +248,7 @@ class UIMultiTPGTarget(UINode):
         B{create}
         '''
         self.assert_root()
-        tpg = TPG(self.target, tag, mode='lookup')
+        tpg = TPG(self.rtsnode, tag, mode='lookup')
         tpg.delete()
         self.log.info("Deleted TPGT %s." % tag)
         self.refresh()
@@ -278,15 +276,14 @@ class UIMultiTPGTarget(UINode):
         else:
             return completions
 
-class UITPG(UINode, UIAttributes, UIParameters):
+class UITPG(UIRTSLibNode, UIAttributes, UIParameters):
     '''
     A generic TPG UI.
     '''
     def __init__(self, tpg):
-        UINode.__init__(self)
+        UIRTSLibNode.__init__(self, tpg)
         UIAttributes.__init__(self, tpg)
         UIParameters.__init__(self, tpg)
-        self.tpg = tpg
         self.name = "tpgt%d" % tpg.tag
         self.cfs_cwd = tpg.path
         self.refresh()
@@ -294,14 +291,14 @@ class UITPG(UINode, UIAttributes, UIParameters):
         self.add_child(UILUNs(tpg))
 
         if tpg.has_feature('acls'):
-            self.add_child(UINodeACLs(self.tpg))
+            self.add_child(UINodeACLs(self.rtsnode))
         if tpg.has_feature('nps'):
-            self.add_child(UIPortals(self.tpg))
+            self.add_child(UIPortals(self.rtsnode))
 
     def summary(self):
-        if self.tpg.has_feature('nexus'):
-            description = "%s" % self.tpg.nexus
-        elif self.tpg.enable:
+        if self.rtsnode.has_feature('nexus'):
+            description = "%s" % self.rtsnode.nexus
+        elif self.rtsnode.enable:
             description = "enabled"
         else:
             description = "disabled"
@@ -316,10 +313,10 @@ class UITPG(UINode, UIAttributes, UIParameters):
         B{disable status}
         '''
         self.assert_root()
-        if self.tpg.enable:
+        if self.rtsnode.enable:
             self.log.info("The TPGT is already enabled.")
         else:
-            self.tpg.enable = True
+            self.rtsnode.enable = True
             self.log.info("The TPGT has been enabled.")
 
     def ui_command_disable(self):
@@ -331,8 +328,8 @@ class UITPG(UINode, UIAttributes, UIParameters):
         B{enable status}
         '''
         self.assert_root()
-        if self.tpg.enable:
-            self.tpg.enable = False
+        if self.rtsnode.enable:
+            self.rtsnode.enable = False
             self.log.info("The TPGT has been disabled.")
         else:
             self.log.info("The TPGT is already disabled.")
@@ -354,7 +351,6 @@ class UITarget(UITPG):
             return ("INVALID WWN", False)
         else:
             return UITPG.summary(self)
-
 
 class UINodeACLs(UINode):
     '''
@@ -419,7 +415,8 @@ class UINodeACLs(UINode):
 
         if add_mapped_luns:
             for lun in self.tpg.luns:
-                mlun = MappedLUN(node_acl, lun.lun, lun.lun, write_protect=False)
+                mlun = MappedLUN(node_acl, lun.lun, lun.lun,
+                                 write_protect=False)
                 self.log.info("Created mapped LUN %d." % lun.lun)
             self.refresh()
 
@@ -460,16 +457,15 @@ class UINodeACLs(UINode):
         else:
             return completions
 
-class UINodeACL(UINode, UIAttributes, UIParameters):
+class UINodeACL(UIRTSLibNode, UIAttributes, UIParameters):
     '''
     A generic UI for a node ACL.
     '''
     def __init__(self, node_acl):
-        UINode.__init__(self)
+        UIRTSLibNode.__init__(self, node_acl)
         UIAttributes.__init__(self, node_acl)
         UIParameters.__init__(self, node_acl)
         self.name = node_acl.node_wwn
-        self.node_acl = node_acl
         self.cfs_cwd = node_acl.path
 
         self._configuration_groups['auth'] = {}
@@ -490,13 +486,13 @@ class UINodeACL(UINode, UIAttributes, UIParameters):
         '''
         value = None
         if auth_attr == 'password':
-            value = self.node_acl.chap_password
+            value = self.rtsnode.chap_password
         elif auth_attr == 'userid':
-            value = self.node_acl.chap_userid
+            value = self.rtsnode.chap_userid
         elif auth_attr == 'mutual_password':
-            value = self.node_acl.chap_mutual_password
+            value = self.rtsnode.chap_mutual_password
         elif auth_attr == 'mutual_userid':
-            value = self.node_acl.chap_mutual_userid
+            value = self.rtsnode.chap_mutual_userid
         return value
 
     def ui_setgroup_auth(self, auth_attr, value):
@@ -511,17 +507,17 @@ class UINodeACL(UINode, UIAttributes, UIParameters):
         if value is None:
             value = ''
         if auth_attr == 'password':
-            self.node_acl.chap_password = value
+            self.rtsnode.chap_password = value
         elif auth_attr == 'userid':
-            self.node_acl.chap_userid = value
+            self.rtsnode.chap_userid = value
         elif auth_attr == 'mutual_password':
-            self.node_acl.chap_mutual_password = value
+            self.rtsnode.chap_mutual_password = value
         elif auth_attr == 'mutual_userid':
-            self.node_acl.chap_mutual_userid = value
+            self.rtsnode.chap_mutual_userid = value
 
     def refresh(self):
         self._children = set([])
-        for mlun in self.node_acl.mapped_luns:
+        for mlun in self.rtsnode.mapped_luns:
             self.add_child(UIMappedLUN(mlun))
 
     def summary(self):
@@ -551,7 +547,7 @@ class UINodeACL(UINode, UIAttributes, UIParameters):
             self.log.error("Incorrect LUN value.")
             return
 
-        mlun = MappedLUN(self.node_acl, mapped_lun, tpg_lun, write_protect)
+        mlun = MappedLUN(self.rtsnode, mapped_lun, tpg_lun, write_protect)
         self.add_child(UIMappedLUN(mlun))
         self.log.info("Created Mapped LUN %s." % mlun.mapped_lun)
 
@@ -564,24 +560,23 @@ class UINodeACL(UINode, UIAttributes, UIParameters):
         B{create}
         '''
         self.assert_root()
-        mlun = MappedLUN(self.node_acl, mapped_lun)
+        mlun = MappedLUN(self.rtsnode, mapped_lun)
         mlun.delete()
         self.log.info("Deleted Mapped LUN %s." % mapped_lun)
         self.refresh()
 
-class UIMappedLUN(UINode):
+class UIMappedLUN(UIRTSLibNode):
     '''
     A generic UI for MappedLUN objects.
     '''
     def __init__(self, mapped_lun):
-        UINode.__init__(self)
-        self.mapped_lun = mapped_lun
+        UIRTSLibNode.__init__(self, mapped_lun)
         self.name = "mapped_lun%d" % mapped_lun.mapped_lun
         self.cfs_cwd = mapped_lun.path
         self.refresh()
 
     def summary(self):
-        mapped_lun = self.mapped_lun
+        mapped_lun = self.rtsnode
         is_healthy = True
         try:
             tpg_lun = mapped_lun.tpg_lun
@@ -668,7 +663,7 @@ class UILUNs(UINode):
                                    self.prefs['auto_add_mapped_luns'])
 
         try:
-            storage_object = self.get_node(storage_object).storage_object
+            storage_object = self.get_node(storage_object).rtsnode
         except AttributeError:
             self.log.error("Wrong storage object path.")
 
@@ -761,19 +756,18 @@ class UILUNs(UINode):
         else:
             return completions
 
-class UILUN(UINode):
+class UILUN(UIRTSLibNode):
     '''
     A generic UI for LUN objects.
     '''
     def __init__(self, lun):
-        UINode.__init__(self)
-        self.lun = lun
+        UIRTSLibNode.__init__(self, lun)
         self.name = "lun%d" % lun.lun
         self.cfs_cwd = lun.path
         self.refresh()
 
     def summary(self):
-        lun = self.lun
+        lun = self.rtsnode
         is_healthy = True
         try:
             storage_object = lun.storage_object
@@ -942,13 +936,12 @@ class UIPortals(UINode):
         else:
             return completions
 
-class UIPortal(UINode):
+class UIPortal(UIRTSLibNode):
     '''
     A generic UI for a network portal.
     '''
     def __init__(self, portal):
-        UINode.__init__(self)
-        self.portal = portal
+        UIRTSLibNode.__init__(self, portal)
         self.name = "%s:%s" % (portal.ip_address, portal.port)
         self.cfs_cwd = portal.path
         self.refresh()
