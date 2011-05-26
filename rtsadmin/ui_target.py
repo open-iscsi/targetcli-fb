@@ -380,11 +380,16 @@ class UINodeACLs(UINode):
             msg = "%d ACL" % no_acls
         return (msg, None)
 
-    def ui_command_create(self, wwn):
+    def ui_command_create(self, wwn, add_mapped_luns=None):
         '''
         Creates a Node ACL for the initiator node with the specified I{wwn}.
         The node's I{wwn} must match the expected WWN Type of the target's
         fabric module.
+
+        If I{add_mapped_luns} is omitted, the global parameter
+        B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
+        accepted. If B{true}, then after creating the ACL, mapped LUNs will be
+        automatically created for all existing LUNs.
 
         SEE ALSO
         ========
@@ -396,6 +401,12 @@ class UINodeACLs(UINode):
             self.log.error("'%s' is not a valid %s WWN."
                            % (wwn, spec['wwn_type']))
             return
+
+        add_mapped_luns = \
+                self.ui_eval_param(add_mapped_luns,
+                                   self.ui_type_bool,
+                                   self.prefs['auto_add_mapped_luns'])
+
         try:
             node_acl = NodeACL(self.tpg, wwn, mode="create")
         except RTSLibError, msg:
@@ -405,6 +416,12 @@ class UINodeACLs(UINode):
             self.log.info("Successfully created Node ACL for %s"
                           % node_acl.node_wwn)
             self.add_child(UINodeACL(node_acl))
+
+        if add_mapped_luns:
+            for lun in self.tpg.luns:
+                mlun = MappedLUN(node_acl, lun.lun, lun.lun, write_protect=False)
+                self.log.info("Created mapped LUN %d." % lun.lun)
+            self.refresh()
 
     def ui_command_delete(self, wwn):
         '''
@@ -604,13 +621,19 @@ class UILUNs(UINode):
             msg = "%d LUN" % no_luns
         return (msg, None)
 
-    def ui_command_create(self, storage_object, lun=None):
+    def ui_command_create(self, storage_object, lun=None,
+                          add_mapped_luns=None):
         '''
         Creates a new LUN in the Target Portal Group, attached to a storage
         object. If the I{lun} parameter is omitted, the first available LUN in
         the TPG will be used. The I{storage_object} must be the path of an
         existing storage object, i.e. B{/backstore/pscsi0/mydisk} to reference
         the B{mydisk} storage object of the virtual HBA B{pscsi0}.
+
+        If I{add_mapped_luns} is omitted, the global parameter
+        B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
+        accepted. If B{true}, then after creating the LUN, mapped LUNs will be
+        automatically created for all existing node ACLs, mapping the new LUN.
 
         SEE ALSO
         ========
@@ -639,6 +662,11 @@ class UILUNs(UINode):
                     self.log.error("The LUN cannot be negative.")
                     return
 
+        add_mapped_luns = \
+                self.ui_eval_param(add_mapped_luns,
+                                   self.ui_type_bool,
+                                   self.prefs['auto_add_mapped_luns'])
+
         try:
             storage_object = self.get_node(storage_object).storage_object
         except AttributeError:
@@ -647,6 +675,26 @@ class UILUNs(UINode):
         lun_object = LUN(self.tpg, lun, storage_object)
         self.log.info("Successfully created LUN %s." % lun_object.lun)
         self.add_child(UILUN(lun_object))
+
+        if add_mapped_luns:
+            for acl in self.tpg.node_acls:
+                mapped_lun = lun
+                existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
+                if mapped_lun in existing_mluns:
+                    tentative_mlun = 0
+                    while mapped_lun == lun:
+                        if tentative_mlun not in existing_mluns:
+                            mapped_lun = tentative_mlun
+                            self.log.warning("Mapped LUN %d already exists in"
+                                             % lun
+                                             + " ACL %s, using %d instead."
+                                             % (acl.node_wwn, mapped_lun))
+                        else:
+                            tentative_mlun += 1
+                mlun = MappedLUN(acl, mapped_lun, lun, write_protect=False)
+                self.log.info("Created mapped LUN %d in node ACL %s"
+                              % (mapped_lun, acl.node_wwn))
+            self.parent.refresh()
 
     def ui_complete_create(self, parameters, text, current_param):
         '''
