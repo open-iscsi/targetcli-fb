@@ -33,7 +33,7 @@ class UINode(ConfigNode):
                   'If true, automatically enables TPGTs upon creation.']
         self._configuration_groups['global']['auto_add_mapped_luns'] = \
                  [self.ui_type_bool,
-                  'If true, automatically create node ACLs mapped LUNs'
+                  'If true, automatically create node ACLs mapped LUNs '
                   + 'after creating a new target LUN or a new node ACL']
 
     def assert_root(self):
