@@ -91,10 +91,6 @@ class UINode(ConfigNode):
         try:
             result = ConfigNode.execute_command(self, command,
                                                 pparams, kparams)
-        except RTSLibNotInCFS:
-            self.log.debug("Detected configFS tree changes, refreshing.")
-            self.get_root().refresh()
-            return self.execute_command(command, pparams, kparams)
         except RTSLibError, msg:
             self.log.error(msg)
         else:
