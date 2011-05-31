@@ -67,8 +67,8 @@ class UIRoot(UINode):
         else:
             self.log.debug("Refreshing in loaded mode.")
             for fabric_module in RTSRoot().loaded_fabric_modules:
-                    self.log.debug("Loading %s." % fabric_module.name)
-                    self.add_child(UIFabricModule(fabric_module))
+                self.log.debug("Loading %s." % fabric_module.name)
+                self.add_child(UIFabricModule(fabric_module))
 
     def ui_command_version(self):
         '''

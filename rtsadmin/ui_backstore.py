@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ui_node import UINode, UIAttributes, UIParameters, UIRTSLibNode
+from ui_node import UINode, UIAttributes, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore

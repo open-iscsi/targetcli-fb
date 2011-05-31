@@ -21,7 +21,7 @@ from ui_node import UINode, UIRTSLibNode, UIAttributes, UIParameters
 from ui_backstore import dedup_so_name
 from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
-from rtslib import RTSRoot, Target, TPG, LUN
+from rtslib import Target, TPG, LUN
 
 class UIFabricModule(UIRTSLibNode):
     '''
@@ -417,8 +417,7 @@ class UINodeACLs(UINode):
 
         if add_mapped_luns:
             for lun in self.tpg.luns:
-                mlun = MappedLUN(node_acl, lun.lun, lun.lun,
-                                 write_protect=False)
+                MappedLUN(node_acl, lun.lun, lun.lun, write_protect=False)
                 self.log.info("Created mapped LUN %d." % lun.lun)
             self.refresh()
 

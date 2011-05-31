@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from os import system
 from configshell import ConfigNode, ExecutionError
-from rtslib import RTSLibError, RTSLibNotInCFS, RTSRoot
+from rtslib import RTSLibError, RTSRoot
 
 class UINode(ConfigNode):
     '''

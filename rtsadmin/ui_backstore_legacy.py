@@ -7,7 +7,7 @@ Jerome Martin <jxm@risingtidesystems.com>
 Implements the rtsadmin backstores related UI.
 '''
 
-from ui_node import UINode, UIAttributes, UIParameters, UIRTSLibNode
+from ui_node import UINode, UIAttributes, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
