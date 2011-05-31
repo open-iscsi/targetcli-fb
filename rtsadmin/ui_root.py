@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from rtslib import RTSRoot
 from ui_node import UINode
 from ui_target import UIFabricModule
+from ui_backstore_legacy import UIBackstoresLegacy
 from ui_backstore import UIBackstores
 
 class UIRoot(UINode):
@@ -37,7 +38,10 @@ class UIRoot(UINode):
         Refreshes the tree of target fabric modules.
         '''
         self._children = set([])
-        self.add_child(UIBackstores())
+        if self.prefs['legacy_hba_view']:
+            self.add_child(UIBackstoresLegacy())
+        else:
+            self.add_child(UIBackstores())
         if not self.loaded:
             self.log.debug("Refreshing in non-loaded mode.")
             for fabric_module in RTSRoot().fabric_modules:

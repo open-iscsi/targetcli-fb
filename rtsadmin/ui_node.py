@@ -35,6 +35,10 @@ class UINode(ConfigNode):
                  [self.ui_type_bool,
                   'If true, automatically create node ACLs mapped LUNs '
                   + 'after creating a new target LUN or a new node ACL']
+        self._configuration_groups['global']['legacy_hba_view'] = \
+                 [self.ui_type_bool,
+                  'If true, use legacy HBA view, allowing to create more '
+                  + 'than one storage object per HBA.']
 
     def assert_root(self):
         '''
@@ -107,6 +111,10 @@ class UINode(ConfigNode):
         '''
         description, is_healthy = self.summary()
         self.log.info("Status for %s: %s" % (self.path, description))
+
+    def ui_setgroup_global(self, parameter, value):
+        ConfigNode.ui_setgroup_global(self, parameter, value)
+        self.get_root().refresh()
 
 class UIRTSLibNode(UINode):
     '''
