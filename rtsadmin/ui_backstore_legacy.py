@@ -182,7 +182,7 @@ class UIBackstoresLegacy(UINode):
         self.assert_root()
         for child in self.children:
             if child.name == backstore:
-                child.backstore.delete()
+                child.rtsnode.delete()
                 self.del_child(child)
                 self.log.info("Deleted backstore %s." % backstore)
                 self.parent.refresh()
@@ -278,7 +278,7 @@ class UIBackstoreLegacy(UIRTSLibNode):
         self.assert_root()
         for child in self.children:
             if child.name == name:
-                child.storage_object.delete()
+                child.rtsnode.delete()
                 self.del_child(child)
                 self.log.info("Deleted storage object %s." % name)
                 self.parent.parent.refresh()
