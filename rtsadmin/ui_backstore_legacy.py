@@ -261,8 +261,7 @@ class UIBackstoreLegacy(UIRTSLibNode):
         Displays the version of the current backstore's plugin.
         '''
         self.con.display("Backstore plugin %s %s" \
-                         % (self.rtsnode.plugin,
-                            self.rtsnode.version))
+                         % (self.rtsnode.plugin, self.rtsnode.version))
 
     def ui_command_delete(self, name):
         '''
@@ -428,8 +427,7 @@ class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
                           % (name, size))
             self.add_child(UIStorageObjectLegacy(so))
         elif size is not None and not is_dev:
-            so = FileIOStorageObject(self.rtsnode, name, file_or_dev,
-                                     size,
+            so = FileIOStorageObject(self.rtsnode, name, file_or_dev, size,
                                      gen_wwn=self.prm_gen_wwn(generate_wwn),
                                      buffered_mode=self.prm_buffered(buffered))
             self.log.info("Created fileio storage object %s." % name)

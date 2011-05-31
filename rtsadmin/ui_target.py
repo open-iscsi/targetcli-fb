@@ -149,16 +149,14 @@ class UIFabricModule(UIRTSLibNode):
         features.
         '''
         spec = self.rtsnode.spec
-        self.log.info("Fabric module name: %s"
-                      % self.name)
-        self.log.info("ConfigFS path: %s"
-                      % self.rtsnode.path)
+        self.log.info("Fabric module name: %s" % self.name)
+        self.log.info("ConfigFS path: %s" % self.rtsnode.path)
         if spec['wwn_list'] is not None:
             self.log.info("Allowed WWNs list (%s type): %s"
                           % (spec['wwn_type'], ', '.join(spec['wwn_list'])))
         else:
-            self.log.info("Supported WWN type: %s"
-                          % spec['wwn_type'])
+            self.log.info("Supported WWN type: %s" % spec['wwn_type'])
+
         self.log.info("Fabric module specfile: %s"
                       % self.rtsnode.spec_file)
         self.log.info("Fabric module features: %s"
