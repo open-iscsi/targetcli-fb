@@ -569,6 +569,29 @@ class UINodeACL(UIRTSLibNode, UIAttributes, UIParameters):
         self.log.info("Deleted Mapped LUN %s." % mapped_lun)
         self.refresh()
 
+    def ui_complete_delete(self, parameters, text, current_param):
+        '''
+        Parameter auto-completion method for user command delete.
+        @param parameters: Parameters on the command line.
+        @type parameters: dict
+        @param text: Current text of parameter being typed by the user.
+        @type text: str
+        @param current_param: Name of parameter to complete.
+        @type current_param: str
+        @return: Possible completions
+        @rtype: list of str
+        '''
+        if current_param == 'mapped_lun':
+            mluns = [str(mlun.mapped_lun) for mlun in self.rtsnode.mapped_luns]
+            completions = [mlun for mlun in mluns if mlun.startswith(text)]
+        else:
+            completions = []
+
+        if len(completions) == 1:
+            return [completions[0] + ' ']
+        else:
+            return completions
+
 class UIMappedLUN(UIRTSLibNode):
     '''
     A generic UI for MappedLUN objects.
