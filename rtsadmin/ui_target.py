@@ -345,7 +345,7 @@ class UITarget(UITPG):
     def __init__(self, target):
         UITPG.__init__(self, TPG(target, 1))
         self.target = target
-        self.tpg.enable = True
+        self.rtsnode.enable = True
         self.name = target.wwn
 
     def summary(self):
