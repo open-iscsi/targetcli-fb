@@ -102,15 +102,6 @@ class UIBackstore(UINode):
             self.log.info("Not using buffered mode.")
         return buffered
 
-    # FIXME
-    #def ui_command_version(self):
-    #    '''
-    #    Displays the version of the current backstore's plugin.
-    #    '''
-    #    self.con.display("Backstore plugin %s %s" \
-    #                     % (self.rtsnode.plugin,
-    #                        self.rtsnode.version))
-
     def ui_command_delete(self, name):
         '''
         Recursively deletes the storage object having the specified I{name}. If
@@ -395,6 +386,14 @@ class UIStorageObject(UIRTSLibNode, UIAttributes):
         self.name = storage_object.name
         self.cfs_cwd = storage_object.path
         self.refresh()
+
+    def ui_command_version(self):
+        '''
+        Displays the version of the current backstore's plugin.
+        '''
+        backstore = self.rtsnode.backstore
+        self.con.display("Backstore plugin %s %s" \
+                         % (backstore.plugin, backstore.version))
 
     def summary(self):
         so = self.rtsnode
