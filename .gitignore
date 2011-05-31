@@ -17,5 +17,7 @@ doc/
 *.swp
 dpkg-buildpackage.log
 dpkg-buildpackage.version
-*.spec
-rtsadmin-*
+./*.spec
+redhat/*.spec
+./rtsadmin-*
+log/
