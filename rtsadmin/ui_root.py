@@ -77,7 +77,15 @@ class UIRoot(UINode):
         from rtslib import __version__ as rtslib_version
         from rtsadmin import __version__ as rtsadmin_version
         from configshell import __version__ as configshell_version
-        self.log.info("Running rtsadmin version %s" % rtsadmin_version)
-        self.log.info("Using rtslib version %s" % rtslib_version)
-        self.log.info("Using configshell version %s" % configshell_version)
+        for package, version in dict(rtsadmin=rtsadmin_version,
+                                     rtslib=rtslib_version,
+                                     configshell=configshell_version).items():
+            if version == 'GIT_VERSION':
+                self.log.error("Cannot find %s version. The %s package has "
+                               % (package, package)
+                               + "probably not been built properly from "
+                               + "either the git repository or a public "
+                               + "tarball.")
+            else:
+                self.log.info("Using %s version %s" % (package, version))
 
