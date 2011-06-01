@@ -39,6 +39,9 @@ class UINode(ConfigNode):
                  [self.ui_type_bool,
                   'If true, use legacy HBA view, allowing to create more '
                   + 'than one storage object per HBA.']
+        self._configuration_groups['global']['auto_cd_after_create'] = \
+                 [self.ui_type_bool,
+                  'If true, changes current path to newly created objects.']
 
     def assert_root(self):
         '''
@@ -50,23 +53,21 @@ class UINode(ConfigNode):
             raise ExecutionError("This privileged command is disabled: "
                                  + "you are not root.")
 
-    def ui_command_refresh(self):
+    def new_node(self, new_node):
         '''
-        Refreshes and updates the objects tree from the current path.
+        Used to honor global 'auto_cd_after_create'.
+        Either returns None if the global is False, or the new_node if the
+        global is True. In both cases, set the @last bookmark to last_node.
         '''
-        self.refresh()
-
-    def ui_command_saveconfig(self):
-        '''
-        Saves the whole configuration tree to disk so that it will be restored
-        on next boot. Unless you do that, changes are lost accross reboots.
-        '''
-        self.assert_root()
-        self.con.display("WARNING: Saving the current configuration to disk "
-                         + "will overwrite your boot settings.")
-        self.con.display("The current target configuration will become the "
-                         + "default boot config.")
-        system('PYTHONPATH="" python /usr/sbin/tcm_dump --o')
+        self.prefs['bookmarks']['last'] = new_node.path
+        self.prefs.save()
+        if self.prefs['auto_cd_after_create']:
+            self.log.info("Entering new node %s" % new_node.path)
+            # Piggy backs on cd instead of just returning new_node,
+            # so we update navigation history.
+            return self.ui_command_cd(new_node.path)
+        else:
+            return None
 
     def refresh(self):
         '''
@@ -96,6 +97,25 @@ class UINode(ConfigNode):
         else:
             self.log.debug("Command %s succeeded." % command)
             return result
+
+
+    def ui_command_refresh(self):
+        '''
+        Refreshes and updates the objects tree from the current path.
+        '''
+        self.refresh()
+
+    def ui_command_saveconfig(self):
+        '''
+        Saves the whole configuration tree to disk so that it will be restored
+        on next boot. Unless you do that, changes are lost accross reboots.
+        '''
+        self.assert_root()
+        self.con.display("WARNING: Saving the current configuration to disk "
+                         + "will overwrite your boot settings.")
+        self.con.display("The current target configuration will become the "
+                         + "default boot config.")
+        system('PYTHONPATH="" python /usr/sbin/tcm_dump --o')
 
     def ui_command_status(self):
         '''

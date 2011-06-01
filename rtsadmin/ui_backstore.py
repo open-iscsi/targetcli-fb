@@ -201,9 +201,12 @@ class UIPSCSIBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        self.add_child(UIStorageObject(so))
+        ui_so = UIStorageObject(so)
+        self.add_child(ui_so)
         self.log.info("Created pscsi storage object %s using %s"
                       % (name, dev))
+        return self.new_node(ui_so)
+
 
 class UIRDDRBackstore(UIBackstore):
     '''
@@ -239,9 +242,11 @@ class UIRDDRBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        self.add_child(UIStorageObject(so))
+        ui_so = UIStorageObject(so)
+        self.add_child(ui_so)
         self.log.info("Created rd_dr ramdisk storage object %s with size %s."
                       % (name, size))
+        return self.new_node(ui_so)
 
 class UIRDMCPBackstore(UIBackstore):
     '''
@@ -277,9 +282,11 @@ class UIRDMCPBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        self.add_child(UIStorageObject(so))
+        ui_so = UIStorageObject(so)
+        self.add_child(ui_so)
         self.log.info("Created rd_mcp ramdisk storage object %s with size %s."
                       % (name, size))
+        return self.new_node(ui_so)
 
 class UIFileIOBackstore(UIBackstore):
     '''
@@ -331,7 +338,9 @@ class UIFileIOBackstore(UIBackstore):
                 raise exception
             self.log.info("Created fileio storage object %s with size %s."
                           % (name, size))
-            self.add_child(UIStorageObject(so))
+            ui_so = UIStorageObject(so)
+            self.add_child(ui_so)
+            return self.new_node(ui_so)
         elif size is not None and not is_dev:
             backstore = FileIOBackstore(self.next_hba_index(), mode='create')
             try:
@@ -344,7 +353,9 @@ class UIFileIOBackstore(UIBackstore):
                 backstore.delete()
                 raise exception
             self.log.info("Created fileio storage object %s." % name)
-            self.add_child(UIStorageObject(so))
+            ui_so = UIStorageObject(so)
+            self.add_child(ui_so)
+            return self.new_node(ui_so)
         else:
             self.log.error("For fileio, you must either specify both a file "
                            + "and a size, or just a device path.")
@@ -372,9 +383,11 @@ class UIIBlockBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        self.add_child(UIStorageObject(so))
+        ui_so = UIStorageObject(so)
+        self.add_child(ui_so)
         self.log.info("Created iblock storage object %s using %s."
                       % (name, dev))
+        return self.new_node(ui_so)
 
 class UIStorageObject(UIRTSLibNode, UIAttributes):
     '''

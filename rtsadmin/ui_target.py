@@ -73,10 +73,12 @@ class UIFabricModule(UIRTSLibNode):
             ui_target = UIMultiTPGTarget(target)
             self.add_child(ui_target)
             self.log.info("Created target %s." % wwn)
-            ui_target.ui_command_create()
+            return ui_target.ui_command_create()
         else:
-            self.add_child(UITarget(target))
+            ui_target = UITarget(target)
+            self.add_child(ui_target)
             self.log.info("Created target %s." % wwn)
+            return self.new_node(ui_target)
 
     def ui_complete_create(self, parameters, text, current_param):
         '''
@@ -238,7 +240,9 @@ class UIMultiTPGTarget(UIRTSLibNode):
         if self.prefs['auto_enable_tpgt']:
             tpg.enable = True
         self.log.info("Successfully created TPG %s." % tpg.tag)
-        self.add_child(UITPG(tpg))
+        ui_tpg = UITPG(tpg)
+        self.add_child(ui_tpg)
+        return self.new_node(ui_tpg)
 
     def ui_command_delete(self, tag):
         '''
@@ -413,13 +417,16 @@ class UINodeACLs(UINode):
         else:
             self.log.info("Successfully created Node ACL for %s"
                           % node_acl.node_wwn)
-            self.add_child(UINodeACL(node_acl))
+            ui_node_acl = UINodeACL(node_acl)
+            self.add_child(ui_node_acl)
 
         if add_mapped_luns:
             for lun in self.tpg.luns:
                 MappedLUN(node_acl, lun.lun, lun.lun, write_protect=False)
                 self.log.info("Created mapped LUN %d." % lun.lun)
             self.refresh()
+
+        return self.new_node(ui_node_acl)
 
     def ui_command_delete(self, wwn):
         '''
@@ -549,8 +556,10 @@ class UINodeACL(UIRTSLibNode, UIAttributes, UIParameters):
             return
 
         mlun = MappedLUN(self.rtsnode, mapped_lun, tpg_lun, write_protect)
-        self.add_child(UIMappedLUN(mlun))
+        ui_mlun = UIMappedLUN(mlun)
+        self.add_child(ui_mlun)
         self.log.info("Created Mapped LUN %s." % mlun.mapped_lun)
+        return self.new_node(ui_mlun)
 
     def ui_command_delete(self, mapped_lun):
         '''
@@ -693,7 +702,8 @@ class UILUNs(UINode):
 
         lun_object = LUN(self.tpg, lun, storage_object)
         self.log.info("Successfully created LUN %s." % lun_object.lun)
-        self.add_child(UILUN(lun_object))
+        ui_lun = UILUN(lun_object)
+        self.add_child(ui_lun)
 
         if add_mapped_luns:
             for acl in self.tpg.node_acls:
@@ -714,6 +724,8 @@ class UILUNs(UINode):
                 self.log.info("Created mapped LUN %d in node ACL %s"
                               % (mapped_lun, acl.node_wwn))
             self.parent.refresh()
+
+        return self.new_node(ui_lun)
 
     def ui_complete_create(self, parameters, text, current_param):
         '''
@@ -880,7 +892,9 @@ class UIPortals(UINode):
                                ip_port, mode='create')
         self.log.info("Successfully created network portal %s:%d."
                       % (ip_address, ip_port))
-        self.add_child(UIPortal(portal))
+        ui_portal = UIPortal(portal)
+        self.add_child(ui_portal)
+        return self.new_node(ui_portal)
 
     def ui_complete_create(self, parameters, text, current_param):
         '''

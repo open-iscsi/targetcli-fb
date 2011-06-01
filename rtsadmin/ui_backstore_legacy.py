@@ -124,19 +124,29 @@ class UIBackstoresLegacy(UINode):
 
         if backstore_plugin == 'pscsi':
             backstore = PSCSIBackstore(backstore_index, mode='create')
-            self.add_child(UIPSCSIBackstoreLegacy(backstore))
+            ui_backstore = UIPSCSIBackstoreLegacy(backstore)
+            self.add_child(ui_backstore)
+            return self.new_node(ui_backstore)
         elif backstore_plugin == 'rd_dr':
             backstore = RDDRBackstore(backstore_index, mode='create')
-            self.add_child(UIRDDRBackstoreLegacy(backstore))
+            ui_backstore = UIRDDRBackstoreLegacy(backstore)
+            self.add_child(ui_backstore)
+            return self.new_node(ui_backstore)
         elif backstore_plugin == 'rd_mcp':
             backstore = RDMCPBackstore(backstore_index, mode='create')
-            self.add_child(UIRDMCPBackstoreLegacy(backstore))
+            ui_backstore = UIRDMCPBackstoreLegacy(backstore)
+            self.add_child(ui_backstore)
+            return self.new_node(ui_backstore)
         elif backstore_plugin == 'fileio':
             backstore = FileIOBackstore(backstore_index, mode='create')
-            self.add_child(UIFileIOBackstoreLegacy(backstore))
+            ui_backstore = UIFileIOBackstoreLegacy(backstore)
+            self.add_child(ui_backstore)
+            return self.new_node(ui_backstore)
         elif backstore_plugin == 'iblock':
             backstore = IBlockBackstore(backstore_index, mode='create')
-            self.add_child(UIIBlockBackstoreLegacy(backstore))
+            ui_backstore = UIIBlockBackstoreLegacy(backstore)
+            self.add_child(ui_backstore)
+            return self.new_node(ui_backstore)
         else:
             self.log.error("Invalid backstore plugin %s" % backstore_plugin)
             return
@@ -325,9 +335,11 @@ class UIPSCSIBackstoreLegacy(UIBackstoreLegacy):
         '''
         self.assert_root()
         so = PSCSIStorageObject(self.rtsnode, name, dev)
-        self.add_child(UIStorageObjectLegacy(so))
+        ui_so = UIStorageObjectLegacy(so)
+        self.add_child(ui_so)
         self.log.info("Created pscsi storage object %s using %s"
                       % (name, dev))
+        return self.new_node(ui_so)
 
 class UIRDDRBackstoreLegacy(UIBackstoreLegacy):
     '''
@@ -353,9 +365,11 @@ class UIRDDRBackstoreLegacy(UIBackstoreLegacy):
         self.assert_root()
         so = RDDRStorageObject(self.rtsnode, name, size,
                                self.prm_gen_wwn(generate_wwn))
-        self.add_child(UIStorageObjectLegacy(so))
+        ui_so = UIStorageObjectLegacy(so)
+        self.add_child(ui_so)
         self.log.info("Created rd_dr ramdisk storage object %s with size %s."
                       % (name, size))
+        return self.new_node(ui_so)
 
 class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
     '''
@@ -381,9 +395,11 @@ class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
         self.assert_root()
         so = RDMCPStorageObject(self.rtsnode, name, size,
                                 self.prm_gen_wwn(generate_wwn))
-        self.add_child(UIStorageObjectLegacy(so))
+        ui_so = UIStorageObjectLegacy(so)
+        self.add_child(ui_so)
         self.log.info("Created rd_mcp ramdisk storage object %s with size %s."
                       % (name, size))
+        return self.new_node(ui_so)
 
 class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
     '''
@@ -425,13 +441,17 @@ class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
                                      buffered_mode=self.prm_buffered(buffered))
             self.log.info("Created fileio storage object %s with size %s."
                           % (name, size))
-            self.add_child(UIStorageObjectLegacy(so))
+            ui_so = UIStorageObjectLegacy(so)
+            self.add_child(ui_so)
+            return self.new_node(ui_so)
         elif size is not None and not is_dev:
             so = FileIOStorageObject(self.rtsnode, name, file_or_dev, size,
                                      gen_wwn=self.prm_gen_wwn(generate_wwn),
                                      buffered_mode=self.prm_buffered(buffered))
             self.log.info("Created fileio storage object %s." % name)
-            self.add_child(UIStorageObjectLegacy(so))
+            ui_so = UIStorageObjectLegacy(so)
+            self.add_child(ui_so)
+            return self.new_node(ui_so)
         else:
             self.log.error("For fileio, you must either specify both a file "
                            + "and a size, or just a device path.")
@@ -450,9 +470,11 @@ class UIIBlockBackstoreLegacy(UIBackstoreLegacy):
         self.assert_root()
         so = IBlockStorageObject(self.rtsnode, name, dev,
                                  self.prm_gen_wwn(generate_wwn))
-        self.add_child(UIStorageObjectLegacy(so))
+        ui_so = UIStorageObjectLegacy(so)
+        self.add_child(ui_so)
         self.log.info("Created iblock storage object %s using %s."
                       % (name, dev))
+        return self.new_node(ui_so)
 
 class UIStorageObjectLegacy(UIRTSLibNode, UIAttributes):
     '''
