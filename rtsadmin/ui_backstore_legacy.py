@@ -7,7 +7,7 @@ Jerome Martin <jxm@risingtidesystems.com>
 Implements the rtsadmin backstores related UI.
 '''
 
-from ui_node import UINode, UIAttributes, UIRTSLibNode
+from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
@@ -476,13 +476,12 @@ class UIIBlockBackstoreLegacy(UIBackstoreLegacy):
                       % (name, dev))
         return self.new_node(ui_so)
 
-class UIStorageObjectLegacy(UIRTSLibNode, UIAttributes):
+class UIStorageObjectLegacy(UIRTSLibNode):
     '''
     A storage object UI.
     '''
     def __init__(self, storage_object):
         UIRTSLibNode.__init__(self, storage_object)
-        UIAttributes.__init__(self, storage_object)
         self.name = storage_object.name
         self.cfs_cwd = storage_object.path
         self.refresh()

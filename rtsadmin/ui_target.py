@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ui_node import UINode, UIRTSLibNode, UIAttributes, UIParameters
+from ui_node import UINode, UIRTSLibNode
 from ui_backstore import dedup_so_name
 from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
@@ -282,14 +282,12 @@ class UIMultiTPGTarget(UIRTSLibNode):
         else:
             return completions
 
-class UITPG(UIRTSLibNode, UIAttributes, UIParameters):
+class UITPG(UIRTSLibNode):
     '''
     A generic TPG UI.
     '''
     def __init__(self, tpg):
         UIRTSLibNode.__init__(self, tpg)
-        UIAttributes.__init__(self, tpg)
-        UIParameters.__init__(self, tpg)
         self.name = "tpgt%d" % tpg.tag
         self.cfs_cwd = tpg.path
         self.refresh()
@@ -465,14 +463,12 @@ class UINodeACLs(UINode):
         else:
             return completions
 
-class UINodeACL(UIRTSLibNode, UIAttributes, UIParameters):
+class UINodeACL(UIRTSLibNode):
     '''
     A generic UI for a node ACL.
     '''
     def __init__(self, node_acl):
         UIRTSLibNode.__init__(self, node_acl)
-        UIAttributes.__init__(self, node_acl)
-        UIParameters.__init__(self, node_acl)
         self.name = node_acl.node_wwn
         self.cfs_cwd = node_acl.path
 

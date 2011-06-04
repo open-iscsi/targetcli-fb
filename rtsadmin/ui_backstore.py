@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ui_node import UINode, UIAttributes, UIRTSLibNode
+from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
@@ -389,13 +389,12 @@ class UIIBlockBackstore(UIBackstore):
                       % (name, dev))
         return self.new_node(ui_so)
 
-class UIStorageObject(UIRTSLibNode, UIAttributes):
+class UIStorageObject(UIRTSLibNode):
     '''
     A storage object UI.
     '''
     def __init__(self, storage_object):
         UIRTSLibNode.__init__(self, storage_object)
-        UIAttributes.__init__(self, storage_object)
         self.name = storage_object.name
         self.cfs_cwd = storage_object.path
         self.refresh()

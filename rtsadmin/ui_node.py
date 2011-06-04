@@ -144,6 +144,34 @@ class UIRTSLibNode(UINode):
         UINode.__init__(self)
         self.rtsnode = rtslib_object
 
+        # If the rtsnode has parameters, use them
+        parameters = self.rtsnode.list_parameters()
+        parameters_ro = self.rtsnode.list_parameters(writable=False)
+        if parameters:
+            self._configuration_groups['parameter'] = {}
+            for parameter in parameters:
+                if parameter in parameters_ro:
+                    writable = False
+                else:
+                    writable = True
+                self._configuration_groups['parameter'][parameter] = \
+                        [self.ui_type_string, "The %s parameter." % parameter,
+                        writable]
+
+        # If the rtsnode has attributes, enable them
+        attributes = self.rtsnode.list_attributes()
+        attributes_ro = self.rtsnode.list_attributes(writable=False)
+        if attributes:
+            self._configuration_groups['attribute'] = {}
+            for attribute in attributes:
+                if attribute in attributes_ro:
+                    writable = False
+                else:
+                    writable = True
+                self._configuration_groups['attribute'][attribute] = \
+                        [self.ui_type_string, "The %s attribute." % attribute,
+                        writable]
+
     def execute_command(self, command, pparams=[], kparams={}):
         '''
         Overrides the parent's execute_command() to check if the underlying
@@ -158,22 +186,26 @@ class UIRTSLibNode(UINode):
         else:
             return UINode.execute_command(self, command, pparams, kparams)
 
-class UIParameters(object):
-    '''
-    A completely virtual class to implement UI methods for setting/getting
-    rtslib object parameters. Requires a set cfs_object parameter and calling
-    __init__(self, cfs_object, ).
-    '''
-    def __init__(self, rtslib_object):
+    def ui_getgroup_attribute(self, attribute):
         '''
-        Call from the class that inherits this, with the rtslib object that
-        should be queried for parameters.
+        This is the backend method for getting attributes.
+        @param attribute: The attribute to get the value of.
+        @type attribute: str
+        @return: The attribute's value
+        @rtype: arbitrary
         '''
-        self.rtsnode = rtslib_object
-        self._configuration_groups['parameter'] = {}
-        for parameter in self.rtsnode.list_parameters():
-            self._configuration_groups['parameter'][parameter] = \
-                    [self.ui_type_string, "The %s parameter." % parameter]
+        return self.rtsnode.get_attribute(attribute)
+
+    def ui_setgroup_attribute(self, attribute, value):
+        '''
+        This is the backend method for setting attributes.
+        @param attribute: The attribute to set the value of.
+        @type attribute: str
+        @param value: The attribute's value
+        @type value: arbitrary
+        '''
+        self.assert_root()
+        self.rtsnode.set_attribute(attribute, value)
 
     def ui_getgroup_parameter(self, parameter):
         '''
@@ -196,40 +228,4 @@ class UIParameters(object):
         self.assert_root()
         self.rtsnode.set_parameter(parameter, value)
 
-class UIAttributes(object):
-    '''
-    A completely virtual class to implement UI methods for setting/getting
-    rtslib object attributes. Requires a set cfs_object attribute and calling
-    __init__(self, cfs_object, ).
-    '''
-    def __init__(self, rtslib_object):
-        '''
-        Call from the class that inherits this, with the rtslib object that
-        should be queried for attributes.
-        '''
-        self.rtsnode = rtslib_object
-        self._configuration_groups['attribute'] = {}
-        for attribute in self.rtsnode.list_attributes():
-            self._configuration_groups['attribute'][attribute] = \
-                    [self.ui_type_string, "The %s attribute." % attribute]
 
-    def ui_getgroup_attribute(self, attribute):
-        '''
-        This is the backend method for getting attributes.
-        @param attribute: The attribute to get the value of.
-        @type attribute: str
-        @return: The attribute's value
-        @rtype: arbitrary
-        '''
-        return self.rtsnode.get_attribute(attribute)
-
-    def ui_setgroup_attribute(self, attribute, value):
-        '''
-        This is the backend method for setting attributes.
-        @param attribute: The attribute to set the value of.
-        @type attribute: str
-        @param value: The attribute's value
-        @type value: arbitrary
-        '''
-        self.assert_root()
-        self.rtsnode.set_attribute(attribute, value)
