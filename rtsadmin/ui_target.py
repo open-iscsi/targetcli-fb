@@ -403,8 +403,7 @@ class UINodeACLs(UINode):
             return
 
         add_mapped_luns = \
-                self.ui_eval_param(add_mapped_luns,
-                                   self.ui_type_bool,
+                self.ui_eval_param(add_mapped_luns, 'bool',
                                    self.prefs['auto_add_mapped_luns'])
 
         try:
@@ -476,7 +475,7 @@ class UINodeACL(UIRTSLibNode):
         for parameter in ['userid', 'password', 'mutual_userid',
                           'mutual_password']:
             self._configuration_groups['auth'][parameter] = \
-                    [self.ui_type_string, "The %s parameter." % parameter]
+                    ['string', "The %s parameter." % parameter]
 
         self.refresh()
 
@@ -687,8 +686,7 @@ class UILUNs(UINode):
                     return
 
         add_mapped_luns = \
-                self.ui_eval_param(add_mapped_luns,
-                                   self.ui_type_bool,
+                self.ui_eval_param(add_mapped_luns, 'bool',
                                    self.prefs['auto_add_mapped_luns'])
 
         try:

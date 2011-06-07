@@ -29,21 +29,21 @@ class UINode(ConfigNode):
         ConfigNode.__init__(self)
         self.cfs_cwd = RTSRoot.configfs_dir
         self._configuration_groups['global']['auto_enable_tpgt'] = \
-                 [self.ui_type_bool,
+                 ['bool',
                   'If true, automatically enables TPGTs upon creation.',
                    True]
         self._configuration_groups['global']['auto_add_mapped_luns'] = \
-                 [self.ui_type_bool,
+                 ['bool',
                   'If true, automatically create node ACLs mapped LUNs '
                   + 'after creating a new target LUN or a new node ACL',
                   True]
         self._configuration_groups['global']['legacy_hba_view'] = \
-                 [self.ui_type_bool,
+                 ['bool',
                   'If true, use legacy HBA view, allowing to create more '
                   + 'than one storage object per HBA.',
                   True]
         self._configuration_groups['global']['auto_cd_after_create'] = \
-                 [self.ui_type_bool,
+                 ['bool',
                   'If true, changes current path to newly created objects.',
                   True]
 
@@ -159,7 +159,7 @@ class UIRTSLibNode(UINode):
                 else:
                     writable = True
                 self._configuration_groups['parameter'][parameter] = \
-                        [self.ui_type_string, "The %s parameter." % parameter,
+                        ['string', "The %s parameter." % parameter,
                         writable]
 
         # If the rtsnode has attributes, enable them
@@ -173,7 +173,7 @@ class UIRTSLibNode(UINode):
                 else:
                     writable = True
                 self._configuration_groups['attribute'][attribute] = \
-                        [self.ui_type_string, "The %s attribute." % attribute,
+                        ['string', "The %s attribute." % attribute,
                         writable]
 
     def execute_command(self, command, pparams=[], kparams={}):

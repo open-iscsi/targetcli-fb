@@ -86,7 +86,7 @@ class UIBackstore(UINode):
 
     def prm_gen_wwn(self, generate_wwn):
         generate_wwn = \
-                self.ui_eval_param(generate_wwn, self.ui_type_bool, True)
+                self.ui_eval_param(generate_wwn, 'bool', True)
         if generate_wwn:
             self.log.info("Generating a wwn serial.")
         else:
@@ -95,7 +95,7 @@ class UIBackstore(UINode):
 
     def prm_buffered(self, buffered):
         generate_wwn = \
-                self.ui_eval_param(buffered, self.ui_type_bool, True)
+                self.ui_eval_param(buffered, 'bool', True)
         if buffered:
             self.log.info("Using buffered mode.")
         else:
