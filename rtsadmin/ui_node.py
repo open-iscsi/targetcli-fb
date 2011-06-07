@@ -30,18 +30,22 @@ class UINode(ConfigNode):
         self.cfs_cwd = RTSRoot.configfs_dir
         self._configuration_groups['global']['auto_enable_tpgt'] = \
                  [self.ui_type_bool,
-                  'If true, automatically enables TPGTs upon creation.']
+                  'If true, automatically enables TPGTs upon creation.',
+                   True]
         self._configuration_groups['global']['auto_add_mapped_luns'] = \
                  [self.ui_type_bool,
                   'If true, automatically create node ACLs mapped LUNs '
-                  + 'after creating a new target LUN or a new node ACL']
+                  + 'after creating a new target LUN or a new node ACL',
+                  True]
         self._configuration_groups['global']['legacy_hba_view'] = \
                  [self.ui_type_bool,
                   'If true, use legacy HBA view, allowing to create more '
-                  + 'than one storage object per HBA.']
+                  + 'than one storage object per HBA.',
+                  True]
         self._configuration_groups['global']['auto_cd_after_create'] = \
                  [self.ui_type_bool,
-                  'If true, changes current path to newly created objects.']
+                  'If true, changes current path to newly created objects.',
+                  True]
 
     def assert_root(self):
         '''
