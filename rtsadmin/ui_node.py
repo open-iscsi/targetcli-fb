@@ -28,24 +28,20 @@ class UINode(ConfigNode):
     def __init__(self):
         ConfigNode.__init__(self)
         self.cfs_cwd = RTSRoot.configfs_dir
-        self._configuration_groups['global']['auto_enable_tpgt'] = \
-                 ['bool',
-                  'If true, automatically enables TPGTs upon creation.',
-                   True]
-        self._configuration_groups['global']['auto_add_mapped_luns'] = \
-                 ['bool',
-                  'If true, automatically create node ACLs mapped LUNs '
-                  + 'after creating a new target LUN or a new node ACL',
-                  True]
-        self._configuration_groups['global']['legacy_hba_view'] = \
-                 ['bool',
-                  'If true, use legacy HBA view, allowing to create more '
-                  + 'than one storage object per HBA.',
-                  True]
-        self._configuration_groups['global']['auto_cd_after_create'] = \
-                 ['bool',
-                  'If true, changes current path to newly created objects.',
-                  True]
+        self.define_config_group_param(
+            'global', 'auto_enable_tpgt', 'bool',
+            'If true, automatically enables TPGTs upon creation.')
+        self.define_config_group_param(
+            'global', 'auto_add_mapped_luns', 'bool',
+            'If true, automatically create node ACLs mapped LUNs '
+            + 'after creating a new target LUN or a new node ACL')
+        self.define_config_group_param(
+            'global', 'legacy_hba_view', 'bool',
+            'If true, use legacy HBA view, allowing to create more '
+            + 'than one storage object per HBA.')
+        self.define_config_group_param(
+            'global', 'auto_cd_after_create', 'bool',
+            'If true, changes current path to newly created objects.')
 
     def assert_root(self):
         '''
@@ -151,30 +147,20 @@ class UIRTSLibNode(UINode):
         # If the rtsnode has parameters, use them
         parameters = self.rtsnode.list_parameters()
         parameters_ro = self.rtsnode.list_parameters(writable=False)
-        if parameters:
-            self._configuration_groups['parameter'] = {}
-            for parameter in parameters:
-                if parameter in parameters_ro:
-                    writable = False
-                else:
-                    writable = True
-                self._configuration_groups['parameter'][parameter] = \
-                        ['string', "The %s parameter." % parameter,
-                        writable]
+        for parameter in parameters:
+            writable = parameter not in parameters_ro
+            description = "The %s parameter." % parameter
+            self.define_config_group_param(
+                'parameter', parameter, 'string', description, writable)
 
         # If the rtsnode has attributes, enable them
         attributes = self.rtsnode.list_attributes()
         attributes_ro = self.rtsnode.list_attributes(writable=False)
-        if attributes:
-            self._configuration_groups['attribute'] = {}
-            for attribute in attributes:
-                if attribute in attributes_ro:
-                    writable = False
-                else:
-                    writable = True
-                self._configuration_groups['attribute'][attribute] = \
-                        ['string', "The %s attribute." % attribute,
-                        writable]
+        for attribute in attributes:
+            writable = attribute not in attributes_ro
+            description = "The %s attribute." % attribute
+            self.define_config_group_param(
+                'attribute', attribute, 'string', description, writable)
 
     def execute_command(self, command, pparams=[], kparams={}):
         '''
