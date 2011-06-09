@@ -920,8 +920,7 @@ class UIPortals(UINode):
                                    + "create the Network Portal, aborting.")
                     return
         elif ip_address not in utils.list_eth_ips():
-            self.log.error("Provided IP address %s does not exist, aborting."
-                           % ip_address)
+            self.log.error("IP address does not exist: %s" % ip_address)
             return
 
         try:
