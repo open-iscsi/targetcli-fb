@@ -32,6 +32,56 @@ class UIFabricModule(UIRTSLibNode):
         self.name = fabric_module.name
         self.cfs_cwd = fabric_module.path
         self.refresh()
+        if self.rtsnode.has_feature('discovery_auth'):
+            for param in ['userid', 'password',
+                          'mutual_userid', 'mutual_password',
+                          'enable']:
+                self.define_config_group_param('discovery_auth',
+                                               param, 'string')
+        self.refresh()
+
+    def ui_getgroup_discovery_auth(self, auth_attr):
+        '''
+        This is the backend method for getting discovery_auth attributes.
+        @param auth_attr: The auth attribute to get the value of.
+        @type auth_attr: str
+        @return: The auth attribute's value
+        @rtype: str
+        '''
+        value = None
+        if auth_attr == 'password':
+            value = self.rtsnode.discovery_password
+        elif auth_attr == 'userid':
+            value = self.rtsnode.discovery_userid
+        elif auth_attr == 'mutual_password':
+            value = self.rtsnode.discovery_mutual_password
+        elif auth_attr == 'mutual_userid':
+            value = self.rtsnode.discovery_mutual_userid
+        elif auth_attr == 'enable':
+            value = self.rtsnode.discovery_enable_auth
+        return value
+
+    def ui_setgroup_discovery_auth(self, auth_attr, value):
+        '''
+        This is the backend method for setting discovery auth attributes.
+        @param auth_attr: The auth attribute to set the value of.
+        @type auth_attr: str
+        @param value: The auth's value
+        @type value: str
+        '''
+        self.assert_root()
+        if value is None:
+            value = ''
+        if auth_attr == 'password':
+            self.rtsnode.discovery_password = value
+        elif auth_attr == 'userid':
+            self.rtsnode.discovery_userid = value
+        elif auth_attr == 'mutual_password':
+            self.rtsnode.discovery_mutual_password = value
+        elif auth_attr == 'mutual_userid':
+            self.rtsnode.discovery_mutual_userid = value
+        elif auth_attr == 'enable':
+            self.rtsnode.discovery_enable_auth = value
 
     def refresh(self):
         self._children = set([])
