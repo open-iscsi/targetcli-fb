@@ -521,10 +521,10 @@ class UINodeACL(UIRTSLibNode):
         self.name = node_acl.node_wwn
         self.cfs_cwd = node_acl.path
 
-        for parameter in ['userid', 'password',
-                          'mutual_userid', 'mutual_password']:
-            self.define_config_group_param('auth', parameter, 'string')
-
+        if self.rtsnode.has_feature('acls_auth'):
+            for parameter in ['userid', 'password',
+                              'mutual_userid', 'mutual_password']:
+                self.define_config_group_param('auth', parameter, 'string')
         self.refresh()
 
     def ui_getgroup_auth(self, auth_attr):
