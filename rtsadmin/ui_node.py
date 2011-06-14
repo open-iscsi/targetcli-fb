@@ -25,8 +25,8 @@ class UINode(ConfigNode):
     '''
     Our rtsadmin basic UI node.
     '''
-    def __init__(self):
-        ConfigNode.__init__(self)
+    def __init__(self, name, parent=None, shell=None):
+        ConfigNode.__init__(self, name, parent, shell)
         self.cfs_cwd = RTSRoot.configfs_dir
         self.define_config_group_param(
             'global', 'auto_enable_tpgt', 'bool',
@@ -59,10 +59,10 @@ class UINode(ConfigNode):
         Either returns None if the global is False, or the new_node if the
         global is True. In both cases, set the @last bookmark to last_node.
         '''
-        self.prefs['bookmarks']['last'] = new_node.path
-        self.prefs.save()
-        if self.prefs['auto_cd_after_create']:
-            self.log.info("Entering new node %s" % new_node.path)
+        self.shell.prefs['bookmarks']['last'] = new_node.path
+        self.shell.prefs.save()
+        if self.shell.prefs['auto_cd_after_create']:
+            self.shell.log.info("Entering new node %s" % new_node.path)
             # Piggy backs on cd instead of just returning new_node,
             # so we update navigation history.
             return self.ui_command_cd(new_node.path)
@@ -82,20 +82,20 @@ class UINode(ConfigNode):
         and not just configshell's ExecutionError.
         '''
         if command == '_cfs':
-            self.log.info(self.cfs_cwd)
+            self.shell.log.info(self.cfs_cwd)
             return
         elif command == '_sh':
-            self.log.info("Opening a shell in %s." % self.cfs_cwd)
-            self.con.display("Type [CTRL-D] or exit to come back.")
+            self.shell.log.info("Opening a shell in %s." % self.cfs_cwd)
+            self.shell.con.display("Type [CTRL-D] or exit to come back.")
             system("(cd %s; bash)" % self.cfs_cwd )
             return
         try:
             result = ConfigNode.execute_command(self, command,
                                                 pparams, kparams)
         except RTSLibError, msg:
-            self.log.error(msg)
+            self.shell.log.error(msg)
         else:
-            self.log.debug("Command %s succeeded." % command)
+            self.shell.log.debug("Command %s succeeded." % command)
             return result
 
 
@@ -111,10 +111,10 @@ class UINode(ConfigNode):
         on next boot. Unless you do that, changes are lost accross reboots.
         '''
         self.assert_root()
-        self.con.display("WARNING: Saving the current configuration to disk "
-                         + "will overwrite your boot settings.")
-        self.con.display("The current target configuration will become the "
-                         + "default boot config.")
+        self.shell.con.display("WARNING: Saving current configuration to "
+                               + "disk will overwrite your boot settings.")
+        self.shell.con.display("The current target configuration will become "
+                               + "the default boot config.")
         system('PYTHONPATH="" python /usr/sbin/tcm_dump --o')
 
     def ui_command_status(self):
@@ -126,7 +126,7 @@ class UINode(ConfigNode):
         B{ls}
         '''
         description, is_healthy = self.summary()
-        self.log.info("Status for %s: %s" % (self.path, description))
+        self.shell.log.info("Status for %s: %s" % (self.path, description))
 
     def ui_setgroup_global(self, parameter, value):
         ConfigNode.ui_setgroup_global(self, parameter, value)
@@ -136,12 +136,12 @@ class UIRTSLibNode(UINode):
     '''
     A subclass of UINode for nodes with an underlying RTSLib object.
     '''
-    def __init__(self, rtslib_object):
+    def __init__(self, name, rtslib_object, parent):
         '''
         Call from the class that inherits this, with the rtslib object that
         should be checked upon.
         '''
-        UINode.__init__(self)
+        UINode.__init__(self, name, parent)
         self.rtsnode = rtslib_object
 
         # If the rtsnode has parameters, use them
@@ -168,8 +168,8 @@ class UIRTSLibNode(UINode):
         RTSLib object still exists before returning.
         '''
         if not self.rtsnode.exists:
-            self.log.error("The underlying rtslib object for "
-                           + "%s does not exist." % self.path)
+            self.shell.log.error("The underlying rtslib object for "
+                                 + "%s does not exist." % self.path)
             root = self.get_root()
             root.refresh()
             return root

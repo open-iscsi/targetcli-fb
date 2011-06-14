@@ -27,10 +27,9 @@ class UIRoot(UINode):
     '''
     The rtsadmin hierarchy root node.
     '''
-    def __init__(self, as_root=False):
+    def __init__(self, shell, as_root=False):
         self.loaded = False
-        UINode.__init__(self)
-        self.name = '/'
+        UINode.__init__(self, '/', shell=shell)
         self.as_root = as_root
 
     def refresh(self):
@@ -38,37 +37,37 @@ class UIRoot(UINode):
         Refreshes the tree of target fabric modules.
         '''
         self._children = set([])
-        if self.prefs['legacy_hba_view']:
-            self.add_child(UIBackstoresLegacy())
+        if self.shell.prefs['legacy_hba_view']:
+            UIBackstoresLegacy(self)
         else:
-            self.add_child(UIBackstores())
+            UIBackstores(self)
         if not self.loaded:
-            self.log.debug("Refreshing in non-loaded mode.")
+            self.shell.log.debug("Refreshing in non-loaded mode.")
             for fabric_module in RTSRoot().fabric_modules:
                 if fabric_module:
-                    self.log.info("Using %s fabric module." \
-                                  % fabric_module.name)
-                    self.add_child(UIFabricModule(fabric_module))
+                    self.shell.log.info("Using %s fabric module." \
+                                        % fabric_module.name)
+                    UIFabricModule(fabric_module, self)
                 elif self.as_root:
                     try:
                         for step in fabric_module.load(yield_steps=True):
                             (action, taken, desc) = step
                             if taken:
-                                self.log.info(desc)
-                        self.log.info("Done loading %s fabric module." \
-                                      % fabric_module.name)
+                                self.shell.log.info(desc)
+                        self.shell.log.info("Done loading %s fabric module." \
+                                            % fabric_module.name)
                     except Exception, msg:
-                        self.log.warning("Can't load fabric module %s."
-                                         % fabric_module.name)
-                        self.log.debug(msg)
+                        self.shell.log.warning("Can't load fabric module %s."
+                                               % fabric_module.name)
+                        self.shell.log.debug(msg)
                     else:
-                        self.add_child(UIFabricModule(fabric_module))
+                        UIFabricModule(fabric_module, self)
             self.loaded = True
         else:
-            self.log.debug("Refreshing in loaded mode.")
+            self.shell.log.debug("Refreshing in loaded mode.")
             for fabric_module in RTSRoot().loaded_fabric_modules:
-                self.log.debug("Loading %s." % fabric_module.name)
-                self.add_child(UIFabricModule(fabric_module))
+                self.shell.log.debug("Loading %s." % fabric_module.name)
+                UIFabricModule(fabric_module, self)
 
     def ui_command_version(self):
         '''
@@ -81,11 +80,11 @@ class UIRoot(UINode):
                                      rtslib=rtslib_version,
                                      configshell=configshell_version).items():
             if version == 'GIT_VERSION':
-                self.log.error("Cannot find %s version. The %s package has "
-                               % (package, package)
-                               + "probably not been built properly from "
-                               + "either the git repository or a public "
-                               + "tarball.")
+                self.shell.log.error("Cannot find %s version. The %s package "
+                                     % (package, package)
+                                     + "has probably not been built properly "
+                                     + "from either the git repository or a "
+                                     + "public tarball.")
             else:
-                self.log.info("Using %s version %s" % (package, version))
+                self.shell.log.info("Using %s version %s" % (package, version))
 

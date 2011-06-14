@@ -54,17 +54,20 @@ def main():
         is_root = True
     else:
         is_root = False
-    root_node = UIRoot(as_root=is_root)
 
-    shell = RTSAdmin(root_node, '~/.rtsadmin')
-    shell.con.epy_write('Welcome to the B{RTSAdmin Community Edition} CLI.')
-    shell.con.display('')
-    shell.con.epy_write('Copyright (c) 2011 by RisingTide Systems LLC.')
-    shell.con.epy_write('Visit us at U{http://www.risingtidesystems.com}.')
+    shell = RTSAdmin('~/.rtsadmin')
+    shell.con.epy_write('''
+                        Welcome to the B{rtsadmin Community Edition} CLI::
+                         Copyright (c) 2011 by RisingTide Systems LLC.
+
+                        Visit us at U{http://www.risingtidesystems.com}.
+                       ''')
     shell.con.display('')
     if not is_root:
         shell.con.display('You are not root, disabling privileged commands.')
         shell.con.display('')
+
+    root_node = UIRoot(shell, as_root=is_root)
 
     try:
         root_node.refresh()

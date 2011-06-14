@@ -44,27 +44,25 @@ class UIBackstores(UINode):
     '''
     The backstores container UI.
     '''
-    def __init__(self):
-        UINode.__init__(self)
-        self.name = 'backstores'
+    def __init__(self, parent):
+        UINode.__init__(self, 'backstores', parent)
         self.cfs_cwd = "%s/core" % self.cfs_cwd
         self.refresh()
 
     def refresh(self):
         self._children = set([])
-        self.add_child(UIPSCSIBackstore())
-        self.add_child(UIRDDRBackstore())
-        self.add_child(UIRDMCPBackstore())
-        self.add_child(UIFileIOBackstore())
-        self.add_child(UIIBlockBackstore())
+        UIPSCSIBackstore(self)
+        UIRDDRBackstore(self)
+        UIRDMCPBackstore(self)
+        UIFileIOBackstore(self)
+        UIIBlockBackstore(self)
 
 class UIBackstore(UINode):
     '''
     A backstore UI.
     '''
-    def __init__(self, plugin):
-        UINode.__init__(self)
-        self.name = plugin
+    def __init__(self, plugin, parent):
+        UINode.__init__(self, plugin, parent)
         self.cfs_cwd = "%s/core" % self.cfs_cwd
         self.refresh()
 
@@ -72,9 +70,8 @@ class UIBackstore(UINode):
         self._children = set([])
         for so in RTSRoot().storage_objects:
             if so.backstore.plugin == self.name:
-                ui_so = UIStorageObject(so)
+                ui_so = UIStorageObject(so, self)
                 ui_so.name = dedup_so_name(so)
-                self.add_child(ui_so)
 
     def summary(self):
         no_storage_objects = len(self._children)
@@ -88,18 +85,18 @@ class UIBackstore(UINode):
         generate_wwn = \
                 self.ui_eval_param(generate_wwn, 'bool', True)
         if generate_wwn:
-            self.log.info("Generating a wwn serial.")
+            self.shell.log.info("Generating a wwn serial.")
         else:
-            self.log.info("Not generating a wwn serial.")
+            self.shell.log.info("Not generating a wwn serial.")
         return generate_wwn
 
     def prm_buffered(self, buffered):
         generate_wwn = \
                 self.ui_eval_param(buffered, 'bool', True)
         if buffered:
-            self.log.info("Using buffered mode.")
+            self.shell.log.info("Using buffered mode.")
         else:
-            self.log.info("Not using buffered mode.")
+            self.shell.log.info("Not using buffered mode.")
         return buffered
 
     def ui_command_delete(self, name):
@@ -114,19 +111,18 @@ class UIBackstore(UINode):
         Deletes the storage object named mystorage, and all associated LUNs.
         '''
         self.assert_root()
-        for child in self.children:
-            if child.name == name:
-                hba = child.rtsnode.backstore
-                child.rtsnode.delete()
-                if not hba.storage_objects:
-                    hba.delete()
-                self.del_child(child)
-                self.log.info("Deleted storage object %s." % name)
-                self.parent.parent.refresh()
-                break
+        try:
+            child = self.get_child(name)
+        except ValueError:
+            self.shell.log.error("No storage object named %s." % name)
         else:
-            self.log.error("Could not find storage object to delete: %s."
-                           % name)
+            hba = child.rtsnode.backstore
+            child.rtsnode.delete()
+            if not hba.storage_objects:
+                hba.delete()
+            self.remove_child(child)
+            self.shell.log.info("Deleted storage object %s." % name)
+            self.parent.parent.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
@@ -153,12 +149,12 @@ class UIBackstore(UINode):
             return completions
 
     def next_hba_index(self):
-        self.log.debug("%r" % [(backstore.plugin, backstore.index)
-                              for backstore in RTSRoot().backstores])
+        self.shell.log.debug("%r" % [(backstore.plugin, backstore.index)
+                                     for backstore in RTSRoot().backstores])
         indexes = [backstore.index for backstore in RTSRoot().backstores
                    if backstore.plugin == self.name]
-        self.log.debug("Existing %s backstore indexes: %r"
-                      % (self.name, indexes))
+        self.shell.log.debug("Existing %s backstore indexes: %r"
+                             % (self.name, indexes))
         for index in range(1048576):
             if index not in indexes:
                 backstore_index = index
@@ -167,8 +163,8 @@ class UIBackstore(UINode):
         if backstore_index is None:
             raise ExecutionError("Cannot find an available backstore index.")
         else:
-            self.log.debug("First available %s backstore index is %d."
-                           % (self.name, backstore_index))
+            self.shell.log.debug("First available %s backstore index is %d."
+                                 % (self.name, backstore_index))
             return backstore_index
 
     def assert_available_so_name(self, name):
@@ -181,8 +177,8 @@ class UIPSCSIBackstore(UIBackstore):
     '''
     PSCSI backstore UI.
     '''
-    def __init__(self):
-        UIBackstore.__init__(self, 'pscsi')
+    def __init__(self, parent):
+        UIBackstore.__init__(self, 'pscsi', parent)
 
     def ui_command_create(self, name, dev):
         '''
@@ -201,10 +197,9 @@ class UIPSCSIBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        ui_so = UIStorageObject(so)
-        self.add_child(ui_so)
-        self.log.info("Created pscsi storage object %s using %s"
-                      % (name, dev))
+        ui_so = UIStorageObject(so, self)
+        self.shell.log.info("Created pscsi storage object %s using %s"
+                            % (name, dev))
         return self.new_node(ui_so)
 
 
@@ -212,8 +207,8 @@ class UIRDDRBackstore(UIBackstore):
     '''
     RDDR backstore UI.
     '''
-    def __init__(self):
-        UIBackstore.__init__(self, 'rd_dr')
+    def __init__(self, parent):
+        UIBackstore.__init__(self, 'rd_dr', parent)
 
     def ui_command_create(self, name, size, generate_wwn=None):
         '''
@@ -242,18 +237,17 @@ class UIRDDRBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        ui_so = UIStorageObject(so)
-        self.add_child(ui_so)
-        self.log.info("Created rd_dr ramdisk storage object %s with size %s."
-                      % (name, size))
+        ui_so = UIStorageObject(so, self)
+        self.shell.log.info("Created rd_dr ramdisk %s with size %s."
+                            % (name, size))
         return self.new_node(ui_so)
 
 class UIRDMCPBackstore(UIBackstore):
     '''
     RDMCP backstore UI.
     '''
-    def __init__(self):
-        UIBackstore.__init__(self, 'rd_mcp')
+    def __init__(self, parent):
+        UIBackstore.__init__(self, 'rd_mcp', parent)
 
     def ui_command_create(self, name, size, generate_wwn=None):
         '''
@@ -282,18 +276,17 @@ class UIRDMCPBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        ui_so = UIStorageObject(so)
-        self.add_child(ui_so)
-        self.log.info("Created rd_mcp ramdisk storage object %s with size %s."
-                      % (name, size))
+        ui_so = UIStorageObject(so, self)
+        self.shell.log.info("Created rd_mcp ramdisk %s with size %s."
+                            % (name, size))
         return self.new_node(ui_so)
 
 class UIFileIOBackstore(UIBackstore):
     '''
     FileIO backstore UI.
     '''
-    def __init__(self):
-        UIBackstore.__init__(self, 'fileio')
+    def __init__(self, parent):
+        UIBackstore.__init__(self, 'fileio', parent)
 
     def ui_command_create(self, name, file_or_dev, size=None,
                           generate_wwn=None, buffered=None):
@@ -321,8 +314,8 @@ class UIFileIOBackstore(UIBackstore):
         '''
         self.assert_root()
         self.assert_available_so_name(name)
-        self.log.debug('Using params: size=%s generate_wwn=%s buffered=%s'
-                       % (size, generate_wwn, buffered))
+        self.shell.log.debug("Using params size=%s generate_wwn=%s buffered=%s"
+                             % (size, generate_wwn, buffered))
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
                 
@@ -336,10 +329,9 @@ class UIFileIOBackstore(UIBackstore):
             except Exception, exception:
                 backstore.delete()
                 raise exception
-            self.log.info("Created fileio storage object %s with size %s."
-                          % (name, size))
-            ui_so = UIStorageObject(so)
-            self.add_child(ui_so)
+            self.shell.log.info("Created fileio %s with size %s."
+                                % (name, size))
+            ui_so = UIStorageObject(so, self)
             return self.new_node(ui_so)
         elif size is not None and not is_dev:
             backstore = FileIOBackstore(self.next_hba_index(), mode='create')
@@ -352,20 +344,19 @@ class UIFileIOBackstore(UIBackstore):
             except Exception, exception:
                 backstore.delete()
                 raise exception
-            self.log.info("Created fileio storage object %s." % name)
-            ui_so = UIStorageObject(so)
-            self.add_child(ui_so)
+            self.shell.log.info("Created fileio %s." % name)
+            ui_so = UIStorageObject(so, self)
             return self.new_node(ui_so)
         else:
-            self.log.error("For fileio, you must either specify both a file "
-                           + "and a size, or just a device path.")
+            self.shell.log.error("For fileio, you must either specify both a "
+                                 + "file and a size, or just a device path.")
 
 class UIIBlockBackstore(UIBackstore):
     '''
     IBlock backstore UI.
     '''
-    def __init__(self):
-        UIBackstore.__init__(self, 'iblock')
+    def __init__(self, parent):
+        UIBackstore.__init__(self, 'iblock', parent)
 
     def ui_command_create(self, name, dev, generate_wwn=None):
         '''
@@ -383,19 +374,18 @@ class UIIBlockBackstore(UIBackstore):
         except Exception, exception:
             backstore.delete()
             raise exception
-        ui_so = UIStorageObject(so)
-        self.add_child(ui_so)
-        self.log.info("Created iblock storage object %s using %s."
-                      % (name, dev))
+        ui_so = UIStorageObject(so, self)
+        self.shell.log.info("Created iblock storage object %s using %s."
+                            % (name, dev))
         return self.new_node(ui_so)
 
 class UIStorageObject(UIRTSLibNode):
     '''
     A storage object UI.
     '''
-    def __init__(self, storage_object):
-        UIRTSLibNode.__init__(self, storage_object)
-        self.name = storage_object.name
+    def __init__(self, storage_object, parent):
+        name = storage_object.name
+        UIRTSLibNode.__init__(self, name, storage_object, parent)
         self.cfs_cwd = storage_object.path
         self.refresh()
 
@@ -404,8 +394,8 @@ class UIStorageObject(UIRTSLibNode):
         Displays the version of the current backstore's plugin.
         '''
         backstore = self.rtsnode.backstore
-        self.con.display("Backstore plugin %s %s" \
-                         % (backstore.plugin, backstore.version))
+        self.shell.con.display("Backstore plugin %s %s"
+                               % (backstore.plugin, backstore.version))
 
     def summary(self):
         so = self.rtsnode
