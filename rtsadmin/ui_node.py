@@ -81,14 +81,6 @@ class UINode(ConfigNode):
         We overload this one in order to handle our own exceptions cleanly,
         and not just configshell's ExecutionError.
         '''
-        if command == '_cfs':
-            self.shell.log.info(self.cfs_cwd)
-            return
-        elif command == '_sh':
-            self.shell.log.info("Opening a shell in %s." % self.cfs_cwd)
-            self.shell.con.display("Type [CTRL-D] or exit to come back.")
-            system("(cd %s; bash)" % self.cfs_cwd )
-            return
         try:
             result = ConfigNode.execute_command(self, command,
                                                 pparams, kparams)
