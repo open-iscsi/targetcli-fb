@@ -17,7 +17,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from os import system
 from configshell import ConfigNode, ExecutionError
 from rtslib import RTSLibError, RTSRoot
 
@@ -96,18 +95,6 @@ class UINode(ConfigNode):
         Refreshes and updates the objects tree from the current path.
         '''
         self.refresh()
-
-    def ui_command_saveconfig(self):
-        '''
-        Saves the whole configuration tree to disk so that it will be restored
-        on next boot. Unless you do that, changes are lost accross reboots.
-        '''
-        self.assert_root()
-        self.shell.con.display("WARNING: Saving current configuration to "
-                               + "disk will overwrite your boot settings.")
-        self.shell.con.display("The current target configuration will become "
-                               + "the default boot config.")
-        system('PYTHONPATH="" python /usr/sbin/tcm_dump --o')
 
     def ui_command_status(self):
         '''

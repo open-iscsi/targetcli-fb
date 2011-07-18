@@ -17,8 +17,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from os import system
 from rtslib import RTSRoot
 from ui_node import UINode
+from socket import gethostname
 from ui_target import UIFabricModule
 from ui_backstore_legacy import UIBackstoresLegacy
 from ui_backstore import UIBackstores
@@ -68,6 +70,19 @@ class UIRoot(UINode):
             for fabric_module in RTSRoot().loaded_fabric_modules:
                 self.shell.log.debug("Loading %s." % fabric_module.name)
                 UIFabricModule(fabric_module, self)
+
+    def ui_command_saveconfig(self):
+        '''
+        Saves the whole configuration tree to disk so that it will be restored
+        on next boot. Unless you do that, changes are lost accross reboots.
+        '''
+        self.assert_root()
+        self.shell.con.display("WARNING: Saving %s current configuration to "
+                               % gethostname()
+                               + "disk will overwrite your boot settings.")
+        self.shell.con.display("The current target configuration will become "
+                               + "the default boot config.")
+        system('PYTHONPATH="" python /usr/sbin/tcm_dump --o')
 
     def ui_command_version(self):
         '''
