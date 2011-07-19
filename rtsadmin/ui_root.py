@@ -22,8 +22,9 @@ from rtslib import RTSRoot
 from ui_node import UINode
 from socket import gethostname
 from ui_target import UIFabricModule
-from ui_backstore_legacy import UIBackstoresLegacy
+from tcm_dump import tcm_full_backup
 from ui_backstore import UIBackstores
+from ui_backstore_legacy import UIBackstoresLegacy
 
 class UIRoot(UINode):
     '''
@@ -82,7 +83,11 @@ class UIRoot(UINode):
                                + "disk will overwrite your boot settings.")
         self.shell.con.display("The current target configuration will become "
                                + "the default boot config.")
-        system('PYTHONPATH="" python /usr/sbin/tcm_dump --o')
+        input = raw_input("Are you sure? Type 'yes': ")
+        if input == "yes":
+            tcm_full_backup(None, None, '1', None)
+        else:
+            self.shell.log.warning("Aborted, configuration left untouched.")
 
     def ui_command_version(self):
         '''
