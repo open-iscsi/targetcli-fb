@@ -10,8 +10,8 @@ URL:            http://www.risingtidesystems.com/git/
 Source:         %{oname}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-rpmroot
 BuildArch:      noarch
-BuildRequires:  python-devel
-Requires:       python-rtslib, python-configshell
+BuildRequires:  python-devel, python-rtslib, python-configshell
+Requires:       python-rtslib, python-configshell, lio-utils
 Conflicts:      rtsadmin-frozen
 Vendor:         RisingTide Systems
 
