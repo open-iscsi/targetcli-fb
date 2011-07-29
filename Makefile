@@ -19,6 +19,7 @@ DOC = ${LIB}/doc/
 SETUP = ./setup.py
 GENDOC = ./bin/gendoc
 RPMVERSION = $$(grep Version: redhat/rtsadmin.spec | awk '{print $$2}')
+GIT_BRANCH = $$(git branch | grep \* | tr -d \*)
 
 all: usage
 usage:
@@ -84,7 +85,7 @@ rpm: doc
 	@echo Building RPM version ${RPMVERSION}
 	mkdir -p ~/rpmbuild/SOURCES/
 	mkdir -p build
-	git archive master --prefix rtsadmin/ > build/rtsadmin.tar
+	git archive ${GIT_BRANCH} --prefix rtsadmin/ > build/rtsadmin.tar
 	cd build; tar mxf rtsadmin.tar; rm rtsadmin.tar
 	cp rtsadmin/__init__.py build/rtsadmin/rtsadmin
 	cp -r doc build/rtsadmin/
