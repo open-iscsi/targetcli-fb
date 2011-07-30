@@ -58,9 +58,9 @@ def main():
     shell = TargetCLI('~/.targetcli')
     shell.con.epy_write('''
                         Welcome to the B{targetcli} shell::
-                         Copyright (c) 2011 by RisingTide Systems LLC.
+                         Copyright (c) 2011 by RisingTide Systems LLC.\n
+                         For help on commands, type 'help'.
 
-                        Visit us at U{http://www.risingtidesystems.com}.
                        ''')
     shell.con.display('')
     if not is_root:
