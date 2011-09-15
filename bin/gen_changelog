@@ -20,22 +20,7 @@ EMAIL=$(git config --get user.email)
 DATE=$(date +'%a, %d %b %Y %H:%M:%S %z')
 
 SRCPKG=$(cat debian/control | grep ^Source | awk '{print $2}')
-
-LAST_TAG=$(git tag | tail -1)
-if [ -z $LAST_TAG ]; then
-	LAST_TAG='0.0'
-fi
-
-COMMIT=$(git log ${LAST_TAG}..HEAD | head -1 | colrm 1 7 | colrm 8)
-TS=$(date +%Y%m%d%H%M%S)
-
-if [ -z $COMMIT ]; then
-	VERSION="${LAST_TAG}"
-	RH_VERSION="${LAST_TAG}"
-else
-	VERSION="${LAST_TAG}-${TS}.${COMMIT}"
-	RH_VERSION="${LAST_TAG}.${TS}.${COMMIT}"
-fi
+VERSION=$(basename $(git describe --tags | tr - .))
 
 sed -i "s/__version__ = .*/__version__ = '${VERSION}'/g" ${SRCPKG}/__init__.py
 
@@ -47,6 +32,6 @@ echo " -- ${NAME} <${EMAIL}>  ${DATE}" >> debian/changelog
 
 RH_SPEC="redhat/rtsadmin.spec"
 cp redhat/rtsadmin.spec.tmpl $RH_SPEC
-sed -i "s/Version:\( *\).*/Version:\1${RH_VERSION}/g" $RH_SPEC
-echo "* $(date +'%a %b %d %Y') ${NAME} <${EMAIL}> - ${RH_VERSION}" >> $RH_SPEC
+sed -i "s/Version:\( *\).*/Version:\1${VERSION}/g" $RH_SPEC
+echo "* $(date +'%a %b %d %Y') ${NAME} <${EMAIL}> - ${VERSION}" >> $RH_SPEC
 echo "- Generated package." >> $RH_SPEC
