@@ -1,7 +1,7 @@
 '''
-Implements the rtsadmin root UI.
+Implements the targetcli root UI.
 
-This file is part of RTSAdmin Community Edition.
+This file is part of targetcli.
 Copyright (c) 2011 by RisingTide Systems LLC
 
 This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ from ui_backstore_legacy import UIBackstoresLegacy
 
 class UIRoot(UINode):
     '''
-    The rtsadmin hierarchy root node.
+    The targetcli hierarchy root node.
     '''
     def __init__(self, shell, as_root=False):
         self.loaded = False
@@ -91,12 +91,12 @@ class UIRoot(UINode):
 
     def ui_command_version(self):
         '''
-        Displays the rtsadmin and support libraries versions.
+        Displays the targetcli and support libraries versions.
         '''
         from rtslib import __version__ as rtslib_version
-        from rtsadmin import __version__ as rtsadmin_version
+        from targetcli import __version__ as targetcli_version
         from configshell import __version__ as configshell_version
-        for package, version in dict(rtsadmin=rtsadmin_version,
+        for package, version in dict(targetcli=targetcli_version,
                                      rtslib=rtslib_version,
                                      configshell=configshell_version).items():
             if version == 'GIT_VERSION':

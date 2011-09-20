@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This file is part of RTSAdmin Community Edition.
+# This file is part of targetcli.
 # Copyright (c) 2011 by RisingTide Systems LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,8 +30,8 @@ echo "  * Generated package." >> debian/changelog
 echo >> debian/changelog
 echo " -- ${NAME} <${EMAIL}>  ${DATE}" >> debian/changelog
 
-RH_SPEC="redhat/rtsadmin.spec"
-cp redhat/rtsadmin.spec.tmpl $RH_SPEC
+RH_SPEC="redhat/targetcli.spec"
+cp redhat/targetcli.spec.tmpl $RH_SPEC
 sed -i "s/Version:\( *\).*/Version:\1${VERSION}/g" $RH_SPEC
 echo "* $(date +'%a %b %d %Y') ${NAME} <${EMAIL}> - ${VERSION}" >> $RH_SPEC
 echo "- Generated package." >> $RH_SPEC

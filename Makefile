@@ -1,4 +1,4 @@
-# This file is part of RTSAdmin Community Edition.
+# This file is part of targetcli.
 # Copyright (c) 2011 by RisingTide Systems LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,12 +13,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-NAME = rtsadmin
+NAME = targetcli
 LIB = /usr/share
 DOC = ${LIB}/doc/
 SETUP = ./setup.py
 GENDOC = ./bin/gendoc
-RPMVERSION = $$(grep Version: redhat/rtsadmin.spec | awk '{print $$2}')
+RPMVERSION = $$(grep Version: redhat/targetcli.spec | awk '{print $$2}')
 GIT_BRANCH = $$(git branch | grep \* | tr -d \*)
 
 all: usage
@@ -32,7 +32,7 @@ usage:
 	@echo "  make doc         - Generate the documentation"
 	@echo "  make sdist       - Build the source tarball"
 	@echo "  make bdist       - Build the installable tarball"
-	@echo "  make install     - Install rtsadmin"
+	@echo "  make install     - Install targetcli"
 	@echo "  make installdocs - Install the documentation"
 
 install:
@@ -49,19 +49,19 @@ installdocs: doc
 
 clean:
 	${CLEAN}
-	rm -fv rtsadmin/*.pyc rtsadmin/*.html
+	rm -fv targetcli/*.pyc targetcli/*.html
 	rm -frv doc
-	rm -frv rtsadmin.egg-info MANIFEST build
+	rm -frv targetcli.egg-info MANIFEST build
 	rm -frv pdf html
 	rm -frv debian/tmp
 	rm -fv build-stamp
 	rm -fv dpkg-buildpackage.log dpkg-buildpackage.version
-	rm -frv *.rpm warnrtsadmin.txt buildrtsadmin
+	rm -frv *.rpm warntargetcli.txt buildtargetcli
 	rm -fv debian/*.debhelper.log debian/*.debhelper debian/*.substvars debian/files
-	rm -fvr debian/rtsadmin-python2.5/
-	rm -fvr debian/rtsadmin-python2.6/ debian/rtsadmin/ debian/rtsadmin-doc/
+	rm -fvr debian/targetcli-python2.5/
+	rm -fvr debian/targetcli-python2.6/ debian/targetcli/ debian/targetcli-doc/
 	rm -fv redhat/*.spec *.spec redhat/sed* sed*
-	rm -frv rtsadmin-*
+	rm -frv targetcli-*
 	./bin/gen_changelog_cleanup
 	@echo "Finished cleanup."
 
@@ -85,18 +85,18 @@ rpm: doc
 	@echo Building RPM version ${RPMVERSION}
 	mkdir -p ~/rpmbuild/SOURCES/
 	mkdir -p build
-	git archive ${GIT_BRANCH} --prefix rtsadmin/ > build/rtsadmin.tar
-	cd build; tar mxf rtsadmin.tar; rm rtsadmin.tar
-	cp rtsadmin/__init__.py build/rtsadmin/rtsadmin
-	cp -r doc build/rtsadmin/
-	mv build/rtsadmin rtsadmin-${RPMVERSION}
-	tar zcf ~/rpmbuild/SOURCES/rtsadmin-${RPMVERSION}.tar.gz rtsadmin-${RPMVERSION}
-	rm -fr rtsadmin-${RPMVERSION}
+	git archive ${GIT_BRANCH} --prefix targetcli/ > build/targetcli.tar
+	cd build; tar mxf targetcli.tar; rm targetcli.tar
+	cp targetcli/__init__.py build/targetcli/targetcli
+	cp -r doc build/targetcli/
+	mv build/targetcli targetcli-${RPMVERSION}
+	tar zcf ~/rpmbuild/SOURCES/targetcli-${RPMVERSION}.tar.gz targetcli-${RPMVERSION}
+	rm -fr targetcli-${RPMVERSION}
 	rpmbuild -ba redhat/*.spec
 	@test -e dist || mkdir dist
-	mv ~/rpmbuild/SRPMS/rtsadmin-${RPMVERSION}*.src.rpm dist/
-	mv ~/rpmbuild/RPMS/*/rtsadmin-${RPMVERSION}*.rpm dist/
-	mv ~/rpmbuild/RPMS/noarch/rtsadmin-doc-${RPMVERSION}*.rpm dist/
+	mv ~/rpmbuild/SRPMS/targetcli-${RPMVERSION}*.src.rpm dist/
+	mv ~/rpmbuild/RPMS/*/targetcli-${RPMVERSION}*.rpm dist/
+	mv ~/rpmbuild/RPMS/noarch/targetcli-doc-${RPMVERSION}*.rpm dist/
 	./bin/gen_changelog_cleanup
 
 sdist: clean doc

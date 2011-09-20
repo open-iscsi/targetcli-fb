@@ -1,25 +1,25 @@
-Source: rtsadmin
+Source: targetcli
 Section: python
 Priority: optional
 Maintainer: Jerome Martin <jxm@risingtidesystems.com>
 Build-Depends: debhelper(>= 5.0.1), python2.6, build-essential, python-dev, python2.6-dev, python-epydoc, zlib1g-dev, python-configshell, upx-ucl, python-rtslib
 Standards-Version: 3.8.1
 
-Package: rtsadmin
+Package: targetcli
 Architecture: all
 Depends: python (>= 2.6)|python2.6, python-configshell, python-rtslib, lio-utils
-Suggests: rtsadmin-doc
-Conflicts: rtsadmin-frozen
+Suggests: targetcli-doc
+Conflicts: targetcli-frozen
 Description: CLI for the RisingTide Systems target, with complete sources.
  .
- This package contains the rtsadmin CLI.  
+ This package contains the targetcli CLI.  
 
-Package: rtsadmin-doc
+Package: targetcli-doc
 Section: doc
 Architecture: all
 Recommends: iceweasel | www-browser
-Description: User manual for the rtsadmin CLI
+Description: User manual for the targetcli CLI
  .
- This package contains the User Manual for rtsadmin, the CLI
+ This package contains the User Manual for targetcli, the CLI
  interface to the RisingTide Systems storage clusters.
 

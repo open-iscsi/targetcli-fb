@@ -1,6 +1,6 @@
-%define oname rtsadmin
+%define oname targetcli
 
-Name:           rtsadmin
+Name:           targetcli
 License:        AGPLv3
 Group:          Applications/System
 Summary:        RisingTide Systems generic SCSI target CLI shell.
@@ -12,20 +12,20 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-rpmroot
 BuildArch:      noarch
 BuildRequires:  python-devel, python-rtslib, python-configshell
 Requires:       python-rtslib, python-configshell, lio-utils
-Conflicts:      rtsadmin-frozen
+Conflicts:      targetcli-frozen
 Vendor:         RisingTide Systems
 
 %description
 RisingTide Systems generic SCSI target CLI shell.
 
 %package doc
-Summary:       PDF user manual for rtsadmin.
+Summary:       PDF user manual for targetcli.
 Group:         Documentation
 BuildRequires: epydoc, python-docutils
 BuildArch:     noarch
 
 %description doc
-PDF user manual for rtsadmin.
+PDF user manual for targetcli.
 
 %prep
 %setup -q -n %{oname}-%{version}
@@ -36,8 +36,8 @@ PDF user manual for rtsadmin.
 %install
 rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root %{buildroot}
-mkdir -p %{buildroot}/usr/share/doc/rtsadmin-doc-%{version}
-cp -r doc/*.pdf doc/README doc/COPYING %{buildroot}/usr/share/doc/rtsadmin-doc-%{version}/
+mkdir -p %{buildroot}/usr/share/doc/targetcli-doc-%{version}
+cp -r doc/*.pdf doc/README doc/COPYING %{buildroot}/usr/share/doc/targetcli-doc-%{version}/
 
 %clean
 rm -rf %{buildroot}
@@ -45,11 +45,11 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{python_sitelib}
-%{_bindir}/rtsadmin
+%{_bindir}/targetcli
 %doc COPYING README
 
 %files doc
 %defattr(-,root,root,-)
-/usr/share/doc/rtsadmin-doc-%{version}
+/usr/share/doc/targetcli-doc-%{version}
 
 %changelog

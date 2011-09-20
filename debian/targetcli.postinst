@@ -1,0 +1,17 @@
+#!/bin/sh
+for lib in lib lib64; do
+	for python in python2.6; do
+		if [ -e /usr/${lib}/${python} ]; then
+			if [ ! -e /usr/${lib}/${python}/targetcli ]; then
+				mkdir /usr/${lib}/${python}/targetcli
+				for source in /usr/share/python-support/targetcli/targetcli/*.py; do
+					ln -sf ${source} /usr/${lib}/${python}/targetcli/
+				done
+				python_path=$(which ${python} 2>/dev/null)
+				if [ ! -z $python_path ]; then
+					${python} -c "import compileall; compileall.compile_dir('/usr/${lib}/${python}/targetcli', force=1)"
+				fi
+			fi
+		fi
+	done
+done

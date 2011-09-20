@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# This file is part of RTSAdmin Community Edition.
+# This file is part of targetcli.
 # Copyright (c) 2011 by RisingTide Systems LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@ import inspect
 import textwrap
 import datetime
 sys.path.insert(0, os.path.realpath("."))
-import rtsadmin
+import targetcli
 
 def doctitle(txt):
     return "%s\n%s\n%s\n\n" \
@@ -55,12 +55,12 @@ def gen_help_cmd():
 
 def gen_title():
     string = ""
-    string += doctitle("The rtsadmin Reference Guide")
-    string += docsubtitle(rtsadmin.__description__)
+    string += doctitle("The targetcli Reference Guide")
+    string += docsubtitle(targetcli.__description__)
     string += ":Date: version %s built on %s\n" \
-            % (str(rtsadmin.__version__), 
+            % (str(targetcli.__version__), 
                str(datetime.datetime.now().date()))
-    license_fields = rtsadmin.__license__.split(".")
+    license_fields = targetcli.__license__.split(".")
     string += ":Author: %s. %s.\n" % (license_fields[0], license_fields[1])
     string += "\n"
     return string

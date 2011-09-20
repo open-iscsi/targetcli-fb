@@ -1,4 +1,4 @@
-# This file is part of RTSAdmin Community Edition.
+# This file is part of targetcli.
 # Copyright (c) 2011 by RisingTide Systems LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-RTSAdmin Community Edition is an administration tool for managing RisingTide
+targetcli is an administration tool for managing RisingTide
 Systems storage targets using the kernel LIO core target and compatible target
-fabric modules. The rtsadmin CLI is built on top of the python configshell CLI
+fabric modules. The targetcli CLI is built on top of the python configshell CLI
 framework.
 
 The latest version of this program might be obtained at:
 http://www.risingtidesystems.com/git/
 
 To run the CLI from this directory use:
-sudo PYTHONPATH=. ./scripts/rtsadmin
+sudo PYTHONPATH=. ./scripts/targetcli

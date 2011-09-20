@@ -4,7 +4,7 @@ All rights reserved.
 
 Jerome Martin <jxm@risingtidesystems.com>
 
-Implements the rtsadmin backstores related UI.
+Implements the targetcli backstores related UI.
 '''
 
 from ui_node import UINode, UIRTSLibNode

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 '''
-This file is part of RTSAdmin Community Edition.
+This file is part of targetcli.
 Copyright (c) 2011 by RisingTide Systems LLC
 
 This program is free software: you can redistribute it and/or modify
@@ -19,14 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
 from distutils.core import setup
-import rtsadmin
+import targetcli
 
-PKG = rtsadmin
+PKG = targetcli
 VERSION = str(PKG.__version__)
 (AUTHOR, EMAIL) = re.match('^(.*?)\s*<(.*)>$', PKG.__author__).groups()
 URL = PKG.__url__
 LICENSE = PKG.__license__
-SCRIPTS = ["scripts/rtsadmin"]
+SCRIPTS = ["scripts/targetcli"]
 DESCRIPTION = PKG.__description__
 
 setup(

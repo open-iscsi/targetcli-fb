@@ -1,3 +1,0 @@
-#!/bin/sh
-rm -f /usr/share/python-support/rtsadmin/rtsadmin/*.pyc
-rm -f /usr/share/python-support/rtsadmin/rtsadmin/*.pyo

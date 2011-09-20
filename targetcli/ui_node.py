@@ -1,7 +1,7 @@
 '''
-Implements the rtsadmin base UI node.
+Implements the targetcli base UI node.
 
-This file is part of RTSAdmin Community Edition.
+This file is part of targetcli.
 Copyright (c) 2011 by RisingTide Systems LLC
 
 This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@ from rtslib import RTSLibError, RTSRoot
 
 class UINode(ConfigNode):
     '''
-    Our rtsadmin basic UI node.
+    Our targetcli basic UI node.
     '''
     def __init__(self, name, parent=None, shell=None):
         ConfigNode.__init__(self, name, parent, shell)

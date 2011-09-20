@@ -36,10 +36,10 @@ build: build-stamp
 build-stamp: 
 	dh_testdir
 	# Build the source package
-	$(setup) build --build-base $(build_dir) install --no-compile --install-purelib $(install_dir)/lib/rtsadmin --install-scripts $(install_dir)/bin
-	echo "2.6" > $(install_dir)/lib/rtsadmin/.version
+	$(setup) build --build-base $(build_dir) install --no-compile --install-purelib $(install_dir)/lib/targetcli --install-scripts $(install_dir)/bin
+	echo "2.6" > $(install_dir)/lib/targetcli/.version
 	# Cleanup
-	rm -f $(install_dir)/lib/rtsadmin/rtsadmin/*.pyc
+	rm -f $(install_dir)/lib/targetcli/targetcli/*.pyc
 	touch build-stamp
 
 clean:

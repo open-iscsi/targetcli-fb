@@ -1,7 +1,7 @@
 '''
-Implements the rtsadmin target related UI.
+Implements the targetcli target related UI.
 
-This file is part of RTSAdmin Community Edition.
+This file is part of targetcli.
 Copyright (c) 2011 by RisingTide Systems LLC
 
 This program is free software: you can redistribute it and/or modify
