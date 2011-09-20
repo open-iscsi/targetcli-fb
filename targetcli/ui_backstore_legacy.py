@@ -214,6 +214,7 @@ class UIBackstoresLegacy(UINode):
         else:
             return completions
 
+
 class UIBackstoreLegacy(UIRTSLibNode):
     '''
     A backstore UI.
@@ -307,6 +308,7 @@ class UIBackstoreLegacy(UIRTSLibNode):
         else:
             return completions
 
+
 class UIPSCSIBackstoreLegacy(UIBackstoreLegacy):
     '''
     PSCSI backstore UI.
@@ -326,6 +328,7 @@ class UIPSCSIBackstoreLegacy(UIBackstoreLegacy):
         self.shell.log.info("Created pscsi storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
+
 
 class UIRDDRBackstoreLegacy(UIBackstoreLegacy):
     '''
@@ -356,6 +359,7 @@ class UIRDDRBackstoreLegacy(UIBackstoreLegacy):
                             % (name, size))
         return self.new_node(ui_so)
 
+
 class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
     '''
     RDMCP backstore UI.
@@ -384,6 +388,7 @@ class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
         self.shell.log.info("Created rd_mcp ramdisk %s with size %s."
                             % (name, size))
         return self.new_node(ui_so)
+
 
 class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
     '''
@@ -438,6 +443,7 @@ class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
             self.shell.log.error("For fileio, you must either specify both a "
                                  + "file and a size, or just a device path.")
 
+
 class UIIBlockBackstoreLegacy(UIBackstoreLegacy):
     '''
     IBlock backstore UI.
@@ -456,6 +462,7 @@ class UIIBlockBackstoreLegacy(UIBackstoreLegacy):
         self.shell.log.info("Created iblock storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
+
 
 class UIStorageObjectLegacy(UIRTSLibNode):
     '''

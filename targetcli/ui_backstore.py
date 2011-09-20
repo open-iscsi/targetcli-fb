@@ -57,6 +57,7 @@ class UIBackstores(UINode):
         UIFileIOBackstore(self)
         UIIBlockBackstore(self)
 
+
 class UIBackstore(UINode):
     '''
     A backstore UI.
@@ -173,6 +174,7 @@ class UIBackstore(UINode):
             raise ExecutionError("Storage object %s/%s already exist."
                                  % (self.name, name))
 
+
 class UIPSCSIBackstore(UIBackstore):
     '''
     PSCSI backstore UI.
@@ -242,6 +244,7 @@ class UIRDDRBackstore(UIBackstore):
                             % (name, size))
         return self.new_node(ui_so)
 
+
 class UIRDMCPBackstore(UIBackstore):
     '''
     RDMCP backstore UI.
@@ -280,6 +283,7 @@ class UIRDMCPBackstore(UIBackstore):
         self.shell.log.info("Created rd_mcp ramdisk %s with size %s."
                             % (name, size))
         return self.new_node(ui_so)
+
 
 class UIFileIOBackstore(UIBackstore):
     '''
@@ -351,6 +355,7 @@ class UIFileIOBackstore(UIBackstore):
             self.shell.log.error("For fileio, you must either specify both a "
                                  + "file and a size, or just a device path.")
 
+
 class UIIBlockBackstore(UIBackstore):
     '''
     IBlock backstore UI.
@@ -378,6 +383,7 @@ class UIIBlockBackstore(UIBackstore):
         self.shell.log.info("Created iblock storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
+
 
 class UIStorageObject(UIRTSLibNode):
     '''

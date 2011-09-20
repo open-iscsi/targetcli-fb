@@ -111,6 +111,7 @@ class UINode(ConfigNode):
         ConfigNode.ui_setgroup_global(self, parameter, value)
         self.get_root().refresh()
 
+
 class UIRTSLibNode(UINode):
     '''
     A subclass of UINode for nodes with an underlying RTSLib object.

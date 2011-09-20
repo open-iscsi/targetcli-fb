@@ -222,6 +222,7 @@ class UIFabricModule(UIRTSLibNode):
                 % (self.rtsnode.name, self.rtsnode.version)
         self.shell.con.display(version.strip())
 
+
 class UIMultiTPGTarget(UIRTSLibNode):
     '''
     A generic target UI that has multiple TPGs.
@@ -328,6 +329,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         else:
             return completions
 
+
 class UITPG(UIRTSLibNode):
     '''
     A generic TPG UI.
@@ -384,6 +386,7 @@ class UITPG(UIRTSLibNode):
         else:
             self.shell.log.info("The TPGT is already disabled.")
 
+
 class UITarget(UITPG):
     '''
     A generic target UI merged with its only TPG.
@@ -399,6 +402,7 @@ class UITarget(UITPG):
             return ("INVALID WWN", False)
         else:
             return UITPG.summary(self)
+
 
 class UINodeACLs(UINode):
     '''
@@ -503,6 +507,7 @@ class UINodeACLs(UINode):
             return [completions[0] + ' ']
         else:
             return completions
+
 
 class UINodeACL(UIRTSLibNode):
     '''
@@ -631,6 +636,7 @@ class UINodeACL(UIRTSLibNode):
         else:
             return completions
 
+
 class UIMappedLUN(UIRTSLibNode):
     '''
     A generic UI for MappedLUN objects.
@@ -657,6 +663,7 @@ class UIMappedLUN(UIRTSLibNode):
             description = "lun%d (%s)" % (tpg_lun.lun, access_mode)
 
         return (description, is_healthy)
+
 
 class UILUNs(UINode):
     '''
@@ -822,6 +829,7 @@ class UILUNs(UINode):
         else:
             return completions
 
+
 class UILUN(UIRTSLibNode):
     '''
     A generic UI for LUN objects.
@@ -856,6 +864,7 @@ class UILUN(UIRTSLibNode):
                                               path)
 
         return (description, is_healthy)
+
 
 class UIPortals(UINode):
     '''
@@ -1007,6 +1016,7 @@ class UIPortals(UINode):
             return [completions[0] + ' ']
         else:
             return completions
+
 
 class UIPortal(UIRTSLibNode):
     '''
