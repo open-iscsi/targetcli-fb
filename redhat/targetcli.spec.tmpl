@@ -12,20 +12,10 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-rpmroot
 BuildArch:      noarch
 BuildRequires:  python-devel, python-rtslib, python-configshell
 Requires:       python-rtslib, python-configshell, lio-utils
-Conflicts:      targetcli-frozen
 Vendor:         RisingTide Systems
 
 %description
 RisingTide Systems generic SCSI target CLI shell.
-
-%package doc
-Summary:       PDF user manual for targetcli.
-Group:         Documentation
-BuildRequires: epydoc, python-docutils
-BuildArch:     noarch
-
-%description doc
-PDF user manual for targetcli.
 
 %prep
 %setup -q -n %{oname}-%{version}
@@ -36,8 +26,6 @@ PDF user manual for targetcli.
 %install
 rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root %{buildroot}
-mkdir -p %{buildroot}/usr/share/doc/targetcli-doc-%{version}
-cp -r doc/*.pdf doc/README doc/COPYING %{buildroot}/usr/share/doc/targetcli-doc-%{version}/
 
 %clean
 rm -rf %{buildroot}
@@ -47,9 +35,5 @@ rm -rf %{buildroot}
 %{python_sitelib}
 %{_bindir}/targetcli
 %doc COPYING README
-
-%files doc
-%defattr(-,root,root,-)
-/usr/share/doc/targetcli-doc-%{version}
 
 %changelog

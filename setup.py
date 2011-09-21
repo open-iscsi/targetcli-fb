@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 '''
 This file is part of targetcli.
 Copyright (c) 2011 by RisingTide Systems LLC
@@ -29,15 +28,13 @@ LICENSE = PKG.__license__
 SCRIPTS = ["scripts/targetcli"]
 DESCRIPTION = PKG.__description__
 
-setup(
-        name=PKG.__name__,
-        description=DESCRIPTION,
-        version=VERSION,
-        author=AUTHOR,
-        author_email=EMAIL,
-        license=LICENSE,
-        url=URL,
-        scripts=SCRIPTS,
-        packages=[PKG.__name__],
-        package_data = {'':[]}
-        )
+setup(name=PKG.__name__,
+      description=DESCRIPTION,
+      version=VERSION,
+      author=AUTHOR,
+      author_email=EMAIL,
+      license=LICENSE,
+      url=URL,
+      scripts=SCRIPTS,
+      packages=[PKG.__name__],
+      package_data = {'':[]})
