@@ -56,7 +56,7 @@ build/release-stamp:
 	@mkdir -p build
 	@echo "Exporting the repository files..."
 	@git archive ${GIT_BRANCH} --prefix ${NAME}-${VERSION}/ \
-		| (cd build; tar xf -)
+		| (cd build; tar xfp -)
 	@echo "Cleaning up the target tree..."
 	@rm -f build/${NAME}-${VERSION}/Makefile
 	@rm -f build/${NAME}-${VERSION}/.gitignore
@@ -101,8 +101,15 @@ build/release-stamp:
 		echo " -- $${author}  $${date}"; \
 		echo ; \
 	done > build/${NAME}-${VERSION}/debian/changelog
+	@find build/${NAME}-${VERSION}/ -exec \
+		touch -t $$(date -d @$$(git show -s --format="format:%at") \
+			+"%Y%m%d%H%M.%S") {} \;
 	@mkdir -p dist
-	@cd build; tar zcf ../dist/${NAME}-${VERSION}.tar.gz ${NAME}-${VERSION}
+	@cd build; tar -c --owner=0 --group=0 --numeric-owner \
+		--format=gnu -b20 --quoting-style=escape \
+		-f ../dist/${NAME}-${VERSION}.tar \
+		$$(find ${NAME}-${VERSION} -type f | sort)
+	@gzip -6 -n dist/${NAME}-${VERSION}.tar
 	@echo "Generated release tarball:"
 	@echo "    $$(ls dist/${NAME}-${VERSION}.tar.gz)"
 	@touch build/release-stamp
