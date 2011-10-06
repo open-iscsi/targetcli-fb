@@ -72,35 +72,33 @@ build/release-stamp:
 		done; \
 		rmdir rpm
 	@echo "Generating rpm changelog..."
-	@for commit in $$(git log --date=iso  | grep -e ^commit -e ^Date: \
-		| tr -d '\n' | sed 's/commit /\n/g' | sed 's/Date:  //g' \
-		| awk '{print $$2, $$3, $$1}' | sort -r | awk '{print $$3}'); do \
-		version=$$(basename $$(git describe $${commit} --tags | tr - .)); \
-		author=$$(git show $${commit} --format="format:%an <%ae>" -s); \
-		date=$$(git show $${commit} --format="format:%ad" -s \
+	@( \
+		version=$$(basename $$(git describe HEAD --tags | tr - .)); \
+		author=$$(git show HEAD --format="format:%an <%ae>" -s); \
+		date=$$(git show HEAD --format="format:%ad" -s \
 			| awk '{print $$1,$$2,$$3,$$5}'); \
+		hash=$$(git show HEAD --format="format:%H" -s); \
 	   	echo '* '"$${date} $${author} $${version}-1"; \
-		git show $${commit} --format="format:%s%n" -s; \
-		git show $${commit} --format="format:%b" -s \
-			| sed 's/^* /- /g' | sed 's/^/  /g'; \
-	done >> $$(ls build/${NAME}-${VERSION}/*.spec)
+		echo "  - Generated from git commit $${hash}."; \
+	) >> $$(ls build/${NAME}-${VERSION}/*.spec)
 	@echo "Generating debian changelog..."
-	@for commit in $$(git log | grep ^commit | awk '{print $$2}'); do \
-		version=$$(basename $$(git describe $${commit} --tags | tr - .)); \
-		author=$$(git show $${commit} --format="format:%an <%ae>" -s); \
-		date=$$(git show $${commit} --format="format:%aD" -s); \
-		day=$$(git show $${commit} --format='format:%ai' -s \
-			| awk -F '-' '{print $$2}'); \
+	@( \
+		version=$$(basename $$(git describe HEAD --tags | tr - .)); \
+		author=$$(git show HEAD --format="format:%an <%ae>" -s); \
+		date=$$(git show HEAD --format="format:%aD" -s); \
+		day=$$(git show HEAD --format='format:%ai' -s \
+			| awk '{print $$1}' \
+			| awk -F '-' '{print $$3}' | sed 's/^0/ /g'); \
 		date=$$(echo $${date} \
 			| awk '{print $$1, "'"$${day}"'", $$3, $$4, $$5, $$6}'); \
+		hash=$$(git show HEAD --format="format:%H" -s); \
 	   	echo "${NAME} ($${version}) unstable; urgency=low"; \
-		echo ; \
-		git show $${commit} --format="format:  * %s%n" -s; \
-		git show $${commit} --format="format:%b%n" -s \
-			| sed 's/^* /- /g' | sed 's/^/    /g'; \
+		echo; \
+		echo "  * Generated from git commit $${hash}."; \
+		echo; \
 		echo " -- $${author}  $${date}"; \
-		echo ; \
-	done > build/${NAME}-${VERSION}/debian/changelog
+		echo; \
+	) > build/${NAME}-${VERSION}/debian/changelog
 	@find build/${NAME}-${VERSION}/ -exec \
 		touch -t $$(date -d @$$(git show -s --format="format:%at") \
 			+"%Y%m%d%H%M.%S") {} \;
