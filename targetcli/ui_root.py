@@ -89,6 +89,20 @@ class UIRoot(UINode):
         else:
             self.shell.log.warning("Aborted, configuration left untouched.")
 
+        # append all into single script
+        from glob import iglob
+        import os
+        import shutil
+        sources = iglob(os.path.join("/etc/target", '*_start.sh'))
+        # ensure tcm_start is appended first
+        sources = [x for x in sources if not 'tcm_' in x]
+        sources = [x for x in sources if not 'all_' in x]
+        sources.insert(0, '/etc/target/tcm_start.sh')
+        dest = open('/etc/target/all_start.sh', 'wb')
+        for filename in sources:
+            shutil.copyfileobj(open(filename, 'rb'), dest)
+        dest.close()
+
     def ui_command_version(self):
         '''
         Displays the targetcli and support libraries versions.
