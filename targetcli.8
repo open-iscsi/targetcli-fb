@@ -1,0 +1,151 @@
+.TH targetcli 8
+.SH NAME
+.B targetcli
+.SH DESCRIPTION
+.B targetcli
+is a shell for viewing, editing, and saving the configuration of
+the kernel's target subsystem, also known as TCM/LIO. It enables the
+administrator to assign local storage resources backed by either files,
+volumes, or local SCSI devices, and export them to remote systems via
+network fabrics, such as iSCSI, FCoE, or others.
+.P
+The configuration layout is tree-based, similar to a filesystem, and
+navigated in a similar manner.
+.SH USAGE
+Invoke
+.B targetcli
+as root to enter the configuration shell.  Use
+.B ls
+to list nodes below the current path. Configuration changes are made
+immediately. To retain changes on reboot, use
+.BR saveconfig .
+Moving
+around the tree is accomplished by the
+.B cd
+command, or by entering
+the new location directly. Use
+.B "help <cmd>"
+for additional usage
+information. Tab-completion is enabled for commands and command
+arguments.
+.SH EXAMPLES
+To export a storage resource, 1) define a storage object using
+backstore, then 2) export the object via a network fabric, such as
+iSCSI or FCoE.
+.SS DEFINING A STORAGE OBJECT WITH BACKSTORE
+.B backstores/fileio0 create disk1 /disks/disk1.img 140M
+.br
+Creates a storage object named
+.I disk1
+with the given path and size.
+.B targetcli
+supports common size abbreviations like 'M', 'G', and 'T'.
+.P
+In addition to the
+.I fileio
+backstore for file-backed volumes, other backstore types include
+.I iblock
+for block-device-backed volumes, and
+.I pscsi
+for volumes backed by local SCSI devices. See the built-in help
+for more details on required parameters.
+.SS EXPORTING A STORAGE OBJECT VIA FCOE
+.B tcm_fc/ create 20:00:00:19:99:a8:34:bc
+.br
+Create an FCoE target with the given WWN.
+.B targetcli
+can tab-complete the WWN based on registered FCoE interfaces. If none
+are found, verify that they are properly configured and are shown in
+the output of
+.BR "fcoeadm -i" .
+.P
+.B tcm_fc/20:00:00:19:99:a8:34:bc/
+.br
+If
+.B auto_cd_after_create
+is set to false, change to the configuration node for the given
+target, equivalent to giving the command prefixed by
+.BR cd .
+.P
+.B luns/ create /backstores/fileio/disk1
+.br
+Create a new LUN for the interface, attached to a previously defined
+storage object. The storage object now shows up under the /backstores
+configuration node as
+.BR activated .
+.P
+.B acls/ create 00:99:88:77:66:55:44:33
+.br
+Create an ACL (access control list), for defining the resources each
+initiator may access. The default behavior is to auto-map existing
+LUNs to the ACL; see help for more information.
+.P
+The LUN should now be accessible via FCoE.
+.SS EXPORTING A STORAGE OBJECT VIA ISCSI
+.B iscsi/ create
+.br
+Creates an iSCSI target with a default WWN. It will also create an
+initial target portal group called
+.IR tpgt1 .
+.P
+.B iqn.2003-01.org.linux-iscsi.test2.x8664:sn123456789012/tpgt1/
+.br
+An example of changing to the configuration node for the given
+target's first target portal group (TPG). This is equivalent to giving
+the command prefixed by "cd". (Although more can be useful for certain
+setups, most configurations have a single TPG per target. In this
+case, configuring the TPG is equivalent to configuring the overall
+target.)
+.P
+.B portals/ create
+.br
+Add a portal, i.e. an address and TCP port via which the target can be
+contacted by initiators. Sane defaults are used if these are not
+specified.
+.P
+.B luns/ create /backstores/fileio0/disk1
+.br
+Create a new LUN in the TPG, attached to the storage object that has
+previously been defined. The storage object now shows up under the
+/backstores configuration node as activated.
+.P
+.B acls/ create iqn.1994-05.com.redhat:4321576890
+.br
+Creates an ACL (access control list) for the given iSCSI initiator.
+.P
+.B acls/iqn.1994-05.com.redhat:4321576890 create 2 0
+.br
+Gives the initiator access to the first exported LUN (lun0), which the
+initiator will see as lun2. The default is to give the initiator
+read/write access; if read-only access was desired, an additional "1"
+argument would be added to enable write-protect.
+.SS OTHER COMMANDS
+.B saveconfig
+.br
+Save the current configuration settings to a file, from which
+settings will be restored if the system is rebooted.
+.P
+This command must be executed from the configuration root node.
+.P
+.B exit
+.br
+Leave the configuration shell.
+.SS SETTINGS
+.B set attribute authentication=0
+.br
+Disable CHAP authentication.
+.P
+.B set global auto_cd_after_create=false
+.br
+Do not change into the configuration node of a newly created
+object. The default is 'true'.
+.SH FILES
+.B /etc/target/*
+.br
+.B /var/lib/target/*
+.SH AUTHOR
+Written by Jerome Martin <jxm@risingtidesystems.com>.
+.br
+Man page written by Andy Grover <agrover@redhat.com>.
+.SH REPORTING BUGS
+Report bugs to <target-devel@vger.kernel.org>
