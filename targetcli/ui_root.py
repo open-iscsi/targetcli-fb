@@ -72,6 +72,15 @@ class UIRoot(UINode):
                 self.shell.log.debug("Loading %s." % fabric_module.name)
                 UIFabricModule(fabric_module, self)
 
+    def ui_command_bar(self):
+        from rtslib.root import RTSRoot
+        import json
+
+        self.assert_root()
+
+        with open("/savecfg.json", "w+") as f:
+            f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=4))
+
     def ui_command_saveconfig(self):
         '''
         Saves the whole configuration tree to disk so that it will be restored
