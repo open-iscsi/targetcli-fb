@@ -24,7 +24,6 @@ from socket import gethostname
 from ui_target import UIFabricModule
 from tcm_dump import tcm_full_backup
 from ui_backstore import UIBackstores
-from ui_backstore_legacy import UIBackstoresLegacy
 
 class UIRoot(UINode):
     '''
@@ -40,10 +39,9 @@ class UIRoot(UINode):
         Refreshes the tree of target fabric modules.
         '''
         self._children = set([])
-        if self.shell.prefs['legacy_hba_view']:
-            UIBackstoresLegacy(self)
-        else:
-            UIBackstores(self)
+
+        UIBackstores(self)
+
         if not self.loaded:
             self.shell.log.debug("Refreshing in non-loaded mode.")
             for fabric_module in RTSRoot().fabric_modules:

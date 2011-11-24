@@ -35,10 +35,6 @@ class UINode(ConfigNode):
             'If true, automatically create node ACLs mapped LUNs '
             + 'after creating a new target LUN or a new node ACL')
         self.define_config_group_param(
-            'global', 'legacy_hba_view', 'bool',
-            'If true, use legacy HBA view, allowing to create more '
-            + 'than one storage object per HBA.')
-        self.define_config_group_param(
             'global', 'auto_cd_after_create', 'bool',
             'If true, changes current path to newly created objects.')
 

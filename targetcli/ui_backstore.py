@@ -26,19 +26,6 @@ from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import get_block_type, is_disk_partition
 from configshell import ExecutionError
 
-def dedup_so_name(storage_object):
-    '''
-    Useful for migration from ui_backstore_legacy to new style with
-    1:1 hba:so mapping. If name is a duplicate in a backstore, returns
-    name_X where X is the HBA index.
-    '''
-    names = [so.name for so in RTSRoot().storage_objects
-             if so.backstore.plugin == storage_object.backstore.plugin]
-    if names.count(storage_object.name) > 1:
-        return "%s_%d" % (storage_object.name,
-                          storage_object.backstore.index)
-    else:
-        return storage_object.name
 
 class UIBackstores(UINode):
     '''
@@ -71,7 +58,7 @@ class UIBackstore(UINode):
         for so in RTSRoot().storage_objects:
             if so.backstore.plugin == self.name:
                 ui_so = UIStorageObject(so, self)
-                ui_so.name = dedup_so_name(so)
+                ui_so.name = so.name
 
     def summary(self):
         no_storage_objects = len(self._children)

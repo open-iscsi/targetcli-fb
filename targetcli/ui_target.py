@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from ui_node import UINode, UIRTSLibNode
-from ui_backstore import dedup_so_name
 from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
 from rtslib import Target, TPG, LUN
@@ -854,13 +853,8 @@ class UILUN(UIRTSLibNode):
                 path = "ramdisk"
             else:
                 path = storage_object.udev_path
-            if self.shell.prefs['legacy_hba_view']:
-                description = "%s%s/%s (%s)" % (backstore.plugin,
-                                                backstore.index,
-                                                storage_object.name, path)
-            else:
                 description = "%s/%s (%s)" % (backstore.plugin,
-                                              dedup_so_name(storage_object),
+                                              storage_object.name,
                                               path)
 
         return (description, is_healthy)
