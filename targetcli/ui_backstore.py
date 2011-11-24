@@ -20,9 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
-from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
+from rtslib import PSCSIBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, IBlockStorageObject
-from rtslib import PSCSIStorageObject, RDDRStorageObject, RDMCPStorageObject
+from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import get_block_type, is_disk_partition
 from configshell import ExecutionError
 
@@ -52,7 +52,6 @@ class UIBackstores(UINode):
     def refresh(self):
         self._children = set([])
         UIPSCSIBackstore(self)
-        UIRDDRBackstore(self)
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
         UIIBlockBackstore(self)
@@ -202,46 +201,6 @@ class UIPSCSIBackstore(UIBackstore):
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
-        return self.new_node(ui_so)
-
-
-class UIRDDRBackstore(UIBackstore):
-    '''
-    RDDR backstore UI.
-    '''
-    def __init__(self, parent):
-        UIBackstore.__init__(self, 'rd_dr', parent)
-
-    def ui_command_create(self, name, size, generate_wwn=None):
-        '''
-        Creates an RDDR storage object. I{size} is the size of the ramdisk, and
-        the optional I{generate_wwn} parameter is a boolean specifying whether
-        or not we should generate a T10 wwn serial for the unit (by default,
-        yes).
-
-        SIZE SYNTAX
-        ===========
-        - If size is an int, it represents a number of bytes.
-        - If size is a string, the following units can be used:
-            - B{B} or no unit present for bytes
-            - B{k}, B{K}, B{kB}, B{KB} for kB (kilobytes)
-            - B{m}, B{M}, B{mB}, B{MB} for MB (megabytes)
-            - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
-            - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
-        '''
-        self.assert_root()
-        self.assert_available_so_name(name)
-        backstore = RDDRBackstore(self.next_hba_index(), mode='create')
-        try:
-            so = RDDRStorageObject(backstore, name, size,
-                                   self.prm_gen_wwn(generate_wwn))
-
-        except Exception, exception:
-            backstore.delete()
-            raise exception
-        ui_so = UIStorageObject(so, self)
-        self.shell.log.info("Created rd_dr ramdisk %s with size %s."
-                            % (name, size))
         return self.new_node(ui_so)
 
 
