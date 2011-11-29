@@ -77,7 +77,7 @@ class UIRoot(UINode):
         self.assert_root()
 
         with open("/savecfg.json", "w+") as f:
-            f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=4))
+            f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
 
     def ui_command_saveconfig(self):
         '''
