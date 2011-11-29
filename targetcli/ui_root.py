@@ -78,6 +78,7 @@ class UIRoot(UINode):
 
         with open("/savecfg.json", "w+") as f:
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
+            f.write("\n")
 
     def ui_command_restore(self):
         from rtslib.root import RTSRoot
