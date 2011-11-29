@@ -70,7 +70,7 @@ class UIRoot(UINode):
                 self.shell.log.debug("Loading %s." % fabric_module.name)
                 UIFabricModule(fabric_module, self)
 
-    def ui_command_bar(self):
+    def ui_command_save(self):
         from rtslib.root import RTSRoot
         import json
 
@@ -78,6 +78,17 @@ class UIRoot(UINode):
 
         with open("/savecfg.json", "w+") as f:
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
+
+    def ui_command_restore(self):
+        from rtslib.root import RTSRoot
+        import json
+
+        self.assert_root()
+
+        with open("/savecfg.json", "r") as f:
+            RTSRoot().restore(json.loads(f.read()))
+
+        self.refresh()
 
     def ui_command_saveconfig(self):
         '''
