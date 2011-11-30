@@ -92,7 +92,7 @@ class UIBackstore(UINode):
         return generate_wwn
 
     def prm_buffered(self, buffered):
-        generate_wwn = \
+        buffered = \
                 self.ui_eval_param(buffered, 'bool', True)
         if buffered:
             self.shell.log.info("Using buffered mode.")
