@@ -73,16 +73,34 @@ class UIRoot(UINode):
                 UIFabricModule(fabric_module, self)
 
     def ui_command_save(self, savefile=default_save_file):
+        '''
+        Saves the current configuration to a file so that it can be restored
+        on next boot.
+        '''
         from rtslib.root import RTSRoot
         import json
+        import shutil
 
         self.assert_root()
+
+        backupfile = savefile + ".backup"
+        try:
+            shutil.move(savefile, backupfile)
+            self.shell.log.info("Existing file %s backed up to %s" % \
+                                    (savefile, backupfile))
+        except IOError:
+            pass
 
         with open(savefile, "w+") as f:
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
             f.write("\n")
 
+        self.shell.log.info("Configuration saved to %s" % savefile)
+
     def ui_command_restore(self, savefile=default_save_file, clear_existing=False):
+        '''
+        Restores configuration from a file.
+        '''
         from rtslib.root import RTSRoot
         import json
 
@@ -90,6 +108,8 @@ class UIRoot(UINode):
 
         with open(savefile, "r") as f:
             RTSRoot().restore(json.loads(f.read()), clear_existing)
+
+        self.shell.log.info("Configuration restored from %s" % savefile)
 
         self.refresh()
 
