@@ -19,9 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
-from rtslib import FileIOBackstore, IBlockBackstore
+from rtslib import FileIOBackstore, BlockBackstore
 from rtslib import PSCSIBackstore, RDMCPBackstore
-from rtslib import FileIOStorageObject, IBlockStorageObject
+from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import get_block_type, is_disk_partition
 from configshell import ExecutionError
@@ -41,7 +41,7 @@ class UIBackstores(UINode):
         UIPSCSIBackstore(self)
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
-        UIIBlockBackstore(self)
+        UIBlockBackstore(self)
 
 
 class UIBackstore(UINode):
@@ -284,28 +284,28 @@ class UIFileIOBackstore(UIBackstore):
                                  + "file and a size, or just a device path.")
 
 
-class UIIBlockBackstore(UIBackstore):
+class UIBlockBackstore(UIBackstore):
     '''
-    IBlock backstore UI.
+    Block backstore UI.
     '''
     def __init__(self, parent):
         UIBackstore.__init__(self, 'block', parent)
 
     def ui_command_create(self, name, dev):
         '''
-        Creates an IBlock Storage object. I{dev} is the path to the TYPE_DISK
+        Creates an Block Storage object. I{dev} is the path to the TYPE_DISK
         block device to use.
         '''
         self.assert_root()
         self.assert_available_so_name(name)
-        backstore = IBlockBackstore(self.next_hba_index(), mode='create')
+        backstore = BlockBackstore(self.next_hba_index(), mode='create')
         try:
-            so = IBlockStorageObject(backstore, name, dev)
+            so = BlockStorageObject(backstore, name, dev)
         except Exception, exception:
             backstore.delete()
             raise exception
         ui_so = UIStorageObject(so, self)
-        self.shell.log.info("Created iblock storage object %s using %s."
+        self.shell.log.info("Created block storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
 
