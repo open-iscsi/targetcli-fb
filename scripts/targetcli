@@ -18,6 +18,7 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+import sys
 from os import getuid
 from targetcli import UIRoot
 from rtslib import RTSLibError
@@ -56,10 +57,6 @@ def main():
         is_root = False
 
     shell = TargetCLI('~/.targetcli')
-    shell.con.display("targetcli %s (rtslib %s)\n"
-                      "Copyright (c) 2011-2013 by Datera, Inc.\n"
-                      "All rights reserved."
-                      % (targetcli_version, rtslib_version))
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
@@ -69,8 +66,17 @@ def main():
         root_node.refresh()
     except RTSLibError, error:
         shell.con.display(shell.con.render_text(str(error), 'red'))
-    else:
-        shell.run_interactive()
+
+    if len(sys.argv) > 1:
+        shell.run_cmdline(" ".join(sys.argv[1:]))
+        sys.exit(0)
+
+    shell.con.display("targetcli %s (rtslib %s)\n"
+                      "Copyright (c) 2011-2013 by Datera, Inc.\n"
+                      "All rights reserved."
+                      % (targetcli_version, rtslib_version))
+    shell.con.display('')
+    shell.run_interactive()
 
 if __name__ == "__main__":
     main()
