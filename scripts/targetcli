@@ -24,6 +24,7 @@ from os import getuid
 from targetcli import UIRoot
 from rtslib import RTSLibError
 from configshell import ConfigShell
+import sys
 
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
@@ -55,13 +56,6 @@ def main():
         is_root = False
 
     shell = TargetCLI('~/.targetcli')
-    shell.con.epy_write('''
-                        Welcome to the B{targetcli} shell::
-                         Copyright (c) 2011 by RisingTide Systems LLC.\n
-                         For help on commands, type 'help'.
-
-                       ''')
-    shell.con.display('')
     if not is_root:
         shell.con.display('You are not root, disabling privileged commands.')
         shell.con.display('')
@@ -72,8 +66,19 @@ def main():
         root_node.refresh()
     except RTSLibError, error:
         shell.con.display(shell.con.render_text(str(error), 'red'))
-    else:
-        shell.run_interactive()
+
+    if len(sys.argv) > 1:
+        shell.run_cmdline(" ".join(sys.argv[1:]))
+        sys.exit(0)
+
+    shell.con.epy_write('''
+                        Welcome to the B{targetcli} shell::
+                         Copyright (c) 2011 by RisingTide Systems LLC.\n
+                         For help on commands, type 'help'.
+
+                       ''')
+    shell.con.display('')
+    shell.run_interactive()
 
 if __name__ == "__main__":
     main()
