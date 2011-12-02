@@ -289,7 +289,7 @@ class UIIBlockBackstore(UIBackstore):
     IBlock backstore UI.
     '''
     def __init__(self, parent):
-        UIBackstore.__init__(self, 'iblock', parent)
+        UIBackstore.__init__(self, 'block', parent)
 
     def ui_command_create(self, name, dev):
         '''
