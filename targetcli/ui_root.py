@@ -25,6 +25,8 @@ from ui_target import UIFabricModule
 from tcm_dump import tcm_full_backup
 from ui_backstore import UIBackstores
 
+default_save_file = "/etc/target/saveconfig.json"
+
 class UIRoot(UINode):
     '''
     The targetcli hierarchy root node.
@@ -70,24 +72,24 @@ class UIRoot(UINode):
                 self.shell.log.debug("Loading %s." % fabric_module.name)
                 UIFabricModule(fabric_module, self)
 
-    def ui_command_save(self):
+    def ui_command_save(self, savefile=default_save_file):
         from rtslib.root import RTSRoot
         import json
 
         self.assert_root()
 
-        with open("/savecfg.json", "w+") as f:
+        with open(savefile, "w+") as f:
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
             f.write("\n")
 
-    def ui_command_restore(self):
+    def ui_command_restore(self, savefile=default_save_file, clear_existing=False):
         from rtslib.root import RTSRoot
         import json
 
         self.assert_root()
 
-        with open("/savecfg.json", "r") as f:
-            RTSRoot().restore(json.loads(f.read()))
+        with open(savefile, "r") as f:
+            RTSRoot().restore(json.loads(f.read()), clear_existing)
 
         self.refresh()
 
