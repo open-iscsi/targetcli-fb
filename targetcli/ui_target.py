@@ -261,27 +261,6 @@ class UIMultiTPGTarget(UIRTSLibNode):
         B{delete}
         '''
         self.assert_root()
-        if tag is None:
-            tags = [tpg.tag for tpg in self.rtsnode.tpgs]
-            for index in range(1048576):
-                if index not in tags and index > 0:
-                    tag = index
-                    break
-            if tag is None:
-                self.shell.log.error("Cannot find an available TPG Tag.")
-                return
-            else:
-                self.shell.log.info("Selected TPG Tag %d." % tag)
-        else:
-            try:
-                tag = int(tag)
-            except ValueError:
-                self.shell.log.error("The TPG Tag must be an integer value.")
-                return
-            else:
-                if tag < 1:
-                    self.shell.log.error("The TPG Tag must be >0.")
-                    return
 
         tpg = TPG(self.rtsnode, tag, mode='create')
         if self.shell.prefs['auto_enable_tpgt']:
@@ -706,27 +685,6 @@ class UILUNs(UINode):
         B{delete}
         '''
         self.assert_root()
-        if lun is None:
-            luns = [lun.lun for lun in self.tpg.luns]
-            for index in range(1048576):
-                if index not in luns:
-                    lun = index
-                    break
-            if lun is None:
-                self.shell.log.error("Cannot find an available LUN.")
-                return
-            else:
-                self.shell.log.info("Selected LUN %d." % lun)
-        else:
-            try:
-                lun = int(lun)
-            except ValueError:
-                self.shell.log.error("The LUN must be an integer value.")
-                return
-            else:
-                if lun < 0:
-                    self.shell.log.error("The LUN cannot be negative.")
-                    return
 
         add_mapped_luns = \
                 self.ui_eval_param(add_mapped_luns, 'bool',
