@@ -1,3 +1,17 @@
+targetcli-fb
+
+targetcli-fb ("free branch") is a tree that tracks RTS's upstream
+git repo, but with additional patches. Like the upstream version,
+these patches are available under AGPLv3, but sole copyright no longer
+belongs to RTS, since additional patch copyrights are still held by
+their respective authors.
+
+Please use Github facilities for code contributions and bug reports:
+
+https://github.com/agrover/targetcli-fb
+
+-----
+
 # This file is part of targetcli.
 # Copyright (c) 2011 by RisingTide Systems LLC
 #
