@@ -22,7 +22,6 @@ from rtslib import RTSRoot
 from ui_node import UINode
 from socket import gethostname
 from ui_target import UIFabricModule
-from tcm_dump import tcm_full_backup
 from ui_backstore import UIBackstores
 
 default_save_file = "/etc/target/saveconfig.json"
@@ -112,37 +111,6 @@ class UIRoot(UINode):
         self.shell.log.info("Configuration restored from %s" % savefile)
 
         self.refresh()
-
-    def ui_command_saveconfig(self):
-        '''
-        Saves the whole configuration tree to disk so that it will be restored
-        on next boot. Unless you do that, changes are lost accross reboots.
-        '''
-        self.assert_root()
-        self.shell.con.display("WARNING: Saving %s current configuration to "
-                               % gethostname()
-                               + "disk will overwrite your boot settings.")
-        self.shell.con.display("The current target configuration will become "
-                               + "the default boot config.")
-        input = raw_input("Are you sure? Type 'yes': ")
-        if input == "yes":
-            tcm_full_backup(None, None, '1', None)
-        else:
-            self.shell.log.warning("Aborted, configuration left untouched.")
-
-        # append all into single script
-        from glob import iglob
-        import os
-        import shutil
-        sources = iglob(os.path.join("/etc/target", '*_start.sh'))
-        # ensure tcm_start is appended first
-        sources = [x for x in sources if not 'tcm_' in x]
-        sources = [x for x in sources if not 'all_' in x]
-        sources.insert(0, '/etc/target/tcm_start.sh')
-        dest = open('/etc/target/all_start.sh', 'wb')
-        for filename in sources:
-            shutil.copyfileobj(open(filename, 'rb'), dest)
-        dest.close()
 
     def ui_command_version(self):
         '''
