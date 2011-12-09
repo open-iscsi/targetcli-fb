@@ -4,10 +4,10 @@
 .SH DESCRIPTION
 .B targetcli
 is a shell for viewing, editing, and saving the configuration of
-the kernel's target subsystem, also known as TCM/LIO. It enables the
+the kernel's target subsystem, also known as LIO. It enables the
 administrator to assign local storage resources backed by either files,
-volumes, or local SCSI devices, and export them to remote systems via
-network fabrics, such as iSCSI, FCoE, or others.
+volumes, local SCSI devices, or ramdisk, and export them to remote systems via
+network fabrics, such as iSCSI or FCoE, among others.
 .P
 The configuration layout is tree-based, similar to a filesystem, and
 navigated in a similar manner.
@@ -33,7 +33,7 @@ To export a storage resource, 1) define a storage object using
 backstore, then 2) export the object via a network fabric, such as
 iSCSI or FCoE.
 .SS DEFINING A STORAGE OBJECT WITH BACKSTORE
-.B backstores/fileio0 create disk1 /disks/disk1.img 140M
+.B backstores/fileio create disk1 /disks/disk1.img 140M
 .br
 Creates a storage object named
 .I disk1
@@ -44,10 +44,12 @@ supports common size abbreviations like 'M', 'G', and 'T'.
 In addition to the
 .I fileio
 backstore for file-backed volumes, other backstore types include
-.I iblock
+.I block
 for block-device-backed volumes, and
 .I pscsi
-for volumes backed by local SCSI devices. See the built-in help
+for volumes backed by local SCSI devices.
+.I rd_mcp
+backstore creates ram-based storage objects. See the built-in help
 for more details on required parameters.
 .SS EXPORTING A STORAGE OBJECT VIA FCOE
 .B tcm_fc/ create 20:00:00:19:99:a8:34:bc
@@ -123,9 +125,24 @@ argument would be added to enable write-protect.
 .B saveconfig
 .br
 Save the current configuration settings to a file, from which
-settings will be restored if the system is rebooted.
+settings will be restored if the system is rebooted. By default, this
+will save the configuration to
+.IR /etc/target/saveconfig.json .
 .P
-This command must be executed from the configuration root node.
+This command is executed from the configuration root node.
+.P
+.B restoreconfig
+.br
+Restore target configuration from a file, the default is the file
+listed under
+.BR saveconfig .
+This will fail if there is already an established config,
+unless the
+.I clear_existing
+option is set to
+.IR true .
+.P
+This command is executed from the configuration root node.
 .P
 .B exit
 .br
@@ -148,4 +165,6 @@ Written by Jerome Martin <jxm@risingtidesystems.com>.
 .br
 Man page written by Andy Grover <agrover@redhat.com>.
 .SH REPORTING BUGS
-Report bugs to <target-devel@vger.kernel.org>
+Report bugs via <target-devel@vger.kernel.org>
+.br
+or <https://github.com/agrover/targetcli-fb/issues>
