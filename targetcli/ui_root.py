@@ -71,7 +71,7 @@ class UIRoot(UINode):
                 self.shell.log.debug("Loading %s." % fabric_module.name)
                 UIFabricModule(fabric_module, self)
 
-    def ui_command_save(self, savefile=default_save_file):
+    def ui_command_saveconfig(self, savefile=default_save_file):
         '''
         Saves the current configuration to a file so that it can be restored
         on next boot.
@@ -96,7 +96,7 @@ class UIRoot(UINode):
 
         self.shell.log.info("Configuration saved to %s" % savefile)
 
-    def ui_command_restore(self, savefile=default_save_file, clear_existing=False):
+    def ui_command_restoreconfig(self, savefile=default_save_file, clear_existing=False):
         '''
         Restores configuration from a file.
         '''
@@ -109,6 +109,18 @@ class UIRoot(UINode):
             RTSRoot().restore(json.loads(f.read()), clear_existing)
 
         self.shell.log.info("Configuration restored from %s" % savefile)
+
+        self.refresh()
+
+    def ui_command_clearconfig(self, confirm=False):
+        '''
+        Attempts to remove entire configuration of backstores and targets
+        '''
+        self.assert_root()
+
+        RTSRoot().clear_existing(confirm=confirm)
+
+        self.shell.log.info("All configuration cleared")
 
         self.refresh()
 
