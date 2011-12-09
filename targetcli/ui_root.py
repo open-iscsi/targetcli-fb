@@ -17,12 +17,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from os import system
 from rtslib import RTSRoot
 from ui_node import UINode
 from socket import gethostname
 from ui_target import UIFabricModule
 from ui_backstore import UIBackstores
+import json
+import shutil
 
 default_save_file = "/etc/target/saveconfig.json"
 
@@ -76,10 +77,6 @@ class UIRoot(UINode):
         Saves the current configuration to a file so that it can be restored
         on next boot.
         '''
-        from rtslib.root import RTSRoot
-        import json
-        import shutil
-
         self.assert_root()
 
         backupfile = savefile + ".backup"
@@ -100,9 +97,6 @@ class UIRoot(UINode):
         '''
         Restores configuration from a file.
         '''
-        from rtslib.root import RTSRoot
-        import json
-
         self.assert_root()
 
         with open(savefile, "r") as f:
