@@ -131,18 +131,6 @@ class UIRoot(UINode):
         '''
         Displays the targetcli and support libraries versions.
         '''
-        from rtslib import __version__ as rtslib_version
         from targetcli import __version__ as targetcli_version
-        from configshell import __version__ as configshell_version
-        for package, version in dict(targetcli=targetcli_version,
-                                     rtslib=rtslib_version,
-                                     configshell=configshell_version).items():
-            if version == 'GIT_VERSION':
-                self.shell.log.error("Cannot find %s version. The %s package "
-                                     % (package, package)
-                                     + "has probably not been built properly "
-                                     + "from either the git repository or a "
-                                     + "public tarball.")
-            else:
-                self.shell.log.info("Using %s version %s" % (package, version))
+        self.shell.log.info("targetcli version %s" % targetcli_version)
 
