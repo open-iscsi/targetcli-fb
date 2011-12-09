@@ -24,6 +24,7 @@ from ui_target import UIFabricModule
 from ui_backstore import UIBackstores
 import json
 import shutil
+import os
 
 default_save_file = "/etc/target/saveconfig.json"
 
@@ -79,6 +80,8 @@ class UIRoot(UINode):
         '''
         self.assert_root()
 
+        savefile = os.path.expanduser(savefile)
+
         backupfile = savefile + ".backup"
         try:
             shutil.move(savefile, backupfile)
@@ -98,6 +101,12 @@ class UIRoot(UINode):
         Restores configuration from a file.
         '''
         self.assert_root()
+
+        savefile = os.path.expanduser(savefile)
+
+        if not os.path.isfile(savefile):
+            self.shell.log.info("Restore file %s not found" % savefile)
+            return
 
         with open(savefile, "r") as f:
             RTSRoot().restore(json.loads(f.read()), clear_existing)
