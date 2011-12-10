@@ -252,7 +252,7 @@ class UIFileIOBackstore(UIBackstore):
                              % (size, buffered))
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
-                
+
         if size is None and is_dev:
             backstore = FileIOBackstore(self.next_hba_index(), mode='create')
             try:
@@ -264,6 +264,7 @@ class UIFileIOBackstore(UIBackstore):
                 raise exception
             self.shell.log.info("Created fileio %s with size %s."
                                 % (name, size))
+            self.shell.log.info("Note: block backstore preferred for best results.")
             ui_so = UIStorageObject(so, self)
             return self.new_node(ui_so)
         elif size is not None and not is_dev:
