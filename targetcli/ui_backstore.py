@@ -25,6 +25,7 @@ from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import get_block_type, is_disk_partition
 from configshell import ExecutionError
+import os
 
 
 class UIBackstores(UINode):
@@ -250,39 +251,40 @@ class UIFileIOBackstore(UIBackstore):
         self.assert_available_so_name(name)
         self.shell.log.debug("Using params size=%s buffered=%s"
                              % (size, buffered))
+
+        backstore = FileIOBackstore(self.next_hba_index(), mode='create')
+
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
 
-        if size is None and is_dev:
-            backstore = FileIOBackstore(self.next_hba_index(), mode='create')
-            try:
-                so = FileIOStorageObject(
-                    backstore, name, file_or_dev,
-                    buffered_mode=self.prm_buffered(buffered))
-            except Exception, exception:
-                backstore.delete()
-                raise exception
-            self.shell.log.info("Created fileio %s with size %s."
-                                % (name, size))
-            self.shell.log.info("Note: block backstore preferred for best results.")
-            ui_so = UIStorageObject(so, self)
-            return self.new_node(ui_so)
-        elif size is not None and not is_dev:
-            backstore = FileIOBackstore(self.next_hba_index(), mode='create')
-            try:
-                so = FileIOStorageObject(
-                    backstore, name, file_or_dev,
-                    size,
-                    buffered_mode=self.prm_buffered(buffered))
-            except Exception, exception:
-                backstore.delete()
-                raise exception
-            self.shell.log.info("Created fileio %s." % name)
-            ui_so = UIStorageObject(so, self)
-            return self.new_node(ui_so)
+        if is_dev:
+            if size:
+                self.shell.log.info("Block device, size parameter ignored")
+                size = None
+            self.shell.log.info("Note: block backstore preferred for best results")
         else:
-            self.shell.log.error("For fileio, you must either specify both a "
-                                 + "file and a size, or just a device path.")
+            # use given file size only if backing file does not exist
+            if os.path.isfile(file_or_dev):
+                new_size = str(os.path.getsize(file_or_dev))
+                if size:
+                    self.shell.log.info("%s exists, using its size (%s bytes)" +
+                                        " instead" % (file_or_dev, new_size))
+                size = new_size
+
+        try:
+            so = FileIOStorageObject(
+                backstore, name, file_or_dev,
+                size,
+                buffered_mode=self.prm_buffered(buffered))
+        except Exception, exception:
+            backstore.delete()
+            raise exception
+
+        self.shell.log.info("Created fileio %s with size %s"
+                            % (name, size))
+        ui_so = UIStorageObject(so, self)
+
+        return self.new_node(ui_so)
 
 
 class UIBlockBackstore(UIBackstore):
