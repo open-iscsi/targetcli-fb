@@ -294,8 +294,27 @@ class UIFileIOBackstore(UIBackstore):
     def __init__(self, parent):
         UIBackstore.__init__(self, 'fileio', parent)
 
+    def _create_file(self, filename, size, sparse=True):
+        f = open(filename, "w+")
+        try:
+            if sparse:
+                f.seek(size-1)
+                f.write("\0")
+            else:
+                self.shell.log.info("Writing %s bytes" % size)
+                while size > 0:
+                    write_size = min(size, 1024)
+                    f.write("\0" * write_size)
+                    size -= write_size
+        except IOError:
+            f.close()
+            os.remove(filename)
+            raise ExecutionError("Could not expand file to size")
+        f.close()
+
     def ui_command_create(self, name, file_or_dev, size=None,
-                          generate_wwn=None, buffered=None):
+                          generate_wwn=None, buffered=None, sparse=None):
+
         '''
         Creates a FileIO storage object. If I{file_or_dev} is a path to a
         regular file to be used as backend, then the I{size} parameter is
@@ -306,7 +325,10 @@ class UIFileIOBackstore(UIBackstore):
         specifying whether or not we should generate a T10 wwn Serial for the
         unit (by default, yes).  The I{buffered} parameter is a boolean stating
         whether or not to enable buffered mode. It is disabled by default
-        (synchronous mode).
+        (synchronous mode). The I{sparse} parameter is only applicable when
+        creating a new backing file. It is a boolean stating if the
+        created file should be created as a sparse file (the default), or
+        fully initialized.
 
         SIZE SYNTAX
         ===========
@@ -321,7 +343,13 @@ class UIFileIOBackstore(UIBackstore):
         self.assert_root()
         self.assert_available_so_name(name)
         self.shell.log.debug("Using params size=%s generate_wwn=%s buffered=%s"
-                             % (size, generate_wwn, buffered))
+                             " sparse=%s"
+                             % (size, generate_wwn, buffered, sparse))
+
+        sparse = self.ui_eval_param(sparse, 'bool', True)
+
+        backstore = FileIOBackstore(self.next_hba_index(), mode='create')
+
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
 
@@ -367,16 +395,7 @@ class UIFileIOBackstore(UIBackstore):
                 if not size:
                     raise ExecutionError("Attempting to create file for new" +
                                          " fileio backstore, need a size")
-
-                f = open(file_or_dev, "w+")
-                try:
-                    f.seek(human_to_bytes(size)-1)
-                    f.write('\0')
-                except IOError:
-                    f.close()
-                    os.remove(file_or_dev)
-                    raise ExecutionError("Could not expand file to size")
-                f.close()
+                self._create_file(file_or_dev, human_to_bytes(size), sparse)
 
 
 class UIIBlockBackstore(UIBackstore):
