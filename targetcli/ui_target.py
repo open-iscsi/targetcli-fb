@@ -812,9 +812,9 @@ class UILUN(UIRTSLibNode):
                 path = "ramdisk"
             else:
                 path = storage_object.udev_path
-                description = "%s/%s (%s)" % (backstore.plugin,
-                                              storage_object.name,
-                                              path)
+            description = "%s/%s (%s)" % (backstore.plugin,
+                                          storage_object.name,
+                                          path)
 
         return (description, is_healthy)
 
