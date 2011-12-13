@@ -23,7 +23,8 @@ from rtslib import FileIOBackstore, BlockBackstore
 from rtslib import PSCSIBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
-from rtslib.utils import get_block_type, is_disk_partition, human_to_bytes
+from rtslib.utils import (get_block_type, is_disk_partition,
+                          human_to_bytes, bytes_to_human)
 from configshell import ExecutionError
 import os
 
@@ -381,11 +382,13 @@ class UIStorageObject(UIRTSLibNode):
         if legacy:
             errors.append("LEGACY: " + ", ".join(legacy))
 
+        size = bytes_to_human(getattr(so, "size", 0))
+
         if errors:
             msg = ", ".join(errors)
             if path:
                 msg += " (%s %s)" % (path, so.status)
             return (msg, False)
         else:
-            return ("%s %s" % (path, so.status), True)
+            return ("%s %s%s" % (path, size, so.status), True)
 
