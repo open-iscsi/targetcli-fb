@@ -21,6 +21,7 @@ from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
 from rtslib import Target, TPG, LUN
+from configshell import ExecutionError
 
 class UIFabricModule(UIRTSLibNode):
     '''
@@ -853,32 +854,20 @@ class UIPortals(UINode):
         B{delete}
         '''
         self.assert_root()
-        if ip_port is None:
-            # FIXME: Add a specfile parameter to determine that
-            ip_port = 3260
+
+        # FIXME: Add a specfile parameter to determine default port
+        ip_port = self.ui_eval_param(ip_port, 'number', 3260)
+        ip_address = self.ui_eval_param(ip_address, 'string', "0.0.0.0")
+
+        if ip_address not in utils.list_eth_ips() and ip_address != "0.0.0.0":
+            raise ExecutionError("Cannot bind to address: %s" % ip_address)
+
+        if ip_port == 3260:
             self.shell.log.info("Using default IP port %d" % ip_port)
-        if ip_address is None:
-            if not ip_address:
-                ip_address = utils.get_main_ip()
-                if ip_address:
-                    self.shell.log.info("Automatically selected IP address %s."
-                                        % ip_address)
-                else:
-                    self.shell.log.error("Cannot find a usable IP address to "
-                                         + "create the Network Portal.")
-                    return
-        elif ip_address not in utils.list_eth_ips():
-            self.shell.log.error("IP address does not exist: %s" % ip_address)
-            return
+        if ip_address == "0.0.0.0":
+            self.shell.log.info("Binding to INADDR_ANY (0.0.0.0)")
 
-        try:
-            ip_port = int(ip_port)
-        except ValueError:
-            self.shell.log.error("The ip_port must be an integer value.")
-            return
-
-        portal = NetworkPortal(self.tpg, ip_address,
-                               ip_port, mode='create')
+        portal = NetworkPortal(self.tpg, ip_address, ip_port, mode='create')
         self.shell.log.info("Successfully created network portal %s:%d."
                             % (ip_address, ip_port))
         ui_portal = UIPortal(portal, self)
