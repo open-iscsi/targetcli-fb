@@ -98,7 +98,7 @@ class UIBackstore(UINode):
         else:
             hba = child.rtsnode.backstore
             child.rtsnode.delete()
-            if not hba.storage_objects:
+            if not list(hba.storage_objects):
                 hba.delete()
             self.remove_child(child)
             self.shell.log.info("Deleted storage object %s." % name)
@@ -376,7 +376,7 @@ class UIStorageObject(UIRTSLibNode):
         legacy = []
         if self.rtsnode.name != self.name:
             legacy.append("ADDED SUFFIX")
-        if len(self.rtsnode.backstore.storage_objects) > 1:
+        if len(list(self.rtsnode.backstore.storage_objects)) > 1:
             legacy.append("SHARED HBA")
 
         if legacy:
