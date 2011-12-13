@@ -115,11 +115,13 @@ class UIRoot(UINode):
 
         self.refresh()
 
-    def ui_command_clearconfig(self, confirm=False):
+    def ui_command_clearconfig(self, confirm=None):
         '''
-        Attempts to remove entire configuration of backstores and targets
+        Removes entire configuration of backstores and targets
         '''
         self.assert_root()
+
+        confirm = self.ui_eval_param(confirm, 'bool', False)
 
         RTSRoot().clear_existing(confirm=confirm)
 
