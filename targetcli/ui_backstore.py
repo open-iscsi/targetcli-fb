@@ -23,7 +23,9 @@ from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, IBlockStorageObject
 from rtslib import PSCSIStorageObject, RDDRStorageObject, RDMCPStorageObject
+from rtslib.utils import convert_human_to_bytes
 from rtslib.utils import get_block_type, is_disk_partition
+
 from configshell import ExecutionError
 
 def dedup_so_name(storage_object):
@@ -353,8 +355,28 @@ class UIFileIOBackstore(UIBackstore):
             ui_so = UIStorageObject(so, self)
             return self.new_node(ui_so)
         else:
-            self.shell.log.error("For fileio, you must either specify both a "
-                                 + "file and a size, or just a device path.")
+            # use given file size only if backing file does not exist
+            if os.path.isfile(file_or_dev):
+                new_size = str(os.path.getsize(file_or_dev))
+                if size:
+                    self.shell.log.info("%s exists, using its size (%s bytes) instead" 
+                                        % (file_or_dev, new_size))
+                size = new_size
+            else:
+                # create file and extend to given file size
+                if not size:
+                    raise ExecutionError("Attempting to create file for new" +
+                                         " fileio backstore, need a size")
+
+                f = open(file_or_dev, "w+")
+                try:
+                    f.seek(human_to_bytes(size)-1)
+                    f.write('\0')
+                except IOError:
+                    f.close()
+                    os.remove(file_or_dev)
+                    raise ExecutionError("Could not expand file to size")
+                f.close()
 
 
 class UIIBlockBackstore(UIBackstore):
