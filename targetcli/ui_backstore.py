@@ -23,9 +23,8 @@ from rtslib import FileIOBackstore, IBlockBackstore
 from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, IBlockStorageObject
 from rtslib import PSCSIStorageObject, RDDRStorageObject, RDMCPStorageObject
-from rtslib.utils import convert_human_to_bytes
 from rtslib.utils import get_block_type, is_disk_partition
-
+from rtslib.utils import convert_human_to_bytes, convert_bytes_to_human
 from configshell import ExecutionError
 
 def dedup_so_name(storage_object):
@@ -365,7 +364,8 @@ class UIFileIOBackstore(UIBackstore):
                 raise exception
             self.shell.log.info("Created fileio %s with size %s."
                                 % (name, size))
-            self.shell.log.info("Note: block backstore preferred for best results.")
+            self.shell.log.info("Note: block backstore preferred for "
+                                " best results.")
             ui_so = UIStorageObject(so, self)
             return self.new_node(ui_so)
         elif size is not None and not is_dev:
@@ -387,7 +387,8 @@ class UIFileIOBackstore(UIBackstore):
             if os.path.isfile(file_or_dev):
                 new_size = str(os.path.getsize(file_or_dev))
                 if size:
-                    self.shell.log.info("%s exists, using its size (%s bytes) instead" 
+                    self.shell.log.info("%s exists, using its size (%s bytes)"
+                                        " instead"
                                         % (file_or_dev, new_size))
                 size = new_size
             else:
@@ -395,7 +396,8 @@ class UIFileIOBackstore(UIBackstore):
                 if not size:
                     raise ExecutionError("Attempting to create file for new" +
                                          " fileio backstore, need a size")
-                self._create_file(file_or_dev, human_to_bytes(size), sparse)
+                self._create_file(file_or_dev, convert_human_to_bytes(size),
+                                  sparse)
 
 
 class UIIBlockBackstore(UIBackstore):
@@ -465,11 +467,13 @@ class UIStorageObject(UIRTSLibNode):
         if legacy:
             errors.append("LEGACY: " + ", ".join(legacy))
 
+        size = convert_bytes_to_human(getattr(so, "size", 0))
+
         if errors:
             msg = ", ".join(errors)
             if path:
                 msg += " (%s %s)" % (path, so.status)
             return (msg, False)
         else:
-            return ("%s %s" % (path, so.status), True)
+            return ("%s %s%s" % (path, size, so.status), True)
 
