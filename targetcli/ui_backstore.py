@@ -23,7 +23,7 @@ from rtslib import FileIOBackstore, BlockBackstore
 from rtslib import PSCSIBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
-from rtslib.utils import get_block_type, is_disk_partition
+from rtslib.utils import get_block_type, is_disk_partition, human_to_bytes
 from configshell import ExecutionError
 import os
 
@@ -267,9 +267,24 @@ class UIFileIOBackstore(UIBackstore):
             if os.path.isfile(file_or_dev):
                 new_size = str(os.path.getsize(file_or_dev))
                 if size:
-                    self.shell.log.info("%s exists, using its size (%s bytes)" +
-                                        " instead" % (file_or_dev, new_size))
+                    self.shell.log.info("%s exists, using its size (%s bytes) instead" 
+                                        % (file_or_dev, new_size))
                 size = new_size
+            else:
+                # create file and extend to given file size
+                if not size:
+                    raise ExecutionError("Attempting to create file for new" +
+                                         " fileio backstore, need a size")
+
+                f = open(file_or_dev, "w+")
+                try:
+                    f.seek(human_to_bytes(size)-1)
+                    f.write('\0')
+                except IOError:
+                    f.close()
+                    os.remove(file_or_dev)
+                    raise ExecutionError("Could not expand file to size")
+                f.close()
 
         try:
             so = FileIOStorageObject(
