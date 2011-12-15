@@ -516,51 +516,7 @@ class UINodeACL(UIRTSLibNode):
     def __init__(self, node_acl, parent):
         UIRTSLibNode.__init__(self, node_acl.node_wwn, node_acl, parent)
         self.cfs_cwd = node_acl.path
-
-        if self.rtsnode.has_feature('acls_auth'):
-            for parameter in ['userid', 'password',
-                              'mutual_userid', 'mutual_password']:
-                self.define_config_group_param('auth', parameter, 'string')
         self.refresh()
-
-    def ui_getgroup_auth(self, auth_attr):
-        '''
-        This is the backend method for getting auths attributes.
-        @param auth_attr: The auth attribute to get the value of.
-        @type auth_attr: str
-        @return: The auth attribute's value
-        @rtype: str
-        '''
-        value = None
-        if auth_attr == 'password':
-            value = self.rtsnode.chap_password
-        elif auth_attr == 'userid':
-            value = self.rtsnode.chap_userid
-        elif auth_attr == 'mutual_password':
-            value = self.rtsnode.chap_mutual_password
-        elif auth_attr == 'mutual_userid':
-            value = self.rtsnode.chap_mutual_userid
-        return value
-
-    def ui_setgroup_auth(self, auth_attr, value):
-        '''
-        This is the backend method for setting auths attributes.
-        @param auth_attr: The auth attribute to set the value of.
-        @type auth_attr: str
-        @param value: The auth's value
-        @type value: str
-        '''
-        self.assert_root()
-        if value is None:
-            value = ''
-        if auth_attr == 'password':
-            self.rtsnode.chap_password = value
-        elif auth_attr == 'userid':
-            self.rtsnode.chap_userid = value
-        elif auth_attr == 'mutual_password':
-            self.rtsnode.chap_mutual_password = value
-        elif auth_attr == 'mutual_userid':
-            self.rtsnode.chap_mutual_userid = value
 
     def refresh(self):
         self._children = set([])

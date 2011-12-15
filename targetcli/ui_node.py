@@ -142,6 +142,15 @@ class UIRTSLibNode(UINode):
             self.define_config_group_param(
                 'attribute', attribute, 'string', description, writable)
 
+        # If the rtsnode has auth_attrs, use them
+        auth_attrs = self.rtsnode.list_auth_attrs()
+        auth_attrs_ro = self.rtsnode.list_auth_attrs(writable=False)
+        for auth_attr in auth_attrs:
+            writable = auth_attr not in auth_attrs_ro
+            description = "The %s auth_attr." % auth_attr
+            self.define_config_group_param(
+                'auth', auth_attr, 'string', description, writable)
+
     def execute_command(self, command, pparams=[], kparams={}):
         '''
         Overrides the parent's execute_command() to check if the underlying
@@ -197,5 +206,26 @@ class UIRTSLibNode(UINode):
         '''
         self.assert_root()
         self.rtsnode.set_parameter(parameter, value)
+
+    def ui_getgroup_auth(self, auth_attr):
+        '''
+        This is the backend method for getting auth_attrs.
+        @param auth_attr: The auth_attr to get the value of.
+        @type auth_attr: str
+        @return: The auth_attr's value
+        @rtype: arbitrary
+        '''
+        return self.rtsnode.get_auth_attr(auth_attr)
+
+    def ui_setgroup_auth(self, auth_attr, value):
+        '''
+        This is the backend method for setting auth_attrs.
+        @param auth_attr: The auth_attr to set the value of.
+        @type auth_attr: str
+        @param value: The auth_attr's value
+        @type value: arbitrary
+        '''
+        self.assert_root()
+        self.rtsnode.set_auth_attr(auth_attr, value)
 
 
