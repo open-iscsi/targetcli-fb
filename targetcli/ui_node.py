@@ -100,7 +100,7 @@ class UINode(ConfigNode):
             result = ConfigNode.execute_command(self, command,
                                                 pparams, kparams)
         except RTSLibError, msg:
-            self.shell.log.error(msg)
+            self.shell.log.error(msg.message)
         else:
             self.shell.log.debug("Command %s succeeded." % command)
             return result
