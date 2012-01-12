@@ -109,9 +109,16 @@ class UIRoot(UINode):
             return
 
         with open(savefile, "r") as f:
-            RTSRoot().restore(json.loads(f.read()), clear_existing)
+            try:
+                errors = RTSRoot().restore(json.loads(f.read()), clear_existing)
+            except ValueError:
+                self.shell.log.error("Error parsing savefile: %s" % savefile)
+                return
 
-        self.shell.log.info("Configuration restored from %s" % savefile)
+        if errors:
+            self.shell.log.error("Configuration restored, %s recoverable errors" % errors)
+        else:
+            self.shell.log.info("Configuration restored from %s" % savefile)
 
         self.refresh()
 
