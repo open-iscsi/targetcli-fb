@@ -702,22 +702,26 @@ class UILUNs(UINode):
 
         if add_mapped_luns:
             for acl in self.tpg.node_acls:
-                mapped_lun = lun
+                if lun:
+                    mapped_lun = lun
+                else:
+                    mapped_lun = 0
                 existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
                 if mapped_lun in existing_mluns:
-                    tentative_mlun = 0
-                    while mapped_lun == lun:
-                        if tentative_mlun not in existing_mluns:
-                            mapped_lun = tentative_mlun
-                            self.shell.log.warning(
-                                "Mapped LUN %d already " % lun
-                                + "exists in ACL %s, using %d instead."
-                                % (acl.node_wwn, mapped_lun))
-                        else:
-                            tentative_mlun += 1
-                mlun = MappedLUN(acl, mapped_lun, lun, write_protect=False)
-                self.shell.log.info("Created mapped LUN %d in node ACL %s"
-                                    % (mapped_lun, acl.node_wwn))
+                    mapped_lun = None
+                    for possible_mlun in xrange(LUN.MAX_LUN):
+                        if possible_mlun not in existing_mluns:
+                            mapped_lun = possible_mlun
+                            break
+
+                if mapped_lun == None:
+                    self.shell.log.warning(
+                        "Cannot map new lun %s into ACL %s"
+                        % (lun_object.lun, acl.node_wwn))
+                else:
+                    mlun = MappedLUN(acl, mapped_lun, lun_object, write_protect=False)
+                    self.shell.log.info("Created LUN %d->%d mapping in node ACL %s"
+                                        % (mlun.tpg_lun.lun, mlun.mapped_lun, acl.node_wwn))
             self.parent.refresh()
 
         return self.new_node(ui_lun)
