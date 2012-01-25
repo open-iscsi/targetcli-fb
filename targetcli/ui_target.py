@@ -764,7 +764,13 @@ class UILUNs(UINode):
         B{create}
         '''
         self.assert_root()
-        lun_object = LUN(self.tpg, lun)
+        if lun.lower().startswith("lun"):
+            lun = lun[3:]
+        try:
+            lun = int(lun)
+            lun_object = LUN(self.tpg, lun)
+        except:
+            raise RTSLibError("Invalid LUN")
         lun_object.delete()
         self.shell.log.info("Successfully deleted LUN %s." % lun)
         # Refresh the TPG as we need to also refresh acls MappedLUNs
