@@ -639,7 +639,9 @@ class UIMappedLUN(UIRTSLibNode):
                 access_mode = 'ro'
             else:
                 access_mode = 'rw'
-            description = "lun%d (%s)" % (tpg_lun.lun, access_mode)
+            description = "lun%d %s/%s (%s)" \
+            % (tpg_lun.lun, tpg_lun.storage_object.backstore.plugin,
+               tpg_lun.storage_object.name, access_mode)
 
         return (description, is_healthy)
 
