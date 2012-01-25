@@ -266,7 +266,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         tpg = TPG(self.rtsnode, tag, mode='create')
         if self.shell.prefs['auto_enable_tpgt']:
             tpg.enable = True
-        self.shell.log.info("Successfully created TPG %s." % tpg.tag)
+        self.shell.log.info("Created TPG %s." % tpg.tag)
         ui_tpg = UITPG(tpg, self)
         return self.new_node(ui_tpg)
 
@@ -438,7 +438,7 @@ class UINodeACLs(UINode):
             self.shell.log.error(msg)
             return
         else:
-            self.shell.log.info("Successfully created Node ACL for %s"
+            self.shell.log.info("Created Node ACL for %s"
                                 % node_acl.node_wwn)
             ui_node_acl = UINodeACL(node_acl, self)
 
@@ -461,7 +461,7 @@ class UINodeACLs(UINode):
         self.assert_root()
         node_acl = NodeACL(self.tpg, wwn, mode='lookup')
         node_acl.delete()
-        self.shell.log.info("Successfully deleted Node ACL %s." % wwn)
+        self.shell.log.info("Deleted Node ACL %s." % wwn)
         self.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
@@ -699,7 +699,7 @@ class UILUNs(UINode):
             self.shell.log.error("Wrong storage object path.")
 
         lun_object = LUN(self.tpg, lun, storage_object)
-        self.shell.log.info("Successfully created LUN %s." % lun_object.lun)
+        self.shell.log.info("Created LUN %s." % lun_object.lun)
         ui_lun = UILUN(lun_object, self)
 
         if add_mapped_luns:
@@ -772,7 +772,7 @@ class UILUNs(UINode):
         except:
             raise RTSLibError("Invalid LUN")
         lun_object.delete()
-        self.shell.log.info("Successfully deleted LUN %s." % lun)
+        self.shell.log.info("Deleted LUN %s." % lun)
         # Refresh the TPG as we need to also refresh acls MappedLUNs
         self.parent.refresh()
 
@@ -880,7 +880,7 @@ class UIPortals(UINode):
             self.shell.log.info("Binding to INADDR_ANY (0.0.0.0)")
 
         portal = NetworkPortal(self.tpg, ip_address, ip_port, mode='create')
-        self.shell.log.info("Successfully created network portal %s:%d."
+        self.shell.log.info("Created network portal %s:%d."
                             % (ip_address, ip_port))
         ui_portal = UIPortal(portal, self)
         return self.new_node(ui_portal)
