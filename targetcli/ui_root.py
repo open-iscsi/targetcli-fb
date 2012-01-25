@@ -25,6 +25,7 @@ from ui_backstore import UIBackstores
 import json
 import shutil
 import os
+import stat
 
 default_save_file = "/etc/target/saveconfig.json"
 
@@ -91,6 +92,7 @@ class UIRoot(UINode):
             pass
 
         with open(savefile, "w+") as f:
+            os.fchmod(f.fileno(), stat.S_IRUSR | stat.S_IWUSR)
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
             f.write("\n")
 
