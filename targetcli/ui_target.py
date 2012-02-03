@@ -349,12 +349,12 @@ class UITPG(UIRTSLibNode):
 
     def summary(self):
         if self.rtsnode.has_feature('nexus'):
-            description = "%s" % self.rtsnode.nexus
+            description = ("%s" % self.rtsnode.nexus, True)
         elif self.rtsnode.enable:
-            description = "enabled"
+            description = ("enabled", True)
         else:
-            description = "disabled"
-        return (description, True)
+            description = ("disabled", False)
+        return description
 
     def ui_command_enable(self):
         '''
