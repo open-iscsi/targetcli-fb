@@ -28,7 +28,9 @@ class UIFabricModule(UIRTSLibNode):
     A fabric module UI.
     '''
     def __init__(self, fabric_module, parent):
-        UIRTSLibNode.__init__(self, fabric_module.name, fabric_module, parent)
+        super(UIFabricModule, self).__init__(fabric_module.name,
+                                             fabric_module, parent,
+                                             late_params=True)
         self.cfs_cwd = fabric_module.path
         self.refresh()
         if self.rtsnode.has_feature('discovery_auth'):
@@ -38,6 +40,59 @@ class UIFabricModule(UIRTSLibNode):
                 self.define_config_group_param('discovery_auth',
                                                param, 'string')
         self.refresh()
+
+    # Support late params
+    #
+    # By default the base class will call list_parameters and list_attributes
+    # in init. This stops us from being able to lazy-load fabric modules.
+    # We declare we support "late_params" to stop this, and then
+    # this code overrides the base class methods that involve enumerating
+    # this stuff, so we don't need to call list_parameters/attrs (which
+    # would cause the module to load) until the ui is actually asking for
+    # them from us.
+    # Currently fabricmodules don't have these anyways, this is all a CYA thing.
+    def list_config_groups(self):
+        groups = super(UIFabricModule, self).list_config_groups()
+        if len(self.rtsnode.list_parameters()):
+            groups.append('parameter')
+        if len(self.rtsnode.list_attributes()):
+            groups.append('attribute')
+        return groups
+
+    # Support late params (see above)
+    def list_group_params(self, group, writable=None):
+        if group not in ("parameter", "attribute"):
+            return super(UIFabricModule, self).list_group_params(group,
+                                                                 writable)
+
+        params_func = getattr(self.rtsnode, "list_%ss" % group)
+        params = params_func()
+        params_ro = params_func(writable=False)
+
+        ret_list = []
+        for param in params:
+            p_writable = param not in params_ro
+            if writable is not None and p_writable != writable:
+                continue
+            ret_list.append(param)
+
+        ret_list.sort()
+        return ret_list
+
+    # Support late params (see above)
+    def get_group_param(self, group, param):
+        if group not in ("parameter", "attribute"):
+            return super(UIFabricModule, self).get_group_param(group, param)
+
+        if param not in self.list_group_params(group):
+            raise ValueError("Not such parameter %s in configuration group %s"
+                             % (param, group))
+
+        description = "The %s %s." % (param, group)
+        writable = param in self.list_group_params(group, writable=True)
+
+        return dict(name=param, group=group, type="string",
+                    description=description, writable=writable)
 
     def ui_getgroup_discovery_auth(self, auth_attr):
         '''

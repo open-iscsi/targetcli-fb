@@ -112,13 +112,16 @@ class UIRTSLibNode(UINode):
     '''
     A subclass of UINode for nodes with an underlying RTSLib object.
     '''
-    def __init__(self, name, rtslib_object, parent):
+    def __init__(self, name, rtslib_object, parent, late_params=False):
         '''
         Call from the class that inherits this, with the rtslib object that
         should be checked upon.
         '''
         UINode.__init__(self, name, parent)
         self.rtsnode = rtslib_object
+
+        if late_params:
+            return
 
         # If the rtsnode has parameters, use them
         parameters = self.rtsnode.list_parameters()

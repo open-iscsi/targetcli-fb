@@ -49,24 +49,7 @@ class UIRoot(UINode):
         if not self.loaded:
             self.shell.log.debug("Refreshing in non-loaded mode.")
             for fabric_module in RTSRoot().fabric_modules:
-                if fabric_module:
-                    self.shell.log.debug("Using %s fabric module." \
-                                        % fabric_module.name)
-                    UIFabricModule(fabric_module, self)
-                elif self.as_root:
-                    try:
-                        for step in fabric_module.load(yield_steps=True):
-                            (action, taken, desc) = step
-                            if taken:
-                                self.shell.log.info(desc)
-                        self.shell.log.info("Done loading %s fabric module." \
-                                            % fabric_module.name)
-                    except Exception, msg:
-                        self.shell.log.debug("Can't load fabric module %s."
-                                               % fabric_module.name)
-                        self.shell.log.debug(msg)
-                    else:
-                        UIFabricModule(fabric_module, self)
+                UIFabricModule(fabric_module, self)
             self.loaded = True
         else:
             self.shell.log.debug("Refreshing in loaded mode.")
