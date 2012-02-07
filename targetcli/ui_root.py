@@ -34,7 +34,6 @@ class UIRoot(UINode):
     The targetcli hierarchy root node.
     '''
     def __init__(self, shell, as_root=False):
-        self.loaded = False
         UINode.__init__(self, '/', shell=shell)
         self.as_root = as_root
 
@@ -46,16 +45,8 @@ class UIRoot(UINode):
 
         UIBackstores(self)
 
-        if not self.loaded:
-            self.shell.log.debug("Refreshing in non-loaded mode.")
-            for fabric_module in RTSRoot().fabric_modules:
-                UIFabricModule(fabric_module, self)
-            self.loaded = True
-        else:
-            self.shell.log.debug("Refreshing in loaded mode.")
-            for fabric_module in RTSRoot().loaded_fabric_modules:
-                self.shell.log.debug("Loading %s." % fabric_module.name)
-                UIFabricModule(fabric_module, self)
+        for fabric_module in RTSRoot().fabric_modules:
+            UIFabricModule(fabric_module, self)
 
     def ui_command_saveconfig(self, savefile=default_save_file):
         '''
