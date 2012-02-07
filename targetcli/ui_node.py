@@ -206,14 +206,16 @@ class UIRTSLibNode(UINode):
         Overrides the parent's execute_command() to check if the underlying
         RTSLib object still exists before returning.
         '''
-        if not self.rtsnode.exists:
+        try:
+            self.rtsnode._check_self()
+        except RTSLibError:
             self.shell.log.error("The underlying rtslib object for "
                                  + "%s does not exist." % self.path)
             root = self.get_root()
             root.refresh()
             return root
-        else:
-            return UINode.execute_command(self, command, pparams, kparams)
+
+        return UINode.execute_command(self, command, pparams, kparams)
 
     def ui_getgroup_attribute(self, attribute):
         '''
