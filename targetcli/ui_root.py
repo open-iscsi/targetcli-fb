@@ -61,7 +61,7 @@ class UIRoot(UINode):
         try:
             shutil.move(savefile, backupfile)
             self.shell.log.info("Existing file %s backed up to %s" % \
-                                    (savefile, backupfile))
+                                    (savefile, backupfile.split('/')[-1]))
         except IOError:
             pass
 
