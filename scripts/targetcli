@@ -44,6 +44,7 @@ class TargetCLI(ConfigShell):
                      'auto_enable_tpgt': True,
                      'auto_add_mapped_luns': True,
                      'auto_cd_after_create': True,
+                     'auto_save_on_exit': True,
                     }
 
 def main():
@@ -79,6 +80,10 @@ def main():
                        ''')
     shell.con.display('')
     shell.run_interactive()
+    if shell.prefs['auto_save_on_exit']:
+        shell.log.info("Global pref auto_save_on_exit=true")
+        root_node.ui_command_saveconfig()
+
 
 if __name__ == "__main__":
     main()

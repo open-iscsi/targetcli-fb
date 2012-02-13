@@ -37,6 +37,9 @@ class UINode(ConfigNode):
         self.define_config_group_param(
             'global', 'auto_cd_after_create', 'bool',
             'If true, changes current path to newly created objects.')
+        self.define_config_group_param(
+            'global', 'auto_save_on_exit', 'bool',
+            'If true, saves configuration on exit.')
 
     def assert_root(self):
         '''
