@@ -6,8 +6,8 @@
 is a shell for viewing, editing, and saving the configuration of
 the kernel's target subsystem, also known as TCM/LIO. It enables the
 administrator to assign local storage resources backed by either files,
-volumes, or local SCSI devices, and export them to remote systems via
-network fabrics, such as iSCSI, FCoE, or others.
+volumes, local SCSI devices, or ramdisk, and export them to remote systems via
+network fabrics, such as iSCSI or FCoE.
 .P
 The configuration layout is tree-based, similar to a filesystem, and
 navigated in a similar manner.
@@ -16,24 +16,38 @@ Invoke
 .B targetcli
 as root to enter the configuration shell.  Use
 .B ls
-to list nodes below the current path. Configuration changes are made
-immediately. To retain changes on reboot, use
-.BR saveconfig .
+to list nodes below the current path.
 Moving
 around the tree is accomplished by the
 .B cd
 command, or by entering
-the new location directly. Use
+the new location directly. Objects are created using
+.BR create ,
+removed using 
+.BR delete .
+Use
 .B "help <cmd>"
 for additional usage
-information. Tab-completion is enabled for commands and command
+information. Tab-completion is available for commands and command
 arguments.
+.P
+Configuration changes in
+targetcli are made immediately to the underlying kernel target
+configuration. Settings will not be retained across reboot unless
+.B saveconfig
+is either explicitly called, or implicitly by exiting the shell with
+the global preference
+.B auto_save_on_exit
+set to
+.BR true ,
+the default.
+.P
 .SH EXAMPLES
 To export a storage resource, 1) define a storage object using
-backstore, then 2) export the object via a network fabric, such as
+a backstore, then 2) export the object via a network fabric, such as
 iSCSI or FCoE.
-.SS DEFINING A STORAGE OBJECT WITH BACKSTORE
-.B backstores/fileio0 create disk1 /disks/disk1.img 140M
+.SS DEFINING A STORAGE OBJECT WITHIN A BACKSTORE
+.B backstores/fileio create disk1 /disks/disk1.img 140M
 .br
 Creates a storage object named
 .I disk1
@@ -47,8 +61,10 @@ backstore for file-backed volumes, other backstore types include
 .I iblock
 for block-device-backed volumes, and
 .I pscsi
-for volumes backed by local SCSI devices. See the built-in help
-for more details on required parameters.
+for volumes backed by local SCSI devices.
+.I rd_mcp
+backstore creates ram-based storage objects. See the built-in help
+for more details on the required parameters for each backstore type.
 .SS EXPORTING A STORAGE OBJECT VIA FCOE
 .B tcm_fc/ create 20:00:00:19:99:a8:34:bc
 .br
@@ -99,11 +115,11 @@ target.)
 .P
 .B portals/ create
 .br
-Add a portal, i.e. an address and TCP port via which the target can be
+Add a portal, i.e. an IP address and TCP port via which the target can be
 contacted by initiators. Sane defaults are used if these are not
 specified.
 .P
-.B luns/ create /backstores/fileio0/disk1
+.B luns/ create /backstores/fileio/disk1
 .br
 Create a new LUN in the TPG, attached to the storage object that has
 previously been defined. The storage object now shows up under the
@@ -118,8 +134,16 @@ Creates an ACL (access control list) for the given iSCSI initiator.
 Gives the initiator access to the first exported LUN (lun0), which the
 initiator will see as lun2. The default is to give the initiator
 read/write access; if read-only access was desired, an additional "1"
-argument would be added to enable write-protect.
-.SS OTHER COMMANDS
+argument would be added to enable write-protect. (Note: if global
+setting 
+.B auto_add_mapped_luns
+is true, this step is not necessary.)
+.P
+.B acls/iqn.1994-05.com.redhat:4321576890 set authentication=0
+.br
+Purely for example, make the LUNs in the ACL accessible without
+authentication. See below for more information on configuring authentication.
+.SH OTHER COMMANDS
 .B saveconfig
 .br
 Save the current configuration settings to a file, from which
@@ -127,18 +151,69 @@ settings will be restored if the system is rebooted.
 .P
 This command must be executed from the configuration root node.
 .P
+.B clearconfig
+.br
+Clears the entire current local configuration. The parameter
+.I confirm=true
+must also be given, as a precaution.
+.P
+This command is executed from the configuration root node.
+.P
 .B exit
 .br
 Leave the configuration shell.
-.SS SETTINGS
-.B set attribute authentication=0
+.SH SETTINGS GROUPS
+Settings are broken into groups. Individual settings are accessed by
+.B "get <group> <setting>"
+and
+.BR "set <group> <setting>=<value>" ,
+and the settings of an entire group may be displayed by
+.BR "get <group>" .
+All except for
+.I global
+are associated with a particular configuration node.
+.SS GLOBAL
+Shell-related user-specific settings are in
+.IR global ,
+and are visible from all configuration nodes. They are mostly shell
+display options, but some starting with
+.B auto_
+affect shell behavior and may merit customization. Global settings
+are saved to ~/.targetcli upon exit, unlike other groups.
+.SS BACKSTORE-SPECIFIC
+.B attribute
 .br
-Disable CHAP authentication.
+/backstore/<type>/<name> configuration node. Contains values relating
+to the backstore and storage object.
 .P
-.B set global auto_cd_after_create=false
+.SS ISCSI-SPECIFIC
+.B discovery_auth
 .br
-Do not change into the configuration node of a newly created
-object. The default is 'true'.
+/iscsi configuration node. Set the normal and mutual authentication
+userid and password for discovery sessions, as well as enabling or
+disabling it. Disabled by default.
+.P
+.B parameter
+.br
+/iscsi/<target_iqn>/tpgtX configuration node. ISCSI-specific parameters such as
+.IR AuthMethod ,
+.IR MaxBurstLength , 
+.IR IFMarker ,
+.IR DataDigest ,
+and similar.
+.P
+.B attribute
+.br
+/iscsi/<iqn>/tpgtX configuration node. Contains implementation-specific
+settings for the TPG (aka TPGT), such as
+.BR authentication ,
+to enforce or disable authentication for the full-feature phase
+(i.e. non-discovery).
+.P
+.B auth
+.br
+/iscsi/<target_iqn>/tpgtX/acls/<initiator_iqn> configuration node. Set the
+userid and password for full-feature phase for this ACL.
 .SH FILES
 .B /etc/target/*
 .br
