@@ -335,7 +335,7 @@ class UITPG(UIRTSLibNode):
     A generic TPG UI.
     '''
     def __init__(self, tpg, parent):
-        name = "tpgt%d" % tpg.tag
+        name = "tpg%d" % tpg.tag
         UIRTSLibNode.__init__(self, name, tpg, parent)
         self.cfs_cwd = tpg.path
         self.refresh()

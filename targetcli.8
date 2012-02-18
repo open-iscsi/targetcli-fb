@@ -102,9 +102,9 @@ The LUN should now be accessible via FCoE.
 .br
 Creates an iSCSI target with a default WWN. It will also create an
 initial target portal group called
-.IR tpgt1 .
+.IR tpg1 .
 .P
-.B iqn.2003-01.org.linux-iscsi.test2.x8664:sn123456789012/tpgt1/
+.B iqn.2003-01.org.linux-iscsi.test2.x8664:sn123456789012/tpg1/
 .br
 An example of changing to the configuration node for the given
 target's first target portal group (TPG). This is equivalent to giving
@@ -195,7 +195,7 @@ disabling it. Disabled by default.
 .P
 .B parameter
 .br
-/iscsi/<target_iqn>/tpgtX configuration node. ISCSI-specific parameters such as
+/iscsi/<target_iqn>/tpgX configuration node. ISCSI-specific parameters such as
 .IR AuthMethod ,
 .IR MaxBurstLength , 
 .IR IFMarker ,
@@ -204,15 +204,15 @@ and similar.
 .P
 .B attribute
 .br
-/iscsi/<iqn>/tpgtX configuration node. Contains implementation-specific
-settings for the TPG (aka TPGT), such as
+/iscsi/<iqn>/tpgX configuration node. Contains implementation-specific
+settings for the TPG, such as
 .BR authentication ,
 to enforce or disable authentication for the full-feature phase
 (i.e. non-discovery).
 .P
 .B auth
 .br
-/iscsi/<target_iqn>/tpgtX/acls/<initiator_iqn> configuration node. Set the
+/iscsi/<target_iqn>/tpgX/acls/<initiator_iqn> configuration node. Set the
 userid and password for full-feature phase for this ACL.
 .SH FILES
 .B /etc/target/*
