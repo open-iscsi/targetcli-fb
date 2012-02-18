@@ -194,7 +194,7 @@ and are visible from all configuration nodes. They are mostly shell
 display options, but some starting with
 .B auto_
 affect shell behavior and may merit customization. Global settings
-are saved to ~/.targetcli upon exit, unlike other groups.
+are saved to ~/.targetcli/ upon exit, unlike other groups.
 .SS BACKSTORE-SPECIFIC
 .B attribute
 .br
@@ -206,7 +206,8 @@ to the backstore and storage object.
 .br
 /iscsi configuration node. Set the normal and mutual authentication
 userid and password for discovery sessions, as well as enabling or
-disabling it. Disabled by default.
+disabling it. By default it is disabled -- no authentication is
+required for discovery.
 .P
 .B parameter
 .br
@@ -219,7 +220,7 @@ and similar.
 .P
 .B attribute
 .br
-/iscsi/<iqn>/tpgX configuration node. Contains implementation-specific
+/iscsi/<target_iqn>/tpgX configuration node. Contains implementation-specific
 settings for the TPG, such as
 .BR authentication ,
 to enforce or disable authentication for the full-feature phase
