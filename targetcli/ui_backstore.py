@@ -189,7 +189,7 @@ class UIRDMCPBackstore(UIBackstore):
     RDMCP backstore UI.
     '''
     def __init__(self, parent):
-        UIBackstore.__init__(self, 'rd_mcp', parent)
+        UIBackstore.__init__(self, 'ramdisk', parent)
 
     def ui_command_create(self, name, size):
         '''
@@ -215,7 +215,7 @@ class UIRDMCPBackstore(UIBackstore):
             backstore.delete()
             raise exception
         ui_so = UIStorageObject(so, self)
-        self.shell.log.info("Created rd_mcp ramdisk %s with size %s."
+        self.shell.log.info("Created ramdisk %s with size %s."
                             % (name, size))
         return self.new_node(ui_so)
 
@@ -365,7 +365,7 @@ class UIStorageObject(UIRTSLibNode):
     def summary(self):
         so = self.rtsnode
         errors = []
-        if so.backstore.plugin.startswith("rd"):
+        if so.backstore.plugin == "ramdisk":
             path = "ramdisk"
         else:
             path = so.udev_path
