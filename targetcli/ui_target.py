@@ -149,13 +149,23 @@ class UIFabricModule(UIRTSLibNode):
 
     def summary(self):
         no_targets = len(self._children)
+        status = None
         if self.rtsnode.needs_wwn() and not self.rtsnode.spec['wwn_list']:
             msg = "Not found"
         elif no_targets > 1:
             msg = "%d Targets" % no_targets
         else:
             msg = "%d Target" % no_targets
-        return (msg, None)
+
+        fm = self.rtsnode
+        if fm.has_feature('discovery_auth') and fm.discovery_enable_auth:
+            print fm.discovery_enable_auth
+            msg += ", disc_auth"
+            if not (fm.discovery_password and fm.discovery_userid) and \
+                    not (fm.discovery_mutual_password and fm.discovery_mutual_userid):
+                status = False
+
+        return (msg, status)
 
     def ui_command_create(self, wwn=None):
         '''
@@ -384,13 +394,17 @@ class UITPG(UIRTSLibNode):
             UIPortals(self.rtsnode, self)
 
     def summary(self):
+        status = None
         if self.rtsnode.has_feature('nexus'):
-            description = ("%s" % self.rtsnode.nexus, True)
+            description = str(self.rtsnode.nexus)
         elif self.rtsnode.enable:
-            description = ("enabled", True)
+            description = "enabled"
         else:
-            description = ("disabled", False)
-        return description
+            description, status = ("disabled", False)
+
+        if int(self.rtsnode.get_attribute("authentication")):
+            description += ", auth"
+        return (description, status)
 
     def ui_command_enable(self):
         '''
@@ -609,7 +623,16 @@ class UINodeACL(UIRTSLibNode):
             msg = "%d Mapped LUNs" % no_mluns
         else:
             msg = "%d Mapped LUN" % no_mluns
-        return (msg, None)
+
+        status = None
+        na = self.rtsnode
+        if int(self.parent.parent.rtsnode.get_attribute("authentication")):
+            msg += ", auth"
+            if not (na.chap_password and na.chap_userid) and \
+                    not (na.chap_mutual_password and na.chap_mutual_userid):
+                status = False
+
+        return (msg, status)
 
     def ui_command_create(self, mapped_lun, tpg_lun, write_protect=None):
         '''
