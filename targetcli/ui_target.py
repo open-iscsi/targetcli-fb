@@ -905,13 +905,12 @@ class UILUN(UIRTSLibNode):
             is_healthy = False
         else:
             backstore = storage_object.backstore
-            if backstore.plugin.startswith("rd"):
-                path = "ramdisk"
+            if backstore.plugin == "ramdisk":
+                description = "%s/%s" % (backstore.plugin, storage_object.name,)
             else:
-                path = storage_object.udev_path
-            description = "%s/%s (%s)" % (backstore.plugin,
+                description = "%s/%s (%s)" % (backstore.plugin,
                                           storage_object.name,
-                                          path)
+                                          storage_object.udev_path)
 
         return (description, is_healthy)
 
