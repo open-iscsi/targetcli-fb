@@ -301,7 +301,9 @@ class UIMultiTPGTarget(UIRTSLibNode):
         B{create}
         '''
         self.assert_root()
-        tpg = TPG(self.rtsnode, tag, mode='lookup')
+        if tag.startswith("tpg"):
+            tag = tag[3:]
+        tpg = TPG(self.rtsnode, int(tag), mode='lookup')
         tpg.delete()
         self.shell.log.info("Deleted TPG %s." % tag)
         self.refresh()
