@@ -67,7 +67,8 @@ class Connection(object):
 
     def indent_print(self, steps):
         if self._has_info():
-            line = "cid: " + self.cid + "  state: " + self.cstate
+            line = "address: " + str(self.address)
+            line += "\tcid: " + self.cid + "  state: " + self.cstate
             _indent_print(line, steps)
 
 
