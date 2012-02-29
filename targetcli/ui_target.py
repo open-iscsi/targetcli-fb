@@ -159,11 +159,13 @@ class UIFabricModule(UIRTSLibNode):
 
         fm = self.rtsnode
         if fm.has_feature('discovery_auth') and fm.discovery_enable_auth:
-            print fm.discovery_enable_auth
-            msg += ", disc_auth"
-            if not (fm.discovery_password and fm.discovery_userid) and \
-                    not (fm.discovery_mutual_password and fm.discovery_mutual_userid):
+            if not (fm.discovery_password and fm.discovery_userid):
                 status = False
+
+            if fm.discovery_mutual_password and fm.discovery_mutual_userid:
+                msg += ", mutual disc auth"
+            else:
+                msg += ", disc auth"
 
         return (msg, status)
 
@@ -627,10 +629,13 @@ class UINodeACL(UIRTSLibNode):
         status = None
         na = self.rtsnode
         if int(self.parent.parent.rtsnode.get_attribute("authentication")):
-            msg += ", auth"
-            if not (na.chap_password and na.chap_userid) and \
-                    not (na.chap_mutual_password and na.chap_mutual_userid):
+            if not (na.chap_password and na.chap_userid):
                 status = False
+
+            if na.chap_mutual_password and na.chap_mutual_userid:
+                msg += ", mutual auth"
+            else:
+                msg += ", auth"
 
         return (msg, status)
 
