@@ -406,8 +406,9 @@ class UITPG(UIRTSLibNode):
         else:
             description, status = ("disabled", False)
 
-        if int(self.rtsnode.get_attribute("authentication")):
-            description += ", auth"
+        if "authentication" in self.rtsnode.list_attributes():
+            if int(self.rtsnode.get_attribute("authentication")):
+                description += ", auth"
         return (description, status)
 
     def ui_command_enable(self):
