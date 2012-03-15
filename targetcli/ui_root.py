@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from rtslib import RTSRoot
+from configshell import ExecutionError
 from ui_node import UINode
 from socket import gethostname
 from ui_target import UIFabricModule
@@ -118,4 +119,88 @@ class UIRoot(UINode):
         '''
         from targetcli import __version__ as targetcli_version
         self.shell.log.info("targetcli version %s" % targetcli_version)
+
+    def ui_command_sessions(self, action="list", sid=None):
+        '''
+        Displays a detailed list of all open sessions.
+
+        PARAMETERS
+        ==========
+
+        I{action}
+        ---------
+        The I{action} is one of:
+            - B{list} gives a short session list
+            - B{details} gives a detailed list
+
+        I{sid}
+        ------
+        You can specify an I{sid} to only list this one,
+        with or without details.
+
+        SEE ALSO
+        ========
+        status
+        '''
+
+        indent_step = 4
+        base_steps = 0
+        action_list = ["list", "details"]
+        found = False
+
+        def indent_print(text, steps):
+            console = self.shell.con
+            console.display(console.indent(text, indent_step * steps),
+                            no_lf=True)
+
+        if action not in action_list:
+            raise ExecutionError("action must be one of: %s" %
+                                                    ", ".join(action_list))
+        if sid is not None:
+            try:
+                int(sid)
+            except ValueError, e:
+                raise ExecutionError("sid must be a number, '%s' given" % sid)
+
+        for session in RTSRoot().sessions:
+
+            if sid is None or int(sid) == session.id:
+                found = True
+                acl = session.parent_nodeacl
+                indent_print("alias: %s\tsid: %i  type: %s  state: %s" % (
+                                                session.alias, session.id,
+                                                session.type, session.state),
+                             base_steps)
+
+                if action == "details":
+                    if self.as_root:
+                        if acl.authenticate_target:
+                            auth = "authenticated"
+                        else:
+                            auth = "NOT AUTHENTICATED"
+                        indent_print("%s (%s)" % (acl.node_wwn, auth),
+                                     base_steps + 1)
+                    else:
+                        indent_print("%s" % acl.node_wwn, base_steps + 1)
+
+                    for mlun in acl.mapped_luns:
+                        number = str(mlun.mapped_lun)
+                        dev = mlun.tpg_lun.storage_object.udev_path
+                        if mlun.write_protect:
+                            mode = " (r)"
+                        else:
+                            mode = " (rw)"
+                        indent_print(number + " " + dev + mode, base_steps + 1)
+
+                    for connection in session.connections:
+                        indent_print("address: %s (%s)  cid: %i  state: %s" % (
+                                            connection.address,
+                                            connection.transport,
+                                            connection.cid, connection.cstate),
+                                     base_steps + 1)
+        if not found:
+            if sid is None:
+                indent_print("(no open sessions)", base_steps)
+            else:
+                raise ExecutionError("no session found with sid %i" % int(sid))
 
