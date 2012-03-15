@@ -119,3 +119,48 @@ class UIRoot(UINode):
         from targetcli import __version__ as targetcli_version
         self.shell.log.info("targetcli version %s" % targetcli_version)
 
+    def ui_command_sessions(self):
+        '''
+        Displays a detailed list of all open sessions.
+        '''
+
+        indent_step = 4
+        base_steps = 0
+
+        def indent_print(text, steps):
+            console = self.shell.con
+            console.display(console.indent(text, indent_step * steps),
+                            no_lf=True)
+
+        for session in RTSRoot().sessions:
+
+            acl = session.parent_nodeacl
+            indent_print("alias: %s\tsid: %i  type: %s  state: %s" % (
+                                            session.alias, session.id,
+                                            session.type, session.state),
+                         base_steps)
+
+            if self.as_root:
+                if acl.authenticate_target:
+                    auth = "authenticated"
+                else:
+                    auth = "NOT AUTHENTICATED"
+                indent_print("%s (%s)" % (acl.node_wwn, auth), base_steps + 1)
+            else:
+                indent_print("%s" % acl.node_wwn, base_steps + 1)
+
+            for mlun in acl.mapped_luns:
+                number = str(mlun.mapped_lun)
+                dev = mlun.tpg_lun.storage_object.udev_path
+                if mlun.write_protect:
+                    mode = " (r)"
+                else:
+                    mode = " (rw)"
+                indent_print(number + " " + dev + mode, base_steps + 1)
+
+            for connection in session.connections:
+                indent_print("address: %s (%s)  cid: %i  state: %s" % (
+                                    connection.address, connection.transport,
+                                    connection.cid, connection.cstate),
+                             base_steps + 1)
+
