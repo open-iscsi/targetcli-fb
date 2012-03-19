@@ -131,7 +131,7 @@ class UIRoot(UINode):
         ---------
         The I{action} is one of:
             - B{list} gives a short session list
-            - B{details} gives a detailed list
+            - B{detail} gives a detailed list
 
         I{sid}
         ------
@@ -145,13 +145,8 @@ class UIRoot(UINode):
 
         indent_step = 4
         base_steps = 0
-        action_list = ["list", "details"]
-        found = False
-
-        def indent_print(text, steps):
-            console = self.shell.con
-            console.display(console.indent(text, indent_step * steps),
-                            no_lf=True)
+        action_list = ("list", "detail")
+        root = RTSRoot()
 
         if action not in action_list:
             raise ExecutionError("action must be one of: %s" %
@@ -162,43 +157,54 @@ class UIRoot(UINode):
             except ValueError, e:
                 raise ExecutionError("sid must be a number, '%s' given" % sid)
 
-        for session in RTSRoot().sessions:
+        def indent_print(text, steps):
+            console = self.shell.con
+            console.display(console.indent(text, indent_step * steps),
+                            no_lf=True)
 
-            if sid is None or int(sid) == session.id:
-                found = True
-                acl = session.parent_nodeacl
-                indent_print("alias: %s\tsid: %i  type: %s  state: %s" % (
-                                                session.alias, session.id,
-                                                session.type, session.state),
-                             base_steps)
+        def print_session(session):
+            acl = session['parent_nodeacl']
+            indent_print("alias: %(alias)s\tsid: %(id)i type: " \
+                             "%(type)s session-state: %(state)s" % session,
+                         base_steps)
 
-                if action == "details":
-                    if self.as_root:
-                        if acl.authenticate_target:
-                            auth = "authenticated"
-                        else:
-                            auth = "NOT AUTHENTICATED"
-                        indent_print("%s (%s)" % (acl.node_wwn, auth),
-                                     base_steps + 1)
+            if action == 'detail':
+                if self.as_root:
+                    if acl.authenticate_target:
+                        auth = " (authenticated)"
                     else:
-                        indent_print("%s" % acl.node_wwn, base_steps + 1)
+                        auth = " (NOT AUTHENTICATED)"
+                else:
+                    auth = ""
 
-                    for mlun in acl.mapped_luns:
-                        number = str(mlun.mapped_lun)
-                        dev = mlun.tpg_lun.storage_object.udev_path
-                        if mlun.write_protect:
-                            mode = " (r)"
-                        else:
-                            mode = " (rw)"
-                        indent_print(number + " " + dev + mode, base_steps + 1)
+                indent_print("name: %s%s" % (acl.node_wwn, auth),
+                                 base_steps + 1)
 
-                    for connection in session.connections:
-                        indent_print("address: %s (%s)  cid: %i  state: %s" % (
-                                            connection.address,
-                                            connection.transport,
-                                            connection.cid, connection.cstate),
-                                     base_steps + 1)
-        if not found:
+                for mlun in acl.mapped_luns:
+                    plugin = mlun.tpg_lun.storage_object.backstore.plugin
+                    name = mlun.tpg_lun.storage_object.name
+                    if mlun.write_protect:
+                        mode = "r"
+                    else:
+                        mode = "rw"
+                    indent_print("mapped-lun: %d backstore: %s/%s mode: %s" %
+                                 (mlun.mapped_lun, plugin, name, mode),
+                                 base_steps + 1)
+
+                for connection in session['connections']:
+                    indent_print("address: %(address)s (%(transport)s)  cid: " \
+                                     "%(cid)i connection-state: %(cstate)s" % \
+                                     connection, base_steps + 1)
+
+        if sid:
+            printed_sessions = filter(lambda x: x['id'] == int(sid), root.sessions)
+        else:
+            printed_sessions = list(root.sessions)
+
+        if len(printed_sessions):
+            for session in printed_sessions:
+                print_session(session)
+        else:
             if sid is None:
                 indent_print("(no open sessions)", base_steps)
             else:
