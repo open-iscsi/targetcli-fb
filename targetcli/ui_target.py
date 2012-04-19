@@ -406,9 +406,9 @@ class UITPG(UIRTSLibNode):
         else:
             description, status = ("disabled", False)
 
-        if "authentication" in self.rtsnode.list_attributes():
-            if int(self.rtsnode.get_attribute("authentication")):
-                description += ", auth"
+        if self.rtsnode.has_feature("acls_auth") and \
+                int(self.rtsnode.get_attribute("authentication")):
+            description += ", auth"
         return (description, status)
 
     def ui_command_enable(self):
@@ -631,7 +631,8 @@ class UINodeACL(UIRTSLibNode):
 
         status = None
         na = self.rtsnode
-        if int(self.parent.parent.rtsnode.get_attribute("authentication")):
+        if self.rtsnode.has_feature("acls_auth") and \
+                int(self.parent.parent.rtsnode.get_attribute("authentication")):
             if not (na.chap_password and na.chap_userid):
                 status = False
 
