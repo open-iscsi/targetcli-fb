@@ -678,9 +678,13 @@ class UILUNs(UINode):
         '''
         Creates a new LUN in the Target Portal Group, attached to a storage
         object. If the I{lun} parameter is omitted, the first available LUN in
-        the TPG will be used. The I{storage_object} must be the path of an
-        existing storage object, i.e. B{/backstore/pscsi0/mydisk} to reference
-        the B{mydisk} storage object of the virtual HBA B{pscsi0}.
+        the TPG will be used. If present, it must be a number greater than 0.
+        Alternatively, the syntax I{lunX} where I{X} is a positive number is
+        also accepted.
+        
+        The I{storage_object} must be the path of an existing storage object,
+        i.e. B{/backstore/pscsi0/mydisk} to reference the B{mydisk} storage
+        object of the virtual HBA B{pscsi0}.
 
         If I{add_mapped_luns} is omitted, the global parameter
         B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
@@ -705,6 +709,8 @@ class UILUNs(UINode):
                 self.shell.log.info("Selected LUN %d." % lun)
         else:
             try:
+                if lun.startswith('lun'):
+                    lun = lun[3:]
                 lun = int(lun)
             except ValueError:
                 self.shell.log.error("The LUN must be an integer value.")
@@ -781,11 +787,16 @@ class UILUNs(UINode):
         Deletes the supplied LUN from the Target Portal Group. The I{lun} must
         be a positive number matching an existing LUN.
 
+        Alternatively, the syntax I{lunX} where I{X} is a positive number is
+        also accepted.
+
         SEE ALSO
         ========
         B{create}
         '''
         self.assert_root()
+        if lun.startswith('lun'):
+            lun = lun[3:]
         lun_object = LUN(self.tpg, lun)
         lun_object.delete()
         self.shell.log.info("Successfully deleted LUN %s." % lun)
