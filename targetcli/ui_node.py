@@ -19,6 +19,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from configshell import ConfigNode, ExecutionError
 from rtslib import RTSLibError, RTSRoot
+from subprocess import PIPE, Popen
+from os.path import isfile
+
+def exec3(cmd):
+    '''
+    Executes a shell command **cmd** and returns
+    **(retcode, stdout, stderr)**.
+    '''
+    process = Popen(cmd, shell=True, bufsize=1024*1024,
+                    stdin=PIPE,
+                    stdout=PIPE, stderr=PIPE,
+                    close_fds=True)
+    (out, err) = process.communicate()
+    retcode = process.returncode
+    return (retcode, out, err)
 
 class UINode(ConfigNode):
     '''
@@ -89,6 +104,36 @@ class UINode(ConfigNode):
             self.shell.log.debug("Command %s succeeded." % command)
             return result
 
+    def ui_command_exit(self):
+        '''
+        Exits the command line interface.
+        '''
+        config_needs_save = False
+        config_paths = {'tcm': "/etc/target/tcm_start.sh",
+                        'lio': "/etc/target/lio_start.sh"}
+        for mod_name, config_path in config_paths.items():
+            saved_config = ''
+            live_config = exec3("%s_dump --stdout" % mod_name)[1]
+            if isfile(config_path):
+                with open(config_path) as config_fh:
+                    saved_config = config_fh.read()
+            if saved_config != live_config:
+                config_needs_save = True
+                break
+
+        if config_needs_save:
+            self.shell.con.display("There are unsaved configuration changes.\n"
+                                   "If you exit now, configuration will not "
+                                   "be updated and changes will be lost upon "
+                                   "reboot.")
+            input = raw_input("Type 'exit' if you want to exit anyway: ")
+            if input == "exit":
+                return 'EXIT'
+            else:
+                self.shell.log.warning("Aborted exit, use 'saveconfig' to "
+                                       "save the current configuration.")
+        else:
+            return 'EXIT'
 
     def ui_command_refresh(self):
         '''
