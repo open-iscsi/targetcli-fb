@@ -44,7 +44,7 @@ class TargetCLI(ConfigShell):
                      'tree_show_root': True,
                      'auto_enable_tpgt': True,
                      'auto_add_mapped_luns': True,
-                     'auto_cd_after_create': True,
+                     'auto_cd_after_create': False,
                      'legacy_hba_view': False
                     }
 
