@@ -784,8 +784,9 @@ class UILUNs(UINode):
 
         try:
             storage_object = self.get_node(storage_object).rtsnode
-        except AttributeError:
-            self.shell.log.error("Wrong storage object path.")
+        except ValueError:
+            self.shell.log.error("Invalid storage object %s." % storage_object)
+            return
 
         lun_object = LUN(self.tpg, lun, storage_object)
         self.shell.log.info("Created LUN %s." % lun_object.lun)
