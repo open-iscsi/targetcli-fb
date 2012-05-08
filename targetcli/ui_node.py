@@ -21,6 +21,7 @@ from configshell import ConfigNode, ExecutionError
 from rtslib import RTSLibError, RTSRoot
 from subprocess import PIPE, Popen
 from os.path import isfile
+from os import getuid
 
 def exec3(cmd):
     '''
@@ -121,7 +122,7 @@ class UINode(ConfigNode):
                 config_needs_save = True
                 break
 
-        if config_needs_save:
+        if config_needs_save and getuid() == 0:
             self.shell.con.display("There are unsaved configuration changes.\n"
                                    "If you exit now, configuration will not "
                                    "be updated and changes will be lost upon "
