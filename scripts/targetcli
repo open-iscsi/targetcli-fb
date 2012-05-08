@@ -24,6 +24,8 @@ from os import getuid
 from targetcli import UIRoot
 from rtslib import RTSLibError
 from configshell import ConfigShell
+from rtslib import __version__ as rtslib_version
+from targetcli import __version__ as targetcli_version
 
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
@@ -56,16 +58,12 @@ def main():
         is_root = False
 
     shell = TargetCLI('~/.targetcli')
-    shell.con.epy_write('''
-                        Welcome to the B{targetcli} shell::
-                         Copyright (c) 2011 by RisingTide Systems LLC.
-
-                        Visit us at U{http://www.risingtidesystems.com}.
-                       ''')
-    shell.con.display('')
+    shell.con.display("targetcli %s (rtslib %s)\n"
+                      "Copyright (c) 2011 by RisingTide Systems LLC.\n"
+                      "All rights reserved."
+                      % (targetcli_version, rtslib_version))
     if not is_root:
-        shell.con.display('You are not root, disabling privileged commands.')
-        shell.con.display('')
+        shell.con.display("You are not root, disabling privileged commands.\n")
 
     root_node = UIRoot(shell, as_root=is_root)
 
