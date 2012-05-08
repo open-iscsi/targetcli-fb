@@ -83,7 +83,11 @@ class UIRoot(UINode):
                                + "disk will overwrite your boot settings.")
         self.shell.con.display("The current target configuration will become "
                                + "the default boot config.")
-        input = raw_input("Are you sure? Type 'yes': ")
+        try:
+            input = raw_input("Are you sure? Type 'yes': ")
+        except EOFError:
+            input = None
+            self.shell.con.display('')
         if input == "yes":
             tcm_full_backup(None, None, '1', None)
         else:

@@ -127,7 +127,11 @@ class UINode(ConfigNode):
                                    "If you exit now, configuration will not "
                                    "be updated and changes will be lost upon "
                                    "reboot.")
-            input = raw_input("Type 'exit' if you want to exit anyway: ")
+            try:
+                input = raw_input("Type 'exit' if you want to exit anyway: ")
+            except EOFError:
+                input = None
+                self.shell.con.display('')
             if input == "exit":
                 return 'EXIT'
             else:
