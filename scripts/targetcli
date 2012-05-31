@@ -25,6 +25,7 @@ from targetcli import UIRoot
 from rtslib import RTSLibError
 from configshell import ConfigShell
 import sys
+from targetcli import __version__ as targetcli_version
 
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
@@ -57,9 +58,6 @@ def main():
         is_root = False
 
     shell = TargetCLI('~/.targetcli')
-    if not is_root:
-        shell.con.display('You are not root, disabling privileged commands.')
-        shell.con.display('')
 
     root_node = UIRoot(shell, as_root=is_root)
 
@@ -72,13 +70,13 @@ def main():
         shell.run_cmdline(" ".join(sys.argv[1:]))
         sys.exit(0)
 
-    shell.con.epy_write('''
-                        Welcome to the B{targetcli} shell::
-                         Copyright (c) 2011 by RisingTide Systems LLC.\n
-                         For help on commands, type 'help'.
+    shell.con.display("targetcli shell version %s\n"
+                      "Copyright 2011 by RisingTide Systems LLC and others.\n"
+                      "For help on commands, type 'help'.\n"
+                      % targetcli_version)
+    if not is_root:
+        shell.con.display("You are not root, disabling privileged commands.\n")
 
-                       ''')
-    shell.con.display('')
     shell.run_interactive()
     if shell.prefs['auto_save_on_exit']:
         shell.log.info("Global pref auto_save_on_exit=true")
