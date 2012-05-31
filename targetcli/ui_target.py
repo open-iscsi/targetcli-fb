@@ -763,9 +763,13 @@ class UILUNs(UINode):
         '''
         Creates a new LUN in the Target Portal Group, attached to a storage
         object. If the I{lun} parameter is omitted, the first available LUN in
-        the TPG will be used. The I{storage_object} must be the path of an
-        existing storage object, i.e. B{/backstore/pscsi0/mydisk} to reference
-        the B{mydisk} storage object of the virtual HBA B{pscsi0}.
+        the TPG will be used. If present, it must be a number greater than 0.
+        Alternatively, the syntax I{lunX} where I{X} is a positive number is
+        also accepted.
+
+        The I{storage_object} must be the path of an existing storage object,
+        i.e. B{/backstore/pscsi0/mydisk} to reference the B{mydisk} storage
+        object of the virtual HBA B{pscsi0}.
 
         If I{add_mapped_luns} is omitted, the global parameter
         B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
@@ -788,6 +792,8 @@ class UILUNs(UINode):
             self.shell.log.error("Invalid storage object %s." % storage_object)
             return
 
+        if lun.lower().startswith('lun'):
+            lun = lun[3:]
         lun_object = LUN(self.tpg, lun, storage_object)
         self.shell.log.info("Created LUN %s." % lun_object.lun)
         ui_lun = UILUN(lun_object, self)
@@ -849,6 +855,9 @@ class UILUNs(UINode):
         Deletes the supplied LUN from the Target Portal Group. The I{lun} must
         be a positive number matching an existing LUN.
 
+        Alternatively, the syntax I{lunX} where I{X} is a positive number is
+        also accepted.
+
         SEE ALSO
         ========
         B{create}
@@ -857,7 +866,6 @@ class UILUNs(UINode):
         if lun.lower().startswith("lun"):
             lun = lun[3:]
         try:
-            lun = int(lun)
             lun_object = LUN(self.tpg, lun)
         except:
             raise RTSLibError("Invalid LUN")
