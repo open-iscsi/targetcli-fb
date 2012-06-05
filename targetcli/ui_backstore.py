@@ -254,8 +254,8 @@ class UIFileIOBackstore(UIBackstore):
         size parameter B{must} be ommited. If present, I{size} is the size of
         the file to be used, I{file} the path to the file or I{dev} the path to
         a block device. The I{buffered} parameter is a boolean stating
-        whether or not to enable buffered mode. It is disabled by default
-        (synchronous mode). The I{sparse} parameter is only applicable when
+        whether or not to enable buffered mode. It is enabled by default
+        (asynchronous mode). The I{sparse} parameter is only applicable when
         creating a new backing file. It is a boolean stating if the
         created file should be created as a sparse file (the default), or
         fully initialized.
