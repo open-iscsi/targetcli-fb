@@ -324,8 +324,8 @@ class UIFileIOBackstore(UIBackstore):
         a block device.  The optional I{generate_wwn} parameter is a boolean
         specifying whether or not we should generate a T10 wwn Serial for the
         unit (by default, yes).  The I{buffered} parameter is a boolean stating
-        whether or not to enable buffered mode. It is disabled by default
-        (synchronous mode). The I{sparse} parameter is only applicable when
+        whether or not to enable buffered mode. It is enabled by default
+        (asynchronous mode). The I{sparse} parameter is only applicable when
         creating a new backing file. It is a boolean stating if the
         created file should be created as a sparse file (the default), or
         fully initialized.
