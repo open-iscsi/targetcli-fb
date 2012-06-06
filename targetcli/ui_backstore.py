@@ -196,6 +196,11 @@ class UIPSCSIBackstore(UIBackstore):
         self.assert_root()
         self.assert_available_so_name(name)
         backstore = PSCSIBackstore(self.next_hba_index(), mode='create')
+
+        if get_block_type(dev) is not None or is_disk_partition(dev):
+            self.shell.log.info("Note: block backstore recommended for "
+                                "SCSI block devices")
+
         try:
             so = PSCSIStorageObject(backstore, name, dev)
         except Exception, exception:
