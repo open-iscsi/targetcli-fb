@@ -23,10 +23,55 @@ from rtslib import FileIOBackstore, BlockBackstore
 from rtslib import PSCSIBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
-from rtslib.utils import (get_block_type, is_disk_partition,
-                          human_to_bytes, bytes_to_human)
+from rtslib.utils import (get_block_type, is_disk_partition)
 from configshell import ExecutionError
 import os
+
+def human_to_bytes(hsize, kilo=1024):
+    '''
+    This function converts human-readable amounts of bytes to bytes.
+    It understands the following units :
+        - I{B} or no unit present for Bytes
+        - I{k}, I{K}, I{kB}, I{KB} for kB (kilobytes)
+        - I{m}, I{M}, I{mB}, I{MB} for MB (megabytes)
+        - I{g}, I{G}, I{gB}, I{GB} for GB (gigabytes)
+        - I{t}, I{T}, I{tB}, I{TB} for TB (terabytes)
+
+    Note: The definition of I{kilo} defaults to 1kB = 1024Bytes.
+    Strictly speaking, those should not be called I{kB} but I{kiB}.
+    You can override that with the optional kilo parameter.
+
+    @param hsize: The human-readable version of the Bytes amount to convert
+    @type hsize: string or int
+    @param kilo: Optional base for the kilo prefix
+    @type kilo: int
+    @return: An int representing the human-readable string converted to bytes
+    '''
+    size = str(hsize).replace("g","G").replace("K","k")
+    size = size.replace("m","M").replace("t","T")
+    if not re.match("^[0-9]+[T|G|M|k]?[B]?$", size):
+        raise RTSLibError("Cannot interpret size, wrong format: %s" % hsize)
+
+    size = size.rstrip('B')
+
+    units = ['k', 'M', 'G', 'T']
+    try:
+        power = units.index(size[-1]) + 1
+    except ValueError:
+        power = 0
+        size = int(size)
+    else:
+        size = int(size[:-1])
+
+    return size * (int(kilo) ** power)
+
+def bytes_to_human(size, kilo=1024.0):
+    if not size:
+        return ""
+    for x in ['bytes','K','M','G','T']:
+        if size < kilo:
+            return "(%3.1f%s) " % (size, x)
+        size /= kilo
 
 
 class UIBackstores(UINode):
