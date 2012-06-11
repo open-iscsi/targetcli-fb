@@ -226,9 +226,9 @@ class UIPSCSIBackstore(UIBackstore):
 
         try:
             so = PSCSIStorageObject(backstore, name, dev)
-        except Exception, exception:
+        except:
             backstore.delete()
-            raise exception
+            raise
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
@@ -261,10 +261,9 @@ class UIRDMCPBackstore(UIBackstore):
         backstore = RDMCPBackstore(self.next_hba_index(), mode='create')
         try:
             so = RDMCPStorageObject(backstore, name, human_to_bytes(size))
-
-        except Exception, exception:
+        except:
             backstore.delete()
-            raise exception
+            raise
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created ramdisk %s with size %s."
                             % (name, size))
@@ -359,9 +358,9 @@ class UIFileIOBackstore(UIBackstore):
                 backstore, name, file_or_dev,
                 size,
                 buffered_mode=self.prm_buffered(buffered))
-        except Exception, exception:
+        except:
             backstore.delete()
-            raise exception
+            raise
 
         self.shell.log.info("Created fileio %s with size %s"
                             % (name, size))
@@ -387,9 +386,9 @@ class UIBlockBackstore(UIBackstore):
         backstore = BlockBackstore(self.next_hba_index(), mode='create')
         try:
             so = BlockStorageObject(backstore, name, dev)
-        except Exception, exception:
+        except:
             backstore.delete()
-            raise exception
+            raise
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created block storage object %s using %s."
                             % (name, dev))
