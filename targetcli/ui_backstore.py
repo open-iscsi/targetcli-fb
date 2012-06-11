@@ -26,6 +26,7 @@ from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import (get_block_type, is_disk_partition)
 from configshell import ExecutionError
 import os
+import re
 
 def human_to_bytes(hsize, kilo=1024):
     '''
