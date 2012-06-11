@@ -259,7 +259,7 @@ class UIRDMCPBackstore(UIBackstore):
         self.assert_available_so_name(name)
         backstore = RDMCPBackstore(self.next_hba_index(), mode='create')
         try:
-            so = RDMCPStorageObject(backstore, name, size)
+            so = RDMCPStorageObject(backstore, name, human_to_bytes(size))
 
         except Exception, exception:
             backstore.delete()
@@ -340,7 +340,7 @@ class UIFileIOBackstore(UIBackstore):
         else:
             # use given file size only if backing file does not exist
             if os.path.isfile(file_or_dev):
-                new_size = str(os.path.getsize(file_or_dev))
+                new_size = os.path.getsize(file_or_dev)
                 if size:
                     self.shell.log.info("%s exists, using its size (%s bytes) instead" 
                                         % (file_or_dev, new_size))
@@ -350,7 +350,8 @@ class UIFileIOBackstore(UIBackstore):
                 if not size:
                     raise ExecutionError("Attempting to create file for new" +
                                          " fileio backstore, need a size")
-                self._create_file(file_or_dev, human_to_bytes(size), sparse)
+                size = human_to_bytes(size)
+                self._create_file(file_or_dev, size, sparse)
 
         try:
             so = FileIOStorageObject(
