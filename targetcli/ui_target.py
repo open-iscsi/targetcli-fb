@@ -729,7 +729,7 @@ class UIMappedLUN(UIRTSLibNode):
             else:
                 access_mode = 'rw'
             description = "lun%d %s/%s (%s)" \
-            % (tpg_lun.lun, tpg_lun.storage_object.backstore.plugin,
+            % (tpg_lun.lun, tpg_lun.storage_object.plugin,
                tpg_lun.storage_object.name, access_mode)
 
         return (description, is_healthy)
@@ -917,11 +917,10 @@ class UILUN(UIRTSLibNode):
             description = "BROKEN STORAGE LINK"
             is_healthy = False
         else:
-            backstore = storage_object.backstore
-            if backstore.plugin == "ramdisk":
-                description = "%s/%s" % (backstore.plugin, storage_object.name,)
+            if storage_object.plugin == "ramdisk":
+                description = "%s/%s" % (storage_object.plugin, storage_object.name,)
             else:
-                description = "%s/%s (%s)" % (backstore.plugin,
+                description = "%s/%s (%s)" % (storage_object.plugin,
                                           storage_object.name,
                                           storage_object.udev_path)
 

@@ -102,7 +102,7 @@ class UIBackstore(UINode):
     def refresh(self):
         self._children = set([])
         for so in RTSRoot().storage_objects:
-            if so.backstore.plugin == self.name:
+            if so.plugin == self.name:
                 ui_so = UIStorageObject(so, self)
                 ui_so.name = so.name
 
@@ -358,14 +358,13 @@ class UIStorageObject(UIRTSLibNode):
         '''
         Displays the version of the current backstore's plugin.
         '''
-        backstore = self.rtsnode.backstore
         self.shell.con.display("Backstore plugin %s %s"
-                               % (backstore.plugin, backstore.version))
+                               % (self.rtsnode.plugin, self.rtsnode.version))
 
     def summary(self):
         so = self.rtsnode
         errors = []
-        if so.backstore.plugin == "ramdisk":
+        if so.plugin == "ramdisk":
             path = "ramdisk"
         else:
             path = so.udev_path
