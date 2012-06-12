@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ui_root import UIRoot
 
-__version__ = "2.0rc1.fb13"
+__version__ = "2.0rc1.fb14"
 __author__ = "Jerome Martin <jxm@risingtidesystems.com>"
 __url__ = "http://www.risingtidesystems.com"
 __description__ = "An administration shell for RTS storage targets."
