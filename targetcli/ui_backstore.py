@@ -174,25 +174,6 @@ class UIBackstore(UINode):
         else:
             return completions
 
-    def next_hba_index(self):
-        self.shell.log.debug("%r" % [(backstore.plugin, backstore.index)
-                                     for backstore in RTSRoot().backstores])
-        indexes = [backstore.index for backstore in RTSRoot().backstores
-                   if backstore.plugin == self.name]
-        self.shell.log.debug("Existing %s backstore indexes: %r"
-                             % (self.name, indexes))
-        for index in range(1048576):
-            if index not in indexes:
-                backstore_index = index
-                break
-
-        if backstore_index is None:
-            raise ExecutionError("Cannot find an available backstore index.")
-        else:
-            self.shell.log.debug("First available %s backstore index is %d."
-                                 % (self.name, backstore_index))
-            return backstore_index
-
     def assert_available_so_name(self, name):
         names = [child.name for child in self.children]
         if name in names:
@@ -218,7 +199,7 @@ class UIPSCSIBackstore(UIBackstore):
         '''
         self.assert_root()
         self.assert_available_so_name(name)
-        backstore = PSCSIBackstore(self.next_hba_index(), mode='create')
+        backstore = PSCSIBackstore(mode='create')
 
         if get_block_type(dev) is not None or is_disk_partition(dev):
             self.shell.log.info("Note: block backstore recommended for "
@@ -258,7 +239,7 @@ class UIRDMCPBackstore(UIBackstore):
         '''
         self.assert_root()
         self.assert_available_so_name(name)
-        backstore = RDMCPBackstore(self.next_hba_index(), mode='create')
+        backstore = RDMCPBackstore(mode='create')
         try:
             so = RDMCPStorageObject(backstore, name, human_to_bytes(size))
         except:
@@ -327,7 +308,7 @@ class UIFileIOBackstore(UIBackstore):
 
         sparse = self.ui_eval_param(sparse, 'bool', True)
 
-        backstore = FileIOBackstore(self.next_hba_index(), mode='create')
+        backstore = FileIOBackstore(mode='create')
 
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
@@ -383,7 +364,7 @@ class UIBlockBackstore(UIBackstore):
         '''
         self.assert_root()
         self.assert_available_so_name(name)
-        backstore = BlockBackstore(self.next_hba_index(), mode='create')
+        backstore = BlockBackstore(mode='create')
         try:
             so = BlockStorageObject(backstore, name, dev)
         except:
