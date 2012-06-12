@@ -19,8 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
-from rtslib import FileIOBackstore, BlockBackstore
-from rtslib import PSCSIBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import (get_block_type, is_disk_partition)
@@ -174,12 +172,6 @@ class UIBackstore(UINode):
         else:
             return completions
 
-    def assert_available_so_name(self, name):
-        names = [child.name for child in self.children]
-        if name in names:
-            raise ExecutionError("Storage object %s/%s already exist."
-                                 % (self.name, name))
-
 
 class UIPSCSIBackstore(UIBackstore):
     '''
@@ -198,18 +190,12 @@ class UIPSCSIBackstore(UIBackstore):
         IDs may vary in time.
         '''
         self.assert_root()
-        self.assert_available_so_name(name)
-        backstore = PSCSIBackstore(mode='create')
 
         if get_block_type(dev) is not None or is_disk_partition(dev):
             self.shell.log.info("Note: block backstore recommended for "
                                 "SCSI block devices")
 
-        try:
-            so = PSCSIStorageObject(backstore, name, dev)
-        except:
-            backstore.delete()
-            raise
+        so = PSCSIStorageObject(name, dev)
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
@@ -238,13 +224,8 @@ class UIRDMCPBackstore(UIBackstore):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        self.assert_available_so_name(name)
-        backstore = RDMCPBackstore(mode='create')
-        try:
-            so = RDMCPStorageObject(backstore, name, human_to_bytes(size))
-        except:
-            backstore.delete()
-            raise
+
+        so = RDMCPStorageObject(name, human_to_bytes(size))
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created ramdisk %s with size %s."
                             % (name, size))
@@ -302,13 +283,10 @@ class UIFileIOBackstore(UIBackstore):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        self.assert_available_so_name(name)
         self.shell.log.debug("Using params size=%s buffered=%s sparse=%s"
                              % (size, buffered, sparse))
 
         sparse = self.ui_eval_param(sparse, 'bool', True)
-
-        backstore = FileIOBackstore(mode='create')
 
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
@@ -334,15 +312,10 @@ class UIFileIOBackstore(UIBackstore):
                 size = human_to_bytes(size)
                 self._create_file(file_or_dev, size, sparse)
 
-        try:
-            so = FileIOStorageObject(
-                backstore, name, file_or_dev,
-                size,
-                buffered_mode=self.prm_buffered(buffered))
-        except:
-            backstore.delete()
-            raise
-
+        so = FileIOStorageObject(
+            name, file_or_dev,
+            size,
+            buffered_mode=self.prm_buffered(buffered))
         self.shell.log.info("Created fileio %s with size %s"
                             % (name, size))
         ui_so = UIStorageObject(so, self)
@@ -363,13 +336,8 @@ class UIBlockBackstore(UIBackstore):
         block device to use.
         '''
         self.assert_root()
-        self.assert_available_so_name(name)
-        backstore = BlockBackstore(mode='create')
-        try:
-            so = BlockStorageObject(backstore, name, dev)
-        except:
-            backstore.delete()
-            raise
+
+        so = BlockStorageObject(name, dev)
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created block storage object %s using %s."
                             % (name, dev))
