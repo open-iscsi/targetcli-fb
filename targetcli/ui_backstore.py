@@ -373,15 +373,6 @@ class UIStorageObject(UIRTSLibNode):
         if not path:
             errors.append("BROKEN STORAGE LINK")
 
-        legacy = []
-        if self.rtsnode.name != self.name:
-            legacy.append("ADDED SUFFIX")
-        if len(list(self.rtsnode.backstore.storage_objects)) > 1:
-            legacy.append("SHARED HBA")
-
-        if legacy:
-            errors.append("LEGACY: " + ", ".join(legacy))
-
         size = bytes_to_human(getattr(so, "size", 0))
 
         if errors:
