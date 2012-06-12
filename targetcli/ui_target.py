@@ -792,7 +792,7 @@ class UILUNs(UINode):
             self.shell.log.error("Invalid storage object %s." % storage_object)
             return
 
-        if lun.lower().startswith('lun'):
+        if lun and lun.lower().startswith('lun'):
             lun = lun[3:]
         lun_object = LUN(self.tpg, lun, storage_object)
         self.shell.log.info("Created LUN %s." % lun_object.lun)
