@@ -140,10 +140,7 @@ class UIBackstore(UINode):
         except ValueError:
             self.shell.log.error("No storage object named %s." % name)
         else:
-            hba = child.rtsnode.backstore
             child.rtsnode.delete()
-            if not list(hba.storage_objects):
-                hba.delete()
             self.remove_child(child)
             self.shell.log.info("Deleted storage object %s." % name)
             self.parent.parent.refresh()
