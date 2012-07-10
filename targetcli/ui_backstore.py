@@ -288,6 +288,11 @@ class UIFileIOBackstore(UIBackstore):
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
 
+        # can't use is_dev_in_use() on files so just check against other
+        # storage object paths
+        if file_or_dev in (so.udev_path for so in RTSRoot().storage_objects):
+            raise ExecutionError("storage object for %s already exists" % file_or_dev)
+
         if is_dev:
             if size:
                 self.shell.log.info("Block device, size parameter ignored")
