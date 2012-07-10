@@ -69,7 +69,7 @@ def bytes_to_human(size, kilo=1024.0):
         return ""
     for x in ['bytes','K','M','G','T']:
         if size < kilo:
-            return "(%3.1f%s) " % (size, x)
+            return "%3.1f%s" % (size, x)
         size /= kilo
 
 
@@ -103,7 +103,7 @@ class UIBackstore(UINode):
         self._children = set([])
         for so in RTSRoot().storage_objects:
             if so.plugin == self.name:
-                ui_so = UIStorageObject(so, self)
+                ui_so = self.so_cls(so, self)
                 ui_so.name = so.name
 
     def summary(self):
@@ -175,6 +175,7 @@ class UIPSCSIBackstore(UIBackstore):
     PSCSI backstore UI.
     '''
     def __init__(self, parent):
+        self.so_cls = UIPSCSIStorageObject
         UIBackstore.__init__(self, 'pscsi', parent)
 
     def ui_command_create(self, name, dev):
@@ -193,7 +194,7 @@ class UIPSCSIBackstore(UIBackstore):
                                 "SCSI block devices")
 
         so = PSCSIStorageObject(name, dev)
-        ui_so = UIStorageObject(so, self)
+        ui_so = UIPSCSIStorageObject(so, self)
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
         return self.new_node(ui_so)
@@ -204,6 +205,7 @@ class UIRDMCPBackstore(UIBackstore):
     RDMCP backstore UI.
     '''
     def __init__(self, parent):
+        self.so_cls = UIRamdiskStorageObject
         UIBackstore.__init__(self, 'ramdisk', parent)
 
     def ui_command_create(self, name, size):
@@ -223,7 +225,7 @@ class UIRDMCPBackstore(UIBackstore):
         self.assert_root()
 
         so = RDMCPStorageObject(name, human_to_bytes(size))
-        ui_so = UIStorageObject(so, self)
+        ui_so = UIRamdiskStorageObject(so, self)
         self.shell.log.info("Created ramdisk %s with size %s."
                             % (name, size))
         return self.new_node(ui_so)
@@ -234,6 +236,7 @@ class UIFileIOBackstore(UIBackstore):
     FileIO backstore UI.
     '''
     def __init__(self, parent):
+        self.so_cls = UIFileioStorageObject
         UIBackstore.__init__(self, 'fileio', parent)
 
     def _create_file(self, filename, size, sparse=True):
@@ -320,7 +323,7 @@ class UIFileIOBackstore(UIBackstore):
             buffered_mode=self.prm_buffered(buffered))
         self.shell.log.info("Created fileio %s with size %s"
                             % (name, size))
-        ui_so = UIStorageObject(so, self)
+        ui_so = UIFileioStorageObject(so, self)
 
         return self.new_node(ui_so)
 
@@ -330,6 +333,7 @@ class UIBlockBackstore(UIBackstore):
     Block backstore UI.
     '''
     def __init__(self, parent):
+        self.so_cls = UIBlockStorageObject
         UIBackstore.__init__(self, 'block', parent)
 
     def ui_command_create(self, name, dev):
@@ -340,7 +344,7 @@ class UIBlockBackstore(UIBackstore):
         self.assert_root()
 
         so = BlockStorageObject(name, dev)
-        ui_so = UIStorageObject(so, self)
+        ui_so = UIBlockStorageObject(so, self)
         self.shell.log.info("Created block storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
@@ -363,24 +367,33 @@ class UIStorageObject(UIRTSLibNode):
         self.shell.con.display("Backstore plugin %s %s"
                                % (self.rtsnode.plugin, self.rtsnode.version))
 
+
+class UIPSCSIStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
-        errors = []
-        if so.plugin == "ramdisk":
-            path = "ramdisk"
+        return ("%s %s" % (so.udev_path, so.status), True)
+
+
+class UIRamdiskStorageObject(UIStorageObject):
+    def summary(self):
+        so = self.rtsnode
+        return ("(%s) %s" % (bytes_to_human(so.size), so.status), True)
+
+
+class UIFileioStorageObject(UIStorageObject):
+    def summary(self):
+        so = self.rtsnode
+
+        if so.buffered_mode:
+            buff_str = "buffered"
         else:
-            path = so.udev_path
+            buff_str = "unbuffered"
 
-        if not path:
-            errors.append("BROKEN STORAGE LINK")
+        return ("%s (%s) %s %s" % (so.udev_path, bytes_to_human(so.size),
+                                 buff_str, so.status), True)
 
-        size = bytes_to_human(getattr(so, "size", 0))
 
-        if errors:
-            msg = ", ".join(errors)
-            if path:
-                msg += " (%s %s)" % (path, so.status)
-            return (msg, False)
-        else:
-            return ("%s %s%s" % (path, size, so.status), True)
-
+class UIBlockStorageObject(UIStorageObject):
+    def summary(self):
+        so = self.rtsnode
+        return ("%s %s" % (so.udev_path, so.status), True)
