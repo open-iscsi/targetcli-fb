@@ -662,6 +662,10 @@ class UINodeACL(UIRTSLibNode):
             self.shell.log.error("Incorrect LUN value.")
             return
 
+        if tpg_lun in (ml.tpg_lun.lun for ml in self.rtsnode.mapped_luns):
+            self.shell.log.warning(
+                "Warning: TPG LUN %d already mapped to this NodeACL" % tpg_lun)
+
         mlun = MappedLUN(self.rtsnode, mapped_lun, tpg_lun, write_protect)
         ui_mlun = UIMappedLUN(mlun, self)
         self.shell.log.info("Created Mapped LUN %s." % mlun.mapped_lun)
