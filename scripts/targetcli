@@ -78,7 +78,7 @@ def main():
         shell.con.display("You are not root, disabling privileged commands.\n")
 
     shell.run_interactive()
-    if shell.prefs['auto_save_on_exit']:
+    if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")
         root_node.ui_command_saveconfig()
 
