@@ -450,7 +450,8 @@ class UITarget(UITPG):
         UITPG.__init__(self, TPG(target, 1), parent)
         self._name = target.wwn
         self.target = target
-        self.rtsnode.enable = True
+        if self.parent.name != "sbp":
+            self.rtsnode.enable = True
 
     def summary(self):
         if not self.target.fabric_module.is_valid_wwn(self.target.wwn):
