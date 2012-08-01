@@ -150,12 +150,7 @@ class UIFabricModule(UIRTSLibNode):
     def summary(self):
         no_targets = len(self._children)
         status = None
-        if self.rtsnode.needs_wwn() and not self.rtsnode.spec['wwn_list']:
-            msg = "Not found"
-        elif no_targets > 1:
-            msg = "%d Targets" % no_targets
-        else:
-            msg = "%d Target" % no_targets
+        msg = "%d Targets" % no_targets
 
         fm = self.rtsnode
         if fm.has_feature('discovery_auth') and fm.discovery_enable_auth:

@@ -46,8 +46,10 @@ class UIRoot(UINode):
 
         UIBackstores(self)
 
-        for fabric_module in RTSRoot().fabric_modules:
-            UIFabricModule(fabric_module, self)
+        # only show fabrics present in the system
+        for fm in RTSRoot().fabric_modules:
+            if (not fm.needs_wwn()) or fm.spec['wwn_list']:
+                UIFabricModule(fm, self)
 
     def ui_command_saveconfig(self, savefile=default_save_file):
         '''
