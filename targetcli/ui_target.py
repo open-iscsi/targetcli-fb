@@ -507,7 +507,7 @@ class UINodeACLs(UINode):
         try:
             node_acl = NodeACL(self.tpg, wwn, mode="create")
         except RTSLibError, msg:
-            self.shell.log.error(msg)
+            self.shell.log.error(str(msg))
             return
         else:
             self.shell.log.info("Created Node ACL for %s"
