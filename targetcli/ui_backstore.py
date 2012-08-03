@@ -112,15 +112,6 @@ class UIBackstore(UINode):
             msg = "%d Storage Object" % no_storage_objects
         return (msg, None)
 
-    def prm_buffered(self, buffered):
-        buffered = \
-                self.ui_eval_param(buffered, 'bool', True)
-        if buffered:
-            self.shell.log.info("Using buffered mode.")
-        else:
-            self.shell.log.info("Not using buffered mode.")
-        return buffered
-
     def ui_command_delete(self, name):
         '''
         Recursively deletes the storage object having the specified I{name}. If
@@ -281,10 +272,12 @@ class UIFileIOBackstore(UIBackstore):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        self.shell.log.debug("Using params size=%s buffered=%s sparse=%s"
-                             % (size, buffered, sparse))
 
         sparse = self.ui_eval_param(sparse, 'bool', True)
+        buffered = self.ui_eval_param(buffered, 'bool', True)
+
+        self.shell.log.debug("Using params size=%s buffered=%s sparse=%s"
+                             % (size, buffered, sparse))
 
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
@@ -318,7 +311,7 @@ class UIFileIOBackstore(UIBackstore):
         so = FileIOStorageObject(
             name, file_or_dev,
             size,
-            buffered_mode=self.prm_buffered(buffered))
+            buffered_mode=buffered)
         self.shell.log.info("Created fileio %s with size %s"
                             % (name, size))
         ui_so = UIFileioStorageObject(so, self)
