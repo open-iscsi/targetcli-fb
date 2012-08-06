@@ -246,20 +246,20 @@ class UIFileIOBackstore(UIBackstore):
             raise ExecutionError("Could not expand file to size")
         f.close()
 
-    def ui_command_create(self, name, file_or_dev, size=None, buffered=None,
+    def ui_command_create(self, name, file_or_dev, size=None, write_back=None,
                           sparse=None):
         '''
-        Creates a FileIO storage object. If I{file_or_dev} is a path to a
-        regular file to be used as backend, then the I{size} parameter is
-        mandatory. Else, if I{file_or_dev} is a path to a block device, the
-        size parameter B{must} be ommited. If present, I{size} is the size of
-        the file to be used, I{file} the path to the file or I{dev} the path to
-        a block device. The I{buffered} parameter is a boolean stating
-        whether or not to enable buffered mode. It is enabled by default
-        (asynchronous mode). The I{sparse} parameter is only applicable when
-        creating a new backing file. It is a boolean stating if the
-        created file should be created as a sparse file (the default), or
-        fully initialized.
+        Creates a FileIO storage object. If I{file_or_dev} is a path
+        to a regular file to be used as backend, then the I{size}
+        parameter is mandatory. Else, if I{file_or_dev} is a path to a
+        block device, the size parameter B{must} be ommited. If
+        present, I{size} is the size of the file to be used, I{file}
+        the path to the file or I{dev} the path to a block device. The
+        I{write_back} parameter is a boolean controlling write
+        caching. It is enabled by default. The I{sparse} parameter is
+        only applicable when creating a new backing file. It is a
+        boolean stating if the created file should be created as a
+        sparse file (the default), or fully initialized.
 
         SIZE SYNTAX
         ===========
@@ -274,10 +274,10 @@ class UIFileIOBackstore(UIBackstore):
         self.assert_root()
 
         sparse = self.ui_eval_param(sparse, 'bool', True)
-        buffered = self.ui_eval_param(buffered, 'bool', True)
+        write_back = self.ui_eval_param(write_back, 'bool', True)
 
-        self.shell.log.debug("Using params size=%s buffered=%s sparse=%s"
-                             % (size, buffered, sparse))
+        self.shell.log.error("Using params size=%s write_back=%s sparse=%s"
+                             % (size, write_back, sparse))
 
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
@@ -311,7 +311,7 @@ class UIFileIOBackstore(UIBackstore):
         so = FileIOStorageObject(
             name, file_or_dev,
             size,
-            buffered_mode=buffered)
+            write_back=write_back)
         self.shell.log.info("Created fileio %s with size %s"
                             % (name, size))
         ui_so = UIFileioStorageObject(so, self)
@@ -377,13 +377,13 @@ class UIFileioStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
 
-        if so.buffered_mode:
-            buff_str = "buffered"
+        if so.write_back:
+            wb_str = "write-back"
         else:
-            buff_str = "unbuffered"
+            wb_str = "write-thru"
 
         return ("%s (%s) %s %s" % (so.udev_path, bytes_to_human(so.size),
-                                 buff_str, so.status), True)
+                                   wb_str, so.status), True)
 
 
 class UIBlockStorageObject(UIStorageObject):
