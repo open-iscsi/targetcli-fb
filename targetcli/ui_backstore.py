@@ -64,8 +64,9 @@ def human_to_bytes(hsize, kilo=1024):
 
     return size * (int(kilo) ** power)
 
-def bytes_to_human(size, kilo=1024.0):
-    for x in ['bytes','K','M','G','T']:
+def bytes_to_human(size):
+    kilo = 1024.0
+    for x in ['bytes','KiB','MiB','GiB','TiB', 'PiB']:
         if size < kilo:
             return "%3.1f%s" % (size, x)
         size /= kilo
@@ -389,4 +390,11 @@ class UIFileioStorageObject(UIStorageObject):
 class UIBlockStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
-        return ("%s %s" % (so.udev_path, so.status), True)
+
+        if so.write_back:
+            wb_str = "write-back"
+        else:
+            wb_str = "write-thru"
+
+        return ("%s (%s) %s %s" % (so.udev_path, bytes_to_human(so.size),
+                                   wb_str, so.status), True)
