@@ -328,7 +328,7 @@ class UIBlockBackstore(UIBackstore):
         self.so_cls = UIBlockStorageObject
         UIBackstore.__init__(self, 'block', parent)
 
-    def ui_command_create(self, name, dev, readonly=None):
+    def ui_command_create(self, name, dev, readonly=None, write_back=None):
         '''
         Creates an Block Storage object. I{dev} is the path to the TYPE_DISK
         block device to use.
@@ -336,8 +336,9 @@ class UIBlockBackstore(UIBackstore):
         self.assert_root()
 
         readonly = self.ui_eval_param(readonly, 'bool', False)
+        write_back = self.ui_eval_param(write_back, 'bool', True)
 
-        so = BlockStorageObject(name, dev, readonly)
+        so = BlockStorageObject(name, dev, readonly=readonly, write_back=write_back)
         ui_so = UIBlockStorageObject(so, self)
         self.shell.log.info("Created block storage object %s using %s."
                             % (name, dev))
