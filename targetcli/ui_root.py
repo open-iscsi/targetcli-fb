@@ -68,10 +68,13 @@ class UIRoot(UINode):
         except IOError:
             pass
 
-        with open(savefile, "w+") as f:
+        with open(savefile+".temp", "w+") as f:
             os.fchmod(f.fileno(), stat.S_IRUSR | stat.S_IWUSR)
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
             f.write("\n")
+            os.fsync(f.fileno())
+
+        os.rename(savefile+".temp", savefile)
 
         self.shell.log.info("Configuration saved to %s" % savefile)
 
