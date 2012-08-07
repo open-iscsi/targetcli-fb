@@ -418,8 +418,11 @@ class UITPG(UIRTSLibNode):
         if self.rtsnode.enable:
             self.shell.log.info("The TPGT is already enabled.")
         else:
-            self.rtsnode.enable = True
-            self.shell.log.info("The TPGT has been enabled.")
+            try:
+                self.rtsnode.enable = True
+                self.shell.log.info("The TPGT has been enabled.")
+            except:
+                self.shell.log.error("The TPGT could not be enabled.")
 
     def ui_command_disable(self):
         '''
