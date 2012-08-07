@@ -397,5 +397,9 @@ class UIBlockStorageObject(UIStorageObject):
         else:
             wb_str = "write-thru"
 
-        return ("%s (%s) %s %s" % (so.udev_path, bytes_to_human(so.size),
-                                   wb_str, so.status), True)
+        ro_str = ""
+        if so.readonly:
+            ro_str = "ro "
+
+        return ("%s (%s) %s%s %s" % (so.udev_path, bytes_to_human(so.size),
+                                   ro_str, wb_str, so.status), True)
