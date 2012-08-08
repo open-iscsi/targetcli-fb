@@ -303,8 +303,7 @@ class UIFileIOBackstore(UIBackstore):
         f = open(filename, "w+")
         try:
             if sparse:
-                f.seek(size-1)
-                f.write("\0")
+                os.ftruncate(f.fileno(), size)
             else:
                 self.shell.log.info("Writing %s bytes" % size)
                 while size > 0:
