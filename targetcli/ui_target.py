@@ -330,6 +330,10 @@ class UIMultiTPGTarget(UIRTSLibNode):
         tpg = TPG(self.rtsnode, tag, mode='create')
         if self.shell.prefs['auto_enable_tpgt']:
             tpg.enable = True
+
+        if tpg.has_feature("acls_auth"):
+                tpg.set_attribute("authentication", 0)
+
         self.shell.log.info("Created TPG %s." % tpg.tag)
         ui_tpg = UITPG(tpg, self)
         return self.new_node(ui_tpg)
