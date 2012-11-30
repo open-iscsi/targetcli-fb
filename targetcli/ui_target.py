@@ -794,14 +794,20 @@ class UILUNs(UINode):
                                    self.shell.prefs['auto_add_mapped_luns'])
 
         try:
-            storage_object = self.get_node(storage_object).rtsnode
+            so = self.get_node(storage_object).rtsnode
         except ValueError:
             self.shell.log.error("Invalid storage object %s." % storage_object)
             return
 
+        sos = (l.storage_object for l in self.parent.rtsnode.luns)
+        so_paths = ("/backstores/%s/%s" % (x.plugin, x.name) for x in sos)
+        if storage_object in so_paths:
+            raise ExecutionError("lun for storage object %s already exists" \
+                                     % storage_object)
+
         if lun and lun.lower().startswith('lun'):
             lun = lun[3:]
-        lun_object = LUN(self.tpg, lun, storage_object)
+        lun_object = LUN(self.tpg, lun, so)
         self.shell.log.info("Created LUN %s." % lun_object.lun)
         ui_lun = UILUN(lun_object, self)
 
