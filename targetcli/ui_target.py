@@ -646,12 +646,17 @@ class UINodeACL(UIRTSLibNode):
 
         return (msg, status)
 
-    def ui_command_create(self, mapped_lun, tpg_lun, write_protect=None):
+    def ui_command_create(self, mapped_lun, tpg_lun_or_backstore, write_protect=None):
         '''
         Creates a mapping to one of the TPG LUNs for the initiator referenced
-        by the ACL. The provided I{tpg_lun} will appear to that initiator as
-        LUN I{mapped_lun}. If the I{write_protect} flag is set to B{1}, the
-        initiator will not have write access to the Mapped LUN.
+        by the ACL. The provided I{tpg_lun_or_backstore} will appear to that
+        initiator as LUN I{mapped_lun}. If the I{write_protect} flag is set to
+        B{1}, the initiator will not have write access to the Mapped LUN.
+
+        A storage object may also be given for the I{tpg_lun_or_backstore} parameter,
+        in which case the TPG LUN will be created for that backstore before
+        mapping the LUN to the initiator. If a TPG LUN for the backstore already
+        exists, the Mapped LUN will map to that TPG LUN.
 
         SEE ALSO
         ========
@@ -659,11 +664,33 @@ class UINodeACL(UIRTSLibNode):
         '''
         self.assert_root()
         try:
-            tpg_lun = int(tpg_lun)
             mapped_lun = int(mapped_lun)
         except ValueError:
-            self.shell.log.error("Incorrect LUN value.")
+            self.shell.log.error("mapped_lun must be an integer")
             return
+
+        try:
+            if tpg_lun_or_backstore.startswith("lun"):
+                tpg_lun_or_backstore = tpg_lun_or_backstore[3:]
+            tpg_lun = int(tpg_lun_or_backstore)
+        except ValueError:
+            try:
+                so = self.get_node(tpg_lun_or_backstore).rtsnode
+            except ValueError:
+                self.shell.log.error("LUN or storage object not found")
+                return
+
+            ui_tpg = self.parent.parent
+
+            for lun in ui_tpg.rtsnode.luns:
+                if so == lun.storage_object:
+                    tpg_lun = lun.lun
+                    break
+            else:
+                lun_object = LUN(ui_tpg.rtsnode, storage_object=so)
+                self.shell.log.info("Created LUN %s." % lun_object.lun)
+                ui_lun = UILUN(lun_object, ui_tpg.get_node("luns"))
+                tpg_lun = ui_lun.rtsnode.lun
 
         if tpg_lun in (ml.tpg_lun.lun for ml in self.rtsnode.mapped_luns):
             self.shell.log.warning(
@@ -673,6 +700,33 @@ class UINodeACL(UIRTSLibNode):
         ui_mlun = UIMappedLUN(mlun, self)
         self.shell.log.info("Created Mapped LUN %s." % mlun.mapped_lun)
         return self.new_node(ui_mlun)
+
+    def ui_complete_create(self, parameters, text, current_param):
+        '''
+        Parameter auto-completion method for user command create.
+        @param parameters: Parameters on the command line.
+        @type parameters: dict
+        @param text: Current text of parameter being typed by the user.
+        @type text: str
+        @param current_param: Name of parameter to complete.
+        @type current_param: str
+        @return: Possible completions
+        @rtype: list of str
+        '''
+        if current_param == 'tpg_lun_or_backstore':
+            completions = []
+            for backstore in self.get_node('/backstores').children:
+                for storage_object in backstore.children:
+                    completions.append(storage_object.path)
+            completions.extend(lun.name for lun in self.parent.parent.get_node("luns").children)
+            completions = [c for c in completions if c.startswith(text)]
+        else:
+            completions = []
+
+        if len(completions) == 1:
+            return [completions[0] + ' ']
+        else:
+            return completions
 
     def ui_command_delete(self, mapped_lun):
         '''
