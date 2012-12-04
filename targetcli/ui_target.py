@@ -853,9 +853,7 @@ class UILUNs(UINode):
             self.shell.log.error("Invalid storage object %s." % storage_object)
             return
 
-        sos = (l.storage_object for l in self.parent.rtsnode.luns)
-        so_paths = ("/backstores/%s/%s" % (x.plugin, x.name) for x in sos)
-        if storage_object in so_paths:
+        if so in (l.storage_object for l in self.parent.rtsnode.luns):
             raise ExecutionError("lun for storage object %s already exists" \
                                      % storage_object)
 
