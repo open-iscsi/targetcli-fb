@@ -22,6 +22,7 @@ from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
 from rtslib import Target, TPG, LUN
 from configshell import ExecutionError
+import ethtool
 
 class UIFabricModule(UIRTSLibNode):
     '''
@@ -1015,12 +1016,30 @@ class UIPortals(UINode):
             msg = "%d Portal" % no_portals
         return (msg, None)
 
+    def _canonicalize_ip(self, ip_address):
+        """
+        rtslib expects ipv4 addresses as a dotted-quad string, and IPv6
+        addresses surrounded by brackets.
+        """
+
+        # Contains a '.'? Must be ipv4, right?
+        if "." in ip_address:
+            return ip_address
+        return "[" + ip_address + "]"
+
     def ui_command_create(self, ip_address=None, ip_port=None):
         '''
-        Creates a Network Portal with specified I{ip_address} and I{ip_port}.
-        If I{ip_port} is omitted, the default port for the target fabric will
-        be used. If I{ip_address} is omitted, the first IP address found
-        matching the local hostname will be used.
+        Creates a Network Portal with specified I{ip_address} and
+        I{ip_port}.  If I{ip_port} is omitted, the default port for
+        the target fabric will be used. If I{ip_address} is omitted,
+        INADDR_ANY (0.0.0.0) will be used.
+
+        Choosing IN6ADDR_ANY (::0) will listen on all IPv6 interfaces
+        as well as IPv4, assuming IPV6_V6ONLY sockopt has not been
+        set.
+
+        Note: Portals on Link-local IPv6 addresses are currently not
+        supported.
 
         SEE ALSO
         ========
@@ -1032,15 +1051,13 @@ class UIPortals(UINode):
         ip_port = self.ui_eval_param(ip_port, 'number', 3260)
         ip_address = self.ui_eval_param(ip_address, 'string', "0.0.0.0")
 
-        if ip_address not in utils.list_eth_ips() and ip_address != "0.0.0.0":
-            raise ExecutionError("Cannot bind to address: %s" % ip_address)
-
         if ip_port == 3260:
             self.shell.log.info("Using default IP port %d" % ip_port)
         if ip_address == "0.0.0.0":
             self.shell.log.info("Binding to INADDR_ANY (0.0.0.0)")
 
-        portal = NetworkPortal(self.tpg, ip_address, ip_port, mode='create')
+        portal = NetworkPortal(self.tpg, self._canonicalize_ip(ip_address),
+                               ip_port, mode='create')
         self.shell.log.info("Created network portal %s:%d."
                             % (ip_address, ip_port))
         ui_portal = UIPortal(portal, self)
@@ -1058,8 +1075,22 @@ class UIPortals(UINode):
         @return: Possible completions
         @rtype: list of str
         '''
+
+        def list_eth_ips():
+            devcfgs = ethtool.get_interfaces_info(ethtool.get_devices())
+            addrs = set()
+            for d in devcfgs:
+                if d.ipv4_address:
+                    addrs.add(d.ipv4_address)
+                    addrs.add("0.0.0.0")
+                for ip6 in d.get_ipv6_addresses():
+                    addrs.add(ip6.address)
+                    addrs.add("::0") # only list ::0 if ipv6 present
+
+            return sorted(addrs)
+
         if current_param == 'ip_address':
-            completions = [addr for addr in utils.list_eth_ips()
+            completions = [addr for addr in list_eth_ips()
                            if addr.startswith(text)]
         else:
             completions = []
@@ -1078,7 +1109,8 @@ class UIPortals(UINode):
         B{create}
         '''
         self.assert_root()
-        portal = NetworkPortal(self.tpg, ip_address, ip_port, mode='lookup')
+        portal = NetworkPortal(self.tpg, self._canonicalize_ip(ip_address),
+                               ip_port, mode='lookup')
         portal.delete()
         self.shell.log.info("Deleted network portal %s:%s"
                             % (ip_address, ip_port))
@@ -1103,19 +1135,17 @@ class UIPortals(UINode):
         all_ports = set([])
         for portal in self.tpg.network_portals:
             all_ports.add(str(portal.port))
-            if not portal.ip_address in portals:
-                portals[portal.ip_address] = []
-            portals[portal.ip_address].append(str(portal.port))
+            portal_ip = portal.ip_address.strip('[]')
+            if not portal_ip in portals:
+                portals[portal_ip] = []
+            portals[portal_ip].append(str(portal.port))
 
         if current_param == 'ip_address':
+            completions = [addr for addr in portals if addr.startswith(text)]
             if 'ip_port' in parameters:
                 port = parameters['ip_port']
-                completions = [addr for addr in portals
-                               if port in portals[addr]
-                               if addr.startswith(text)]
-            else:
-                completions = [addr for addr in portals
-                               if addr.startswith(text)]
+                completions = [addr for addr in completions
+                               if port in portals[addr]]
         elif current_param == 'ip_port':
             if 'ip_address' in parameters:
                 addr = parameters['ip_address']
