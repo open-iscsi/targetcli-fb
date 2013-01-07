@@ -98,7 +98,9 @@ class UIRoot(UINode):
                 return
 
         if errors:
-            self.shell.log.error("Configuration restored, %s recoverable errors" % errors)
+            self.shell.log.error("Configuration restored, %d recoverable errors:" % len(errors))
+            for error in errors:
+                self.shell.log.error(error)
         else:
             self.shell.log.info("Configuration restored from %s" % savefile)
 
