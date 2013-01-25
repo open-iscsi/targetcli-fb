@@ -278,7 +278,7 @@ class UIFileIOBackstore(UIBackstore):
         sparse = self.ui_eval_param(sparse, 'bool', True)
         write_back = self.ui_eval_param(write_back, 'bool', True)
 
-        self.shell.log.error("Using params size=%s write_back=%s sparse=%s"
+        self.shell.log.debug("Using params size=%s write_back=%s sparse=%s"
                              % (size, write_back, sparse))
 
         is_dev = get_block_type(file_or_dev) is not None \
