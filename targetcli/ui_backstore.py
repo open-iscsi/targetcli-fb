@@ -21,10 +21,12 @@ from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
+from rtslib import RTSLibError
 from rtslib.utils import (get_block_type, is_disk_partition)
 from configshell import ExecutionError
 import os
 import re
+import string
 
 def human_to_bytes(hsize, kilo=1024):
     '''
@@ -46,14 +48,14 @@ def human_to_bytes(hsize, kilo=1024):
     @type kilo: int
     @return: An int representing the human-readable string converted to bytes
     '''
-    size = str(hsize).replace("g","G").replace("K","k")
-    size = size.replace("m","M").replace("t","T")
-    if not re.match("^[0-9]+[T|G|M|k]?[B]?$", size):
+    trans = string.maketrans("KMGTB", "kmgtb")
+    size = hsize.translate(trans, "i")
+    if not re.match("^[0-9]+[k|m|g|t]?[i]?[b]?$", size):
         raise RTSLibError("Cannot interpret size, wrong format: %s" % hsize)
 
-    size = size.rstrip('B')
+    size = size.rstrip('ib')
 
-    units = ['k', 'M', 'G', 'T']
+    units = ['k', 'm', 'g', 't']
     try:
         power = units.index(size[-1]) + 1
     except ValueError:
