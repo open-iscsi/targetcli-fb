@@ -48,7 +48,7 @@ class UIRoot(UINode):
 
         # only show fabrics present in the system
         for fm in RTSRoot().fabric_modules:
-            if (not fm.needs_wwn()) or fm.spec['wwn_list']:
+            if fm.wwns == None or list(fm.wwns) != []:
                 UIFabricModule(fm, self)
 
     def ui_command_saveconfig(self, savefile=default_save_file):

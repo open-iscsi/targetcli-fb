@@ -108,12 +108,7 @@ class UIBackstore(UINode):
                 ui_so.name = so.name
 
     def summary(self):
-        no_storage_objects = len(self._children)
-        if no_storage_objects > 1:
-            msg = "%d Storage Objects" % no_storage_objects
-        else:
-            msg = "%d Storage Object" % no_storage_objects
-        return (msg, None)
+            return ("Storage Objects: %d" % len(self._children), None)
 
     def ui_command_delete(self, name):
         '''

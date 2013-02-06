@@ -149,9 +149,8 @@ class UIFabricModule(UIRTSLibNode):
                 UITarget(target, self)
 
     def summary(self):
-        no_targets = len(self._children)
         status = None
-        msg = "%d Targets" % no_targets
+        msg = "Targets: %d" % len(self._children)
 
         fm = self.rtsnode
         if fm.has_feature('discovery_auth') and fm.discovery_enable_auth:
@@ -181,6 +180,7 @@ class UIFabricModule(UIRTSLibNode):
         B{info}
         '''
         self.assert_root()
+
         target = Target(self.rtsnode, wwn, mode='create')
         wwn = target.wwn
         if target.has_feature('tpgts'):
@@ -204,10 +204,9 @@ class UIFabricModule(UIRTSLibNode):
         @return: Possible completions
         @rtype: list of str
         '''
-        spec = self.rtsnode.spec
-        if current_param == 'wwn' and spec['wwn_list'] is not None:
+        if current_param == 'wwn' and self.rtsnode.wwns is not None:
             existing_wwns = [child.wwn for child in self.rtsnode.targets]
-            completions = [wwn for wwn in spec['wwn_list']
+            completions = [wwn for wwn in self.rtsnode.wwns
                            if wwn.startswith(text)
                            if wwn not in existing_wwns]
         else:
@@ -303,18 +302,12 @@ class UIMultiTPGTarget(UIRTSLibNode):
             UITPG(tpg, self)
 
     def summary(self):
-        if not self.rtsnode.fabric_module.is_valid_wwn(self.rtsnode.wwn):
-            description = "INVALID WWN"
-            is_healthy = False
-        else:
-            is_healthy = None
-            no_tpgs = len(self._children)
-            if no_tpgs > 1:
-                description = "%d TPGs" % no_tpgs
-            else:
-                description = "%d TPG" % no_tpgs
+        try:
+            self.rtsnode.fabric_module.to_normalized_wwn(self.rtsnode.wwn)
+        except:
+            return ("INVALID WWN", False)
 
-        return (description, is_healthy)
+        return ("TPGs: %d" % len(self._children), None)
 
     def ui_command_create(self, tag=None):
         '''
@@ -457,10 +450,12 @@ class UITarget(UITPG):
             self.rtsnode.enable = True
 
     def summary(self):
-        if not self.target.fabric_module.is_valid_wwn(self.target.wwn):
+        try:
+            self.target.fabric_module.to_normalized_wwn(self.target.wwn)
+        except:
             return ("INVALID WWN", False)
-        else:
-            return UITPG.summary(self)
+
+        return UITPG.summary(self)
 
 
 class UINodeACLs(UINode):
@@ -479,12 +474,7 @@ class UINodeACLs(UINode):
             UINodeACL(node_acl, self)
 
     def summary(self):
-        no_acls = len(self._children)
-        if no_acls > 1:
-            msg = "%d ACLs" % no_acls
-        else:
-            msg = "%d ACL" % no_acls
-        return (msg, None)
+        return ("ACLs: %d" % len(self._children), None)
 
     def ui_command_create(self, wwn, add_mapped_luns=None):
         '''
@@ -502,25 +492,13 @@ class UINodeACLs(UINode):
         B{delete}
         '''
         self.assert_root()
-        spec = self.tpg.parent_target.fabric_module.spec
-        if not utils.is_valid_wwn(spec['wwn_type'], wwn):
-            self.shell.log.error("'%s' is not a valid %s WWN."
-                                 % (wwn, spec['wwn_type']))
-            return
 
-        add_mapped_luns = \
-                self.ui_eval_param(add_mapped_luns, 'bool',
-                                   self.shell.prefs['auto_add_mapped_luns'])
+        add_mapped_luns = self.ui_eval_param(add_mapped_luns, 'bool',
+                                             self.shell.prefs['auto_add_mapped_luns'])
 
-        try:
-            node_acl = NodeACL(self.tpg, wwn, mode="create")
-        except RTSLibError, msg:
-            self.shell.log.error(str(msg))
-            return
-        else:
-            self.shell.log.info("Created Node ACL for %s"
-                                % node_acl.node_wwn)
-            ui_node_acl = UINodeACL(node_acl, self)
+        node_acl = NodeACL(self.tpg, wwn, mode="create")
+        ui_node_acl = UINodeACL(node_acl, self)
+        self.shell.log.info("Created Node ACL for %s" % node_acl.node_wwn)
 
         if add_mapped_luns:
             for lun in self.tpg.luns:
@@ -627,11 +605,7 @@ class UINodeACL(UIRTSLibNode):
             UIMappedLUN(mlun, self)
 
     def summary(self):
-        no_mluns = len(self._children)
-        if no_mluns > 1:
-            msg = "%d Mapped LUNs" % no_mluns
-        else:
-            msg = "%d Mapped LUN" % no_mluns
+        msg = "Mapped LUNs: %d" % len(self._children)
 
         status = None
         na = self.rtsnode
@@ -813,12 +787,7 @@ class UILUNs(UINode):
             UILUN(lun, self)
 
     def summary(self):
-        no_luns = len(self._children)
-        if no_luns > 1:
-            msg = "%d LUNs" % no_luns
-        else:
-            msg = "%d LUN" % no_luns
-        return (msg, None)
+        return ("LUNs: %d" % len(self._children), None)
 
     def ui_command_create(self, storage_object, lun=None,
                           add_mapped_luns=None):
@@ -1009,12 +978,7 @@ class UIPortals(UINode):
             UIPortal(portal, self)
 
     def summary(self):
-        no_portals = len(self._children)
-        if no_portals > 1:
-            msg = "%d Portals" % no_portals
-        else:
-            msg = "%d Portal" % no_portals
-        return (msg, None)
+        return ("Portals: %d" % len(self._children), None)
 
     def _canonicalize_ip(self, ip_address):
         """
