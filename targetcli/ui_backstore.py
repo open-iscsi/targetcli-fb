@@ -63,6 +63,7 @@ class UIBackstores(UINode):
 class UIBackstore(UINode):
     '''
     A backstore UI.
+    Abstract Base Class, do not instantiate.
     '''
     def __init__(self, plugin, parent):
         UINode.__init__(self, plugin, parent)
@@ -439,6 +440,7 @@ class UIIBlockBackstore(UIBackstore):
 class UIStorageObject(UIRTSLibNode):
     '''
     A storage object UI.
+    Abstract Base Class, do not instantiate.
     '''
     def __init__(self, storage_object, parent):
         name = storage_object.name
