@@ -156,6 +156,17 @@ class UIBackstore(UINode):
         else:
             return completions
 
+    def ui_set_model_alias(self, storageobject):
+        if self.shell.prefs['export_backstore_as_model']:
+            try:
+                storageobject.set_attribute("emulate_model_alias", 1)
+            except RTSLibError, err:
+                if "Cannot find attribute" in str(err):
+                    raise RTSLibError("This version of target_core_mod does "
+                                      "not support export_backstore_as_model "
+                                      "functionality.  Model is unchanged.")
+                else:
+                    raise RTSLibError(str(err) + ".  Model is unchanged.")
 
 class UIPSCSIBackstore(UIBackstore):
     '''
@@ -182,6 +193,7 @@ class UIPSCSIBackstore(UIBackstore):
 
         so = PSCSIStorageObject(name, dev)
         ui_so = UIPSCSIStorageObject(so, self)
+        self.ui_set_model_alias(so)
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
         return self.new_node(ui_so)
@@ -213,10 +225,10 @@ class UIRDMCPBackstore(UIBackstore):
 
         so = RDMCPStorageObject(name, human_to_bytes(size))
         ui_so = UIRamdiskStorageObject(so, self)
+        self.ui_set_model_alias(so)
         self.shell.log.info("Created ramdisk %s with size %s."
                             % (name, size))
         return self.new_node(ui_so)
-
 
 class UIFileIOBackstore(UIBackstore):
     '''
@@ -309,10 +321,10 @@ class UIFileIOBackstore(UIBackstore):
             name, file_or_dev,
             size,
             write_back=write_back)
+        ui_so = UIFileioStorageObject(so, self)
+        self.ui_set_model_alias(so)
         self.shell.log.info("Created fileio %s with size %s"
                             % (name, size))
-        ui_so = UIFileioStorageObject(so, self)
-
         return self.new_node(ui_so)
 
 
@@ -336,6 +348,7 @@ class UIBlockBackstore(UIBackstore):
 
         so = BlockStorageObject(name, dev, readonly=readonly, write_back=write_back)
         ui_so = UIBlockStorageObject(so, self)
+        self.ui_set_model_alias(so)
         self.shell.log.info("Created block storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
