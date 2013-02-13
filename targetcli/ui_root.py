@@ -27,8 +27,11 @@ import json
 import shutil
 import os
 import stat
+from glob import glob
+from datetime import datetime
 
 default_save_file = "/etc/target/saveconfig.json"
+kept_backups = 10
 
 class UIRoot(UINode):
     '''
@@ -60,22 +63,33 @@ class UIRoot(UINode):
 
         savefile = os.path.expanduser(savefile)
 
-        backupfile = savefile + ".backup"
-        try:
-            shutil.move(savefile, backupfile)
-            self.shell.log.info("Existing file %s backed up to %s" % \
-                                    (savefile, backupfile.split('/')[-1]))
-        except IOError:
-            pass
-
         with open(savefile+".temp", "w+") as f:
             os.fchmod(f.fileno(), stat.S_IRUSR | stat.S_IWUSR)
             f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
             f.write("\n")
             os.fsync(f.fileno())
 
-        os.rename(savefile+".temp", savefile)
+        # Only save backups if saving to default location
+        if savefile == default_save_file:
+            backup_dir = os.path.dirname(savefile) + "/backup"
+            backup_name = "saveconfig-" + \
+                datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
+            backupfile = backup_dir + "/" + backup_name
+            try:
+                shutil.move(savefile, backupfile)
+            except IOError:
+                pass
 
+            # Kill excess backups
+            backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
+            files_to_unlink = list(reversed(backups))[kept_backups:]
+            for f in files_to_unlink:
+                os.unlink(f)
+
+            self.shell.log.info("Last %d configs saved in %s." % \
+                                    (kept_backups, backup_dir))
+
+        os.rename(savefile+".temp", savefile)
         self.shell.log.info("Configuration saved to %s" % savefile)
 
     def ui_command_restoreconfig(self, savefile=default_save_file, clear_existing=False):
