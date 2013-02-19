@@ -94,7 +94,7 @@ class UIFabricModule(UIRTSLibNode):
 
     def summary(self):
         no_targets = len(self._children)
-        if no_targets > 1:
+        if no_targets != 1:
             msg = "%d Targets" % no_targets
         else:
             msg = "%d Target" % no_targets
@@ -244,7 +244,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         else:
             is_healthy = None
             no_tpgs = len(self._children)
-            if no_tpgs > 1:
+            if no_tpgs != 1:
                 description = "%d TPGs" % no_tpgs
             else:
                 description = "%d TPG" % no_tpgs
@@ -421,7 +421,7 @@ class UINodeACLs(UINode):
 
     def summary(self):
         no_acls = len(self._children)
-        if no_acls > 1:
+        if no_acls != 1:
             msg = "%d ACLs" % no_acls
         else:
             msg = "%d ACL" % no_acls
@@ -554,7 +554,7 @@ class UINodeACL(UIRTSLibNode):
 
     def summary(self):
         no_mluns = len(self._children)
-        if no_mluns > 1:
+        if no_mluns != 1:
             msg = "%d Mapped LUNs" % no_mluns
         else:
             msg = "%d Mapped LUN" % no_mluns
@@ -667,7 +667,7 @@ class UILUNs(UINode):
 
     def summary(self):
         no_luns = len(self._children)
-        if no_luns > 1:
+        if no_luns != 1:
             msg = "%d LUNs" % no_luns
         else:
             msg = "%d LUN" % no_luns
@@ -880,7 +880,7 @@ class UIPortals(UINode):
 
     def summary(self):
         no_portals = len(self._children)
-        if no_portals > 1:
+        if no_portals != 1:
             msg = "%d Portals" % no_portals
         else:
             msg = "%d Portal" % no_portals
