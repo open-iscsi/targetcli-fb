@@ -292,7 +292,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
     A generic target UI that has multiple TPGs.
     '''
     def __init__(self, target, parent):
-        UIRTSLibNode.__init__(self, target.wwn, target, parent)
+        super(UIMultiTPGTarget, self).__init__(target.wwn, target, parent)
         self.cfs_cwd = target.path
         self.refresh()
 
@@ -379,7 +379,7 @@ class UITPG(UIRTSLibNode):
     '''
     def __init__(self, tpg, parent):
         name = "tpg%d" % tpg.tag
-        UIRTSLibNode.__init__(self, name, tpg, parent)
+        super(UITPG, self).__init__(name, tpg, parent)
         self.cfs_cwd = tpg.path
         self.refresh()
 
@@ -443,7 +443,7 @@ class UITarget(UITPG):
     A generic target UI merged with its only TPG.
     '''
     def __init__(self, target, parent):
-        UITPG.__init__(self, TPG(target, 1), parent)
+        super(UITarget, self).__init__(TPG(target, 1), parent)
         self._name = target.wwn
         self.target = target
         if self.parent.name != "sbp":
@@ -455,7 +455,7 @@ class UITarget(UITPG):
         except:
             return ("INVALID WWN", False)
 
-        return UITPG.summary(self)
+        return super(UITarget, self).summary(self)
 
 
 class UINodeACLs(UINode):
@@ -463,7 +463,7 @@ class UINodeACLs(UINode):
     A generic UI for node ACLs.
     '''
     def __init__(self, tpg, parent):
-        UINode.__init__(self, "acls", parent)
+        super(UINodeACLs, self).__init__("acls", parent)
         self.tpg = tpg
         self.cfs_cwd = "%s/acls" % tpg.path
         self.refresh()
@@ -551,7 +551,7 @@ class UINodeACL(UIRTSLibNode):
     A generic UI for a node ACL.
     '''
     def __init__(self, node_acl, parent):
-        UIRTSLibNode.__init__(self, node_acl.node_wwn, node_acl, parent)
+        super(UINodeACL, self).__init__(node_acl.node_wwn, node_acl, parent)
         self.cfs_cwd = node_acl.path
 
         if self.rtsnode.has_feature('acls_auth'):
@@ -747,7 +747,7 @@ class UIMappedLUN(UIRTSLibNode):
     '''
     def __init__(self, mapped_lun, parent):
         name = "mapped_lun%d" % mapped_lun.mapped_lun
-        UIRTSLibNode.__init__(self, name, mapped_lun, parent)
+        super(UIMappedLUN, self).__init__(name, mapped_lun, parent)
         self.cfs_cwd = mapped_lun.path
         self.refresh()
 
@@ -776,7 +776,7 @@ class UILUNs(UINode):
     A generic UI for TPG LUNs.
     '''
     def __init__(self, tpg, parent):
-        UINode.__init__(self, "luns", parent)
+        super(UILUNs, self).__init__("luns", parent)
         self.cfs_cwd = "%s/lun" % tpg.path
         self.tpg = tpg
         self.refresh()
@@ -939,7 +939,7 @@ class UILUN(UIRTSLibNode):
     '''
     def __init__(self, lun, parent):
         name = "lun%d" % lun.lun
-        UIRTSLibNode.__init__(self, name, lun, parent)
+        super(UILUN, self).__init__(name, lun, parent)
         self.cfs_cwd = lun.path
         self.refresh()
 
@@ -967,7 +967,7 @@ class UIPortals(UINode):
     A generic UI for TPG network portals.
     '''
     def __init__(self, tpg, parent):
-        UINode.__init__(self, "portals", parent)
+        super(UIPortals, self).__init__("portals", parent)
         self.tpg = tpg
         self.cfs_cwd = "%s/np" % tpg.path
         self.refresh()
@@ -1132,7 +1132,7 @@ class UIPortal(UIRTSLibNode):
     '''
     def __init__(self, portal, parent):
         name = "%s:%s" % (portal.ip_address, portal.port)
-        UIRTSLibNode.__init__(self, name, portal, parent)
+        super(UIPortal, self).__init__(name, portal, parent)
         self.cfs_cwd = portal.path
         self.refresh()
 
