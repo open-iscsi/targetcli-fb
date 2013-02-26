@@ -24,6 +24,9 @@ from rtslib import Target, TPG, LUN
 from configshell import ExecutionError
 import ethtool
 
+auth_params = ('userid', 'password', 'mutual_userid', 'mutual_password')
+discovery_params = auth_params + ("enable",)
+
 class UIFabricModule(UIRTSLibNode):
     '''
     A fabric module UI.
@@ -35,9 +38,7 @@ class UIFabricModule(UIRTSLibNode):
         self.cfs_cwd = fabric_module.path
         self.refresh()
         if self.rtsnode.has_feature('discovery_auth'):
-            for param in ['userid', 'password',
-                          'mutual_userid', 'mutual_password',
-                          'enable']:
+            for param in discovery_params:
                 self.define_config_group_param('discovery_auth',
                                                param, 'string')
         self.refresh()
@@ -103,18 +104,10 @@ class UIFabricModule(UIRTSLibNode):
         @return: The auth attribute's value
         @rtype: str
         '''
-        value = None
-        if auth_attr == 'password':
-            value = self.rtsnode.discovery_password
-        elif auth_attr == 'userid':
-            value = self.rtsnode.discovery_userid
-        elif auth_attr == 'mutual_password':
-            value = self.rtsnode.discovery_mutual_password
-        elif auth_attr == 'mutual_userid':
-            value = self.rtsnode.discovery_mutual_userid
-        elif auth_attr == 'enable':
-            value = self.rtsnode.discovery_enable_auth
-        return value
+        if auth_attr == 'enable':
+            return getattr(self.rtsnode, "discovery_enable_auth")
+        else:
+            return getattr(self.rtsnode, "discovery_" + auth_attr)
 
     def ui_setgroup_discovery_auth(self, auth_attr, value):
         '''
@@ -125,18 +118,14 @@ class UIFabricModule(UIRTSLibNode):
         @type value: str
         '''
         self.assert_root()
+
         if value is None:
             value = ''
-        if auth_attr == 'password':
-            self.rtsnode.discovery_password = value
-        elif auth_attr == 'userid':
-            self.rtsnode.discovery_userid = value
-        elif auth_attr == 'mutual_password':
-            self.rtsnode.discovery_mutual_password = value
-        elif auth_attr == 'mutual_userid':
-            self.rtsnode.discovery_mutual_userid = value
-        elif auth_attr == 'enable':
-            self.rtsnode.discovery_enable_auth = value
+
+        if auth_attr == 'enable':
+            return setattr(self.rtsnode, "discovery_enable_auth")
+        else:
+            return setattr(self.rtsnode, "discovery_" + auth_attr)
 
     def refresh(self):
         self._children = set([])
@@ -470,8 +459,8 @@ class UINodeACLs(UINode):
 
     def refresh(self):
         self._children = set([])
-        for node_acl in self.tpg.node_acls:
-            UINodeACL(node_acl, self)
+        for name in self.all_names():
+            UINodeACL(name, self)
 
     def summary(self):
         return ("ACLs: %d" % len(self._children), None)
@@ -545,19 +534,142 @@ class UINodeACLs(UINode):
         else:
             return completions
 
+    def find_tagged(self, name):
+        for na in self.tpg.node_acls:
+            if na.node_wwn == name:
+                yield na
+            elif na.tag == name:
+                yield na
+
+    def all_names(self):
+        names = set([])
+
+        for na in self.tpg.node_acls:
+            if na.tag:
+                names.add(na.tag)
+            else:
+                names.add(na.node_wwn)
+
+        return names
+
+    def ui_command_tag(self, wwn_or_tag, new_tag):
+        '''
+        Tag a NodeACL.
+
+        Usage: tag <wwn_or_tag> <new_tag>
+
+        Tags help manage initiator WWNs. A tag can apply to one or
+        more WWNs. This can give a more meaningful name to a single
+        initiator's configuration, or allow multiple initiators with
+        identical settings to be configured en masse.
+
+        The WWNs described by <wwn_or_tag> will be given the new
+        tag. If new_tag already exists, its new members will adopt the
+        current tag's configuration.
+
+        Within a tag, the 'wwns' command shows the WWNs the tag applies to.
+
+        NOTE: tags are only supported in kernel 3.8 and above.
+        '''
+        if wwn_or_tag == new_tag:
+            return
+
+        # Since all WWNs have a '.' in them, let's avoid confusion.
+        if '.' in new_tag:
+            self.shell.log.error("'.' not permitted in tag names.")
+            return
+
+        if new_tag:
+            cur_tag_members = list(self.find_tagged(new_tag))
+        else:
+            cur_tag_members = []
+
+        for na in list(self.find_tagged(wwn_or_tag)):
+            na.tag = new_tag
+
+            # if joining a tag, take its config
+            if cur_tag_members:
+                model = cur_tag_members[0]
+
+                for mlun in na.mapped_luns:
+                    mlun.delete()
+
+                for mlun in model.mapped_luns:
+                    MappedLUN(na, mlun.mapped_lun, mlun.tpg_lun, mlun.write_protect)
+
+                if self.parent.rtsnode.has_feature("acls_auth"):
+                    for param in auth_params:
+                        setattr(na, "chap_" + param, getattr(model, "chap_" + param))
+
+                for item in model.list_attributes(writable=True):
+                    na.set_attribute(item, model.get_attribute(item))
+                for item in model.list_parameters(writable=True):
+                    na.set_parameter(item, model.get_parameter(item))
+
+        self.refresh()
+
+    def ui_command_untag(self, wwn_or_tag):
+        '''
+        Untag a NodeACL.
+
+        Usage: untag <tag>
+
+        Remove the tag given to one or more initiator WWNs. They will
+        return to being displayed by WWN in the configuration tree, and
+        will maintain settings from when they were tagged.
+        '''
+        for na in list(self.find_tagged(wwn_or_tag)):
+            na.tag = None
+
+        self.refresh()
+
+    def ui_complete_tag(self, parameters, text, current_param):
+        '''
+        Parameter auto-completion method for user command tag
+        @param parameters: Parameters on the command line.
+        @type parameters: dict
+        @param text: Current text of parameter being typed by the user.
+        @type text: str
+        @param current_param: Name of parameter to complete.
+        @type current_param: str
+        @return: Possible completions
+        @rtype: list of str
+        '''
+        if current_param == 'wwn_or_tag':
+            completions = [n for n in self.all_names() if n.startswith(text)]
+        else:
+            completions = []
+
+        if len(completions) == 1:
+            return [completions[0] + ' ']
+        else:
+            return completions
+
+    ui_complete_untag = ui_complete_tag
+
 
 class UINodeACL(UIRTSLibNode):
     '''
     A generic UI for a node ACL.
-    '''
-    def __init__(self, node_acl, parent):
-        super(UINodeACL, self).__init__(node_acl.node_wwn, node_acl, parent)
-        self.cfs_cwd = node_acl.path
 
-        if self.rtsnode.has_feature('acls_auth'):
+    Handles grouping multiple NodeACLs in UI via tags.
+    All gets are performed against first NodeACL.
+    All sets are performed on all NodeACLs.
+    This is to make management of multiple ACLs easier.
+    '''
+    def __init__(self, name, parent):
+
+        # Don't want to duplicate work in UIRTSLibNode, so call it but
+        # del self.rtsnode to make sure we always use self.rtsnodes.
+        self.rtsnodes = list(parent.find_tagged(name))
+        super(UINodeACL, self).__init__(name, self.rtsnodes[0], parent)
+        del self.rtsnode
+
+        if self.parent.parent.rtsnode.has_feature('acls_auth'):
             for parameter in ['userid', 'password',
                               'mutual_userid', 'mutual_password']:
                 self.define_config_group_param('auth', parameter, 'string')
+
         self.refresh()
 
     def ui_getgroup_auth(self, auth_attr):
@@ -568,16 +680,8 @@ class UINodeACL(UIRTSLibNode):
         @return: The auth attribute's value
         @rtype: str
         '''
-        value = None
-        if auth_attr == 'password':
-            value = self.rtsnode.chap_password
-        elif auth_attr == 'userid':
-            value = self.rtsnode.chap_userid
-        elif auth_attr == 'mutual_password':
-            value = self.rtsnode.chap_mutual_password
-        elif auth_attr == 'mutual_userid':
-            value = self.rtsnode.chap_mutual_userid
-        return value
+        # All should return same, so just return from the first one
+        return getattr(self.rtsnodes[0], "chap_" + auth_attr)
 
     def ui_setgroup_auth(self, auth_attr, value):
         '''
@@ -588,28 +692,33 @@ class UINodeACL(UIRTSLibNode):
         @type value: str
         '''
         self.assert_root()
+
         if value is None:
             value = ''
-        if auth_attr == 'password':
-            self.rtsnode.chap_password = value
-        elif auth_attr == 'userid':
-            self.rtsnode.chap_userid = value
-        elif auth_attr == 'mutual_password':
-            self.rtsnode.chap_mutual_password = value
-        elif auth_attr == 'mutual_userid':
-            self.rtsnode.chap_mutual_userid = value
+
+        for na in self.rtsnodes:
+            setattr(na, "chap_" + auth_attr, value)
 
     def refresh(self):
         self._children = set([])
-        for mlun in self.rtsnode.mapped_luns:
+        for mlun in self.rtsnodes[0].mapped_luns:
             UIMappedLUN(mlun, self)
 
     def summary(self):
-        msg = "Mapped LUNs: %d" % len(self._children)
+
+        if self.name != self.rtsnodes[0].node_wwn:
+            if len(self.rtsnodes) > 1:
+                msg = "(group of %d) " % len(self.rtsnodes)
+            else:
+                msg = "(%s) " % self.rtsnodes[0].node_wwn
+        else:
+            msg = ""
+
+        msg += "Mapped LUNs: %d" % len(self._children)
 
         status = None
-        na = self.rtsnode
-        if self.rtsnode.has_feature("acls_auth") and \
+        na = self.rtsnodes[0]
+        if self.parent.parent.rtsnode.has_feature("acls_auth") and \
                 int(self.parent.parent.rtsnode.get_attribute("authentication")):
             if not (na.chap_password and na.chap_userid):
                 status = False
@@ -667,11 +776,13 @@ class UINodeACL(UIRTSLibNode):
                 ui_lun = UILUN(lun_object, ui_tpg.get_node("luns"))
                 tpg_lun = ui_lun.rtsnode.lun
 
-        if tpg_lun in (ml.tpg_lun.lun for ml in self.rtsnode.mapped_luns):
+        if tpg_lun in (ml.tpg_lun.lun for ml in self.rtsnodes[0].mapped_luns):
             self.shell.log.warning(
                 "Warning: TPG LUN %d already mapped to this NodeACL" % tpg_lun)
 
-        mlun = MappedLUN(self.rtsnode, mapped_lun, tpg_lun, write_protect)
+        for na in self.rtsnodes:
+            mlun = MappedLUN(na, mapped_lun, tpg_lun, write_protect)
+
         ui_mlun = UIMappedLUN(mlun, self)
         self.shell.log.info("Created Mapped LUN %s." % mlun.mapped_lun)
         return self.new_node(ui_mlun)
@@ -712,8 +823,10 @@ class UINodeACL(UIRTSLibNode):
         B{create}
         '''
         self.assert_root()
-        mlun = MappedLUN(self.rtsnode, mapped_lun)
-        mlun.delete()
+        for na in self.rtsnodes:
+            print "deleted lun %s" % mapped_lun
+            mlun = MappedLUN(na, mapped_lun)
+            mlun.delete()
         self.shell.log.info("Deleted Mapped LUN %s." % mapped_lun)
         self.refresh()
 
@@ -730,7 +843,7 @@ class UINodeACL(UIRTSLibNode):
         @rtype: list of str
         '''
         if current_param == 'mapped_lun':
-            mluns = [str(mlun.mapped_lun) for mlun in self.rtsnode.mapped_luns]
+            mluns = [str(mlun.mapped_lun) for mlun in self.rtsnodes[0].mapped_luns]
             completions = [mlun for mlun in mluns if mlun.startswith(text)]
         else:
             completions = []
@@ -739,6 +852,36 @@ class UINodeACL(UIRTSLibNode):
             return [completions[0] + ' ']
         else:
             return completions
+
+    def ui_command_wwns(self):
+        '''
+        List WWNs associated with this NodeACL.
+
+        If tags have been used to set an alternate name in the UI for one or
+        more NodeACLs, this may be useful to get a listing of the underlying
+        WWNs.
+        '''
+        for na in self.parent.find_tagged(self.name):
+            self.shell.log.info(na.node_wwn)
+
+    # Override these four methods to handle multiple NodeACLs
+    def ui_getgroup_attribute(self, attribute):
+        return self.rtsnodes[0].get_attribute(attribute)
+
+    def ui_setgroup_attribute(self, attribute, value):
+        self.assert_root()
+
+        for na in self.rtsnodes:
+            na.set_attribute(attribute, value)
+
+    def ui_getgroup_parameter(self, parameter):
+        return self.rtsnode[0].get_parameter(parameter)
+
+    def ui_setgroup_parameter(self, parameter, value):
+        self.assert_root()
+
+        for na in self.rtsnodes:
+            self.rtsnode.set_parameter(parameter, value)
 
 
 class UIMappedLUN(UIRTSLibNode):
