@@ -579,15 +579,11 @@ class UINodeACLs(UINode):
             self.shell.log.error("'.' not permitted in tag names.")
             return
 
-        if new_tag:
-            cur_tag_members = list(self.find_tagged(new_tag))
-        else:
-            cur_tag_members = []
-
         for na in list(self.find_tagged(wwn_or_tag)):
             na.tag = new_tag
 
             # if joining a tag, take its config
+            cur_tag_members = list(self.find_tagged(new_tag))
             if cur_tag_members:
                 model = cur_tag_members[0]
 
