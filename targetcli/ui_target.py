@@ -486,7 +486,7 @@ class UINodeACLs(UINode):
                                              self.shell.prefs['auto_add_mapped_luns'])
 
         node_acl = NodeACL(self.tpg, wwn, mode="create")
-        ui_node_acl = UINodeACL(node_acl, self)
+        ui_node_acl = UINodeACL(node_acl.node_wwn, self)
         self.shell.log.info("Created Node ACL for %s" % node_acl.node_wwn)
 
         if add_mapped_luns:
