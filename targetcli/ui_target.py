@@ -579,7 +579,12 @@ class UINodeACLs(UINode):
             self.shell.log.error("'.' not permitted in tag names.")
             return
 
-        for na in list(self.find_tagged(wwn_or_tag)):
+        src = list(self.find_tagged(wwn_or_tag))
+        if not src:
+            self.shell.log.error("wwn_or_tag %s not found." % wwn_or_tag)
+            return
+
+        for na in src:
             na.tag = new_tag
 
             # if joining a tag, take its config
