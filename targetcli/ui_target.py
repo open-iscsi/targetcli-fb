@@ -444,7 +444,7 @@ class UITarget(UITPG):
         except:
             return ("INVALID WWN", False)
 
-        return super(UITarget, self).summary(self)
+        return super(UITarget, self).summary()
 
 
 class UINodeACLs(UINode):
