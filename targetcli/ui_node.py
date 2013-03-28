@@ -147,22 +147,6 @@ class UIRTSLibNode(UINode):
             self.define_config_group_param(
                 'attribute', attribute, 'string', description, writable)
 
-    def execute_command(self, command, pparams=[], kparams={}):
-        '''
-        Overrides the parent's execute_command() to check if the underlying
-        RTSLib object still exists before returning.
-        '''
-        try:
-            self.rtsnode._check_self()
-        except RTSLibError:
-            self.shell.log.error("The underlying rtslib object for "
-                                 + "%s does not exist." % self.path)
-            root = self.get_root()
-            root.refresh()
-            return root
-
-        return UINode.execute_command(self, command, pparams, kparams)
-
     def ui_getgroup_attribute(self, attribute):
         '''
         This is the backend method for getting attributes.
