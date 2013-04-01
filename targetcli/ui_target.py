@@ -825,7 +825,6 @@ class UINodeACL(UIRTSLibNode):
         '''
         self.assert_root()
         for na in self.rtsnodes:
-            print "deleted lun %s" % mapped_lun
             mlun = MappedLUN(na, mapped_lun)
             mlun.delete()
         self.shell.log.info("Deleted Mapped LUN %s." % mapped_lun)
