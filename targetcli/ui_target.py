@@ -1023,8 +1023,31 @@ class UIPortal(UIRTSLibNode):
         name = "%s:%s" % (portal.ip_address, portal.port)
         UIRTSLibNode.__init__(self, name, portal, parent)
         self.cfs_cwd = portal.path
+        self.portal = portal
         self.refresh()
 
     def summary(self):
-        return ('', True)
+        if self.portal._get_iser_attr():
+            return ('OK, iser enabled', True)
+        else:
+            return ('OK, iser disabled', True)
 
+    def ui_command_iser_enable(self):
+        '''
+        Enables iser operation on an network portal.
+        '''
+        if self.portal._get_iser_attr() == True:
+            self.shell.log.info("iser operation has already been enabled")
+        else:
+            self.portal._set_iser_attr(True)
+            self.shell.log.info("iser operation has been enabled")
+
+    def ui_command_iser_disable(self):
+        '''
+        Disabled iser operation on an network portal.
+        '''
+        if self.portal._get_iser_attr() == False:
+            self.shell.log.info("iser operation has already been disabled")
+        else:
+            self.portal._set_iser_attr(False)
+            self.shell.log.info("iser operation has been disabled")
