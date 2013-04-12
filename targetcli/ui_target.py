@@ -123,9 +123,9 @@ class UIFabricModule(UIRTSLibNode):
             value = ''
 
         if auth_attr == 'enable':
-            return setattr(self.rtsnode, "discovery_enable_auth")
+            return setattr(self.rtsnode, "discovery_enable_auth", value)
         else:
-            return setattr(self.rtsnode, "discovery_" + auth_attr)
+            return setattr(self.rtsnode, "discovery_" + auth_attr, value)
 
     def refresh(self):
         self._children = set([])
