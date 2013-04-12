@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from rtslib import RTSRoot
+from rtslib.utils import ignored
 from configshell import ExecutionError
 from ui_node import UINode
 from socket import gethostname
@@ -75,10 +76,8 @@ class UIRoot(UINode):
             backup_name = "saveconfig-" + \
                 datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
             backupfile = backup_dir + "/" + backup_name
-            try:
+            with ignored(IOError):
                 shutil.move(savefile, backupfile)
-            except IOError:
-                pass
 
             # Kill excess backups
             backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
