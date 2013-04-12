@@ -1280,5 +1280,17 @@ class UIPortal(UIRTSLibNode):
         self.refresh()
 
     def summary(self):
+        if self.rtsnode.iser:
+            return('iser', True)
         return ('', True)
 
+    def ui_command_enable_iser(self, boolean):
+        '''
+        Enables or disables iSER for this NetworkPortal.
+
+        If iSER is not supported by the kernel, this command will do nothing.
+        '''
+
+        boolean = self.ui_eval_param(boolean, 'bool', False)
+        self.rtsnode.iser = boolean
+        self.shell.log.info("iSER enable now: %s" % self.rtsnode.iser)
