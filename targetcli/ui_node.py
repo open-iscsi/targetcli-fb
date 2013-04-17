@@ -189,4 +189,11 @@ class UIRTSLibNode(UINode):
         self.assert_root()
         self.rtsnode.set_parameter(parameter, value)
 
-
+    def ui_command_info(self):
+        info = self.rtsnode.dump()
+        for item in ('attributes', 'parameters'):
+            if item in info:
+                del info[item]
+        for name, value in sorted(info.iteritems()):
+            if not isinstance (value, (dict, list)):
+                self.shell.log.info("%s: %s" % (name, value))

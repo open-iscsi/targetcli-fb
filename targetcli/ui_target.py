@@ -250,22 +250,15 @@ class UIFabricModule(UIRTSLibNode):
         transports(s) and accepted B{wwn} format(s), as long as supported
         features.
         '''
-        spec = self.rtsnode.spec
+        fabric = self.rtsnode
         self.shell.log.info("Fabric module name: %s" % self.name)
         self.shell.log.info("ConfigFS path: %s" % self.rtsnode.path)
-        if spec['wwn_list'] is not None:
-            self.shell.log.info("Allowed WWNs list (%s type): %s"
-                                % (spec['wwn_type'],
-                                   ', '.join(spec['wwn_list'])))
-        else:
-            self.shell.log.info("Supported WWN type: %s" % spec['wwn_type'])
-
-        self.shell.log.info("Fabric module specfile: %s"
-                            % self.rtsnode.spec_file)
-        self.shell.log.info("Fabric module features: %s"
-                            % ', '.join(spec['features']))
+        self.shell.log.info("Allowed WWN types: %s" % ", ".join(fabric.wwn_types))
+        if fabric.wwns is not None:
+            self.shell.log.info("Allowed WWNs list: %s" % ', '.join(fabric.wwns))
+        self.shell.log.info("Fabric module features: %s" % ', '.join(fabric.features))
         self.shell.log.info("Corresponding kernel module: %s"
-                            % spec['kernel_module'])
+                            % fabric.kernel_module)
 
     def ui_command_version(self):
         '''
@@ -853,17 +846,6 @@ class UINodeACL(UIRTSLibNode):
         else:
             return completions
 
-    def ui_command_wwns(self):
-        '''
-        List WWNs associated with this NodeACL.
-
-        If tags have been used to set an alternate name in the UI for one or
-        more NodeACLs, this may be useful to get a listing of the underlying
-        WWNs.
-        '''
-        for na in self.parent.find_tagged(self.name):
-            self.shell.log.info(na.node_wwn)
-
     # Override these four methods to handle multiple NodeACLs
     def ui_getgroup_attribute(self, attribute):
         return self.rtsnodes[0].get_attribute(attribute)
@@ -882,6 +864,23 @@ class UINodeACL(UIRTSLibNode):
 
         for na in self.rtsnodes:
             self.rtsnode.set_parameter(parameter, value)
+
+    def ui_command_info(self):
+        '''
+        Since we don't have a self.rtsnode we can't use the base implementation
+        of this method. We also want to not print node_wwn, but list *all*
+        wwns for this entry.
+        '''
+        info = self.rtsnodes[0].dump()
+        for item in ('attributes', 'parameters', "node_wwn"):
+            if item in info:
+                del info[item]
+        for name, value in sorted(info.iteritems()):
+            if not isinstance (value, (dict, list)):
+                self.shell.log.info("%s: %s" % (name, value))
+        self.shell.log.info("wwns:")
+        for na in self.parent.find_tagged(self.name):
+            self.shell.log.info(na.node_wwn)
 
 
 class UIMappedLUN(UIRTSLibNode):
