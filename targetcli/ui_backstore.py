@@ -324,7 +324,7 @@ class UIFileIOBackstore(UIBackstore):
         ui_so = UIFileioStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created fileio %s with size %s"
-                            % (name, size))
+                            % (name, so.size))
         return self.new_node(ui_so)
 
 
