@@ -68,9 +68,15 @@ def human_to_bytes(hsize, kilo=1024):
 
 def bytes_to_human(size):
     kilo = 1024.0
-    for x in ['bytes','KiB','MiB','GiB','TiB', 'PiB']:
+
+    # don't use decimal for bytes
+    if size < kilo:
+        return "%d bytes" % size
+    size /= kilo
+
+    for x in ['KiB','MiB','GiB','TiB', 'PiB']:
         if size < kilo:
-            return "%3.1f%s" % (size, x)
+            return "%3.1f %s" % (size, x)
         size /= kilo
 
 
