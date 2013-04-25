@@ -22,7 +22,7 @@ from rtslib import RTSRoot
 from rtslib import FileIOStorageObject, BlockStorageObject
 from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib import RTSLibError
-from rtslib.utils import (get_block_type, is_disk_partition)
+from rtslib.utils import get_block_type
 from configshell import ExecutionError
 import os
 import re
@@ -191,7 +191,7 @@ class UIPSCSIBackstore(UIBackstore):
         '''
         self.assert_root()
 
-        if get_block_type(dev) is not None or is_disk_partition(dev):
+        if get_block_type(dev) is not None:
             self.shell.log.info("Note: block backstore recommended for "
                                 "SCSI block devices")
 
@@ -292,9 +292,6 @@ class UIFileIOBackstore(UIBackstore):
         self.shell.log.debug("Using params size=%s write_back=%s sparse=%s"
                              % (size, write_back, sparse))
 
-        is_dev = get_block_type(file_or_dev) is not None \
-                or is_disk_partition(file_or_dev)
-
         # can't use is_dev_in_use() on files so just check against other
         # storage object paths
         for so in RTSRoot().storage_objects:
@@ -302,7 +299,7 @@ class UIFileIOBackstore(UIBackstore):
                 raise ExecutionError("storage object for %s already exists: %s" % \
                                          (file_or_dev, so.name))
 
-        if is_dev:
+        if get_block_type(file_or_dev) is not None:
             if size:
                 self.shell.log.info("Block device, size parameter ignored")
                 size = None
