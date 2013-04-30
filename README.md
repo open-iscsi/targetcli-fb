@@ -12,7 +12,7 @@ targetd is licensed under the Affero GPLv3. Contributions are welcome.
 
  * Mailing list: [targetcli-fb-devel](https://lists.fedorahosted.org/mailman/listinfo/targetcli-fb-devel)
  * Source repo: [GitHub](https://github.com/agrover/targetcli-fb)
- * Bugs: [GitHub](https://github.com/agrover/targetcli-fb/issues) or [Trac](https://fedorahosted.org/targetcli/)
+ * Bugs: [GitHub](https://github.com/agrover/targetcli-fb/issues) or [Trac](https://fedorahosted.org/targetcli-fb/)
  * Tarballs: [fedorahosted](https://fedorahosted.org/releases/t/a/targetcli-fb/)
  * Playlist of instructional screencast videos: [YouTube](https://www.youtube.com/playlist?list=PLC2C75481A3ABB067)
 
