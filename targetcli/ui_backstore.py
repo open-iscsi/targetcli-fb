@@ -294,10 +294,11 @@ class UIFileIOBackstore(UIBackstore):
 
         # can't use is_dev_in_use() on files so just check against other
         # storage object paths
-        for so in RTSRoot().storage_objects:
-            if os.path.samefile(file_or_dev, so.udev_path):
-                raise ExecutionError("storage object for %s already exists: %s" % \
-                                         (file_or_dev, so.name))
+        if os.path.exists(file_or_dev):
+            for so in RTSRoot().storage_objects:
+                if os.path.samefile(file_or_dev, so.udev_path):
+                    raise ExecutionError("storage object for %s already exists: %s" % \
+                                             (file_or_dev, so.name))
 
         if get_block_type(file_or_dev) is not None:
             if size:
