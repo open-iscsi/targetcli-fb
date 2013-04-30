@@ -1,39 +1,26 @@
 targetcli-fb
+============
 
-targetcli-fb ("free branch") is a tree that tracks RTS's upstream
-git repo, but with additional patches. Like the upstream version,
-these patches are available under AGPLv3, but sole copyright no longer
-belongs to RTS, since additional patch copyrights are still held by
-their respective authors.
+A command shell for managing the Linux LIO kernel target
+--------------------------------------------------------
+targetcli-fb is a command-line interface for configuring the LIO generic
+SCSI target, present in 3.x Linux kernel versions.
 
-Please use Github facilities for code contributions and bug reports:
+targetcli-fb development
+------------------------
+targetd is licensed under the Affero GPLv3. Contributions are welcome.
 
-https://github.com/agrover/targetcli-fb
+ * Mailing list: [targetcli-fb-devel](https://lists.fedorahosted.org/mailman/listinfo/targetcli-fb-devel)
+ * Source repo: [GitHub](https://github.com/agrover/targetcli-fb)
+ * Bugs: [GitHub](https://github.com/agrover/targetcli-fb/issues) or [Trac](https://fedorahosted.org/targetcli/)
+ * Tarballs: [fedorahosted](https://fedorahosted.org/releases/t/a/targetcli-fb/)
+ * Playlist of instructional screencast videos: [YouTube](https://www.youtube.com/playlist?list=PLC2C75481A3ABB067)
 
------
+"fb" -- "free branch"
+---------------------
 
-# This file is part of targetcli.
-# Copyright (c) 2011 by RisingTide Systems LLC
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, version 3 (AGPLv3).
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-targetcli is an administration tool for managing RisingTide
-Systems storage targets using the kernel LIO core target and compatible target
-fabric modules. The targetcli CLI is built on top of the python configshell CLI
-framework.
-
-The latest version of this program might be obtained at:
-http://www.risingtidesystems.com/git/
-
-To run the CLI from this directory use:
-sudo PYTHONPATH=. ./scripts/targetcli
+targetcli-fb is a fork of the "targetcli" code written by RisingTide Systems.
+The "-fb" differentiates between the original and this version.
+Please ensure to use either all "fb" versions of the targetcli components --
+targetcli, rtslib, and configshell, or stick with all non-fb versions, since
+they are no longer strictly compatible.
