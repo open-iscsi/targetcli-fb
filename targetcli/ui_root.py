@@ -174,7 +174,7 @@ class UIRoot(UINode):
         if sid is not None:
             try:
                 int(sid)
-            except ValueError, e:
+            except ValueError:
                 raise ExecutionError("sid must be a number, '%s' given" % sid)
 
         def indent_print(text, steps):

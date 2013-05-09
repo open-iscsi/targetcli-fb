@@ -167,7 +167,7 @@ class UIBackstore(UINode):
         if self.shell.prefs['export_backstore_name_as_model']:
             try:
                 storageobject.set_attribute("emulate_model_alias", 1)
-            except RTSLibError, err:
+            except RTSLibError:
                 self.shell.log.error("'export_backstore_name_as_model' is set but"
                                      " emulate_model_alias\n  not supported by kernel.")
 

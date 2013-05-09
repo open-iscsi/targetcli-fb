@@ -105,7 +105,7 @@ class UIFabricModule(UIRTSLibNode):
         @rtype: str
         '''
         if auth_attr == 'enable':
-            return getattr(self.rtsnode, "discovery_enable_auth")
+            return self.rtsnode.discovery_enable_auth
         else:
             return getattr(self.rtsnode, "discovery_" + auth_attr)
 
@@ -123,9 +123,9 @@ class UIFabricModule(UIRTSLibNode):
             value = ''
 
         if auth_attr == 'enable':
-            return setattr(self.rtsnode, "discovery_enable_auth", value)
+            self.rtsnode.discovery_enable_auth = value
         else:
-            return setattr(self.rtsnode, "discovery_" + auth_attr, value)
+            setattr(self.rtsnode, "discovery_" + auth_attr, value)
 
     def refresh(self):
         self._children = set([])
@@ -863,7 +863,7 @@ class UINodeACL(UIRTSLibNode):
         self.assert_root()
 
         for na in self.rtsnodes:
-            self.rtsnode.set_parameter(parameter, value)
+            na.set_parameter(parameter, value)
 
     def ui_command_info(self):
         '''
