@@ -253,7 +253,7 @@ class UIRDMCPBackstore(UIBackstore):
     def __init__(self, parent):
         UIBackstore.__init__(self, 'rd_mcp', parent)
 
-    def ui_command_create(self, name, size, generate_wwn=None):
+    def ui_command_create(self, name, size, generate_wwn=None, nullio=None):
         '''
         Creates an RDMCP storage object. I{size} is the size of the ramdisk,
         and the optional I{generate_wwn} parameter is a boolean specifying
@@ -273,9 +273,11 @@ class UIRDMCPBackstore(UIBackstore):
         self.assert_root()
         self.assert_available_so_name(name)
         backstore = RDMCPBackstore(self.next_hba_index(), mode='create')
+        nullio = self.ui_eval_param(nullio, 'bool', False)
         try:
             so = RDMCPStorageObject(backstore, name, size,
-                                    self.prm_gen_wwn(generate_wwn))
+                                    self.prm_gen_wwn(generate_wwn),
+                                    nullio=nullio)
 
         except Exception, exception:
             backstore.delete()
@@ -283,6 +285,9 @@ class UIRDMCPBackstore(UIBackstore):
         ui_so = UIStorageObject(so, self)
         self.shell.log.info("Created rd_mcp ramdisk %s with size %s."
                             % (name, size))
+        if nullio and not so.nullio:
+            self.shell.log.warning("nullio ramdisk is not supported by this "
+                                   "kernel version, created with nullio=false")
         return self.new_node(ui_so)
 
 
@@ -468,6 +473,12 @@ class UIStorageObject(UIRTSLibNode):
             errors.append("LEGACY: " + ", ".join(legacy))
 
         size = convert_bytes_to_human(getattr(so, "size", 0))
+        nullio_str = ""
+        try:
+            if so.nullio:
+                nullio_str = " (nullio)"
+        except AttributeError:
+            pass
 
         if errors:
             msg = ", ".join(errors)
@@ -475,5 +486,5 @@ class UIStorageObject(UIRTSLibNode):
                 msg += " (%s %s)" % (path, so.status)
             return (msg, False)
         else:
-            return ("%s %s%s" % (path, size, so.status), True)
+            return ("%s %s%s%s" % (path, size, so.status, nullio_str), True)
 
