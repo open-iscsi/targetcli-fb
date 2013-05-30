@@ -211,7 +211,7 @@ class UIRDMCPBackstore(UIBackstore):
         self.so_cls = UIRamdiskStorageObject
         UIBackstore.__init__(self, 'ramdisk', parent)
 
-    def ui_command_create(self, name, size):
+    def ui_command_create(self, name, size, nullio=None):
         '''
         Creates an RDMCP storage object. I{size} is the size of the ramdisk.
 
@@ -227,7 +227,9 @@ class UIRDMCPBackstore(UIBackstore):
         '''
         self.assert_root()
 
-        so = RDMCPStorageObject(name, human_to_bytes(size))
+        nullio = self.ui_eval_param(nullio, 'bool', False)
+
+        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio)
         ui_so = UIRamdiskStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created ramdisk %s with size %s."
@@ -383,7 +385,12 @@ class UIPSCSIStorageObject(UIStorageObject):
 class UIRamdiskStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
-        return ("(%s) %s" % (bytes_to_human(so.size), so.status), True)
+
+        nullio_str = ""
+        if so.nullio:
+            nullio_str = "nullio "
+
+        return ("%s(%s) %s" % (nullio_str, bytes_to_human(so.size), so.status), True)
 
 
 class UIFileioStorageObject(UIStorageObject):
