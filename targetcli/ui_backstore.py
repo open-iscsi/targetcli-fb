@@ -298,7 +298,7 @@ class UIFileIOBackstore(UIBackstore):
         # storage object paths
         if os.path.exists(file_or_dev):
             for so in RTSRoot().storage_objects:
-                if os.path.samefile(file_or_dev, so.udev_path):
+                if so.udev_path and os.path.samefile(file_or_dev, so.udev_path):
                     raise ExecutionError("storage object for %s already exists: %s" % \
                                              (file_or_dev, so.name))
 
