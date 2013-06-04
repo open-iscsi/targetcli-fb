@@ -294,6 +294,7 @@ class UIFileIOBackstore(UIBackstore):
         self.shell.log.debug("Using params size=%s write_back=%s sparse=%s"
                              % (size, write_back, sparse))
 
+        file_or_dev = os.path.expanduser(file_or_dev)
         # can't use is_dev_in_use() on files so just check against other
         # storage object paths
         if os.path.exists(file_or_dev):
