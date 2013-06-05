@@ -560,7 +560,9 @@ class UINodeACLs(UINode):
         tag. If new_tag already exists, its new members will adopt the
         current tag's configuration.
 
-        Within a tag, the 'wwns' command shows the WWNs the tag applies to.
+        Within a tag, the 'info' command shows the WWNs the tag applies to.
+
+        Use 'untag' to remove tags.
 
         NOTE: tags are only supported in kernel 3.8 and above.
         '''
