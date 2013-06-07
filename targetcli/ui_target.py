@@ -579,13 +579,18 @@ class UINodeACLs(UINode):
             self.shell.log.error("wwn_or_tag %s not found." % wwn_or_tag)
             return
 
+        old_tag_members = list(self.find_tagged(new_tag))
+
+        # handle overlap
+        src_wwns = [na.node_wwn for na in src]
+        old_tag_members = [old for old in old_tag_members if old.node_wwn not in src_wwns]
+
         for na in src:
             na.tag = new_tag
 
             # if joining a tag, take its config
-            cur_tag_members = list(self.find_tagged(new_tag))
-            if cur_tag_members:
-                model = cur_tag_members[0]
+            if old_tag_members:
+                model = old_tag_members[0]
 
                 for mlun in na.mapped_luns:
                     mlun.delete()
