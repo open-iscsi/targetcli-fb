@@ -64,8 +64,11 @@ def main():
 
     try:
         root_node.refresh()
-    except RTSLibError, error:
+    except Exception, error:
         shell.con.display(shell.con.render_text(str(error), 'red'))
+        if not is_root:
+            shell.con.display(shell.con.render_text("Retry as root.", 'red'))
+        sys.exit(-1)
 
     if len(sys.argv) > 1:
         shell.run_cmdline(" ".join(sys.argv[1:]))
