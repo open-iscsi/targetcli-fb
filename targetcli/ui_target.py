@@ -667,8 +667,7 @@ class UINodeACL(UIRTSLibNode):
         del self.rtsnode
 
         if self.parent.parent.rtsnode.has_feature('auth'):
-            for parameter in ['userid', 'password',
-                              'mutual_userid', 'mutual_password']:
+            for parameter in auth_params:
                 self.define_config_group_param('auth', parameter, 'string')
 
         self.refresh()
