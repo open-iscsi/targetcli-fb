@@ -307,7 +307,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         if self.shell.prefs['auto_enable_tpgt']:
             tpg.enable = True
 
-        if tpg.has_feature("acls_auth"):
+        if tpg.has_feature("auth"):
                 tpg.set_attribute("authentication", 0)
 
         self.shell.log.info("Created TPG %s." % tpg.tag)
@@ -381,7 +381,7 @@ class UITPG(UIRTSLibNode):
         else:
             description, status = ("disabled", False)
 
-        if self.rtsnode.has_feature("acls_auth") and \
+        if self.rtsnode.has_feature("auth") and \
                 int(self.rtsnode.get_attribute("authentication")):
             description += ", auth"
         return (description, status)
@@ -598,7 +598,7 @@ class UINodeACLs(UINode):
                 for mlun in model.mapped_luns:
                     MappedLUN(na, mlun.mapped_lun, mlun.tpg_lun, mlun.write_protect)
 
-                if self.parent.rtsnode.has_feature("acls_auth"):
+                if self.parent.rtsnode.has_feature("auth"):
                     for param in auth_params:
                         setattr(na, "chap_" + param, getattr(model, "chap_" + param))
 
@@ -666,7 +666,7 @@ class UINodeACL(UIRTSLibNode):
         super(UINodeACL, self).__init__(name, self.rtsnodes[0], parent)
         del self.rtsnode
 
-        if self.parent.parent.rtsnode.has_feature('acls_auth'):
+        if self.parent.parent.rtsnode.has_feature('auth'):
             for parameter in ['userid', 'password',
                               'mutual_userid', 'mutual_password']:
                 self.define_config_group_param('auth', parameter, 'string')
@@ -719,7 +719,7 @@ class UINodeACL(UIRTSLibNode):
 
         status = None
         na = self.rtsnodes[0]
-        if self.parent.parent.rtsnode.has_feature("acls_auth") and \
+        if self.parent.parent.rtsnode.has_feature("auth") and \
                 int(self.parent.parent.rtsnode.get_attribute("authentication")):
             if not (na.chap_password and na.chap_userid):
                 status = False
