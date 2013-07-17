@@ -146,7 +146,7 @@ class UIFabricModule(UIRTSLibNode):
             if not (fm.discovery_password and fm.discovery_userid):
                 status = False
 
-            if fm.discovery_mutual_password and fm.discovery_mutual_userid:
+            if fm.discovery_authenticate_target:
                 msg += ", mutual disc auth"
             else:
                 msg += ", disc auth"
@@ -724,7 +724,7 @@ class UINodeACL(UIRTSLibNode):
             if not (na.chap_password and na.chap_userid):
                 status = False
 
-            if na.chap_mutual_password and na.chap_mutual_userid:
+            if na.authenticate_target:
                 msg += ", mutual auth"
             else:
                 msg += ", auth"
