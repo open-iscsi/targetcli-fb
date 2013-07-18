@@ -23,6 +23,7 @@ from rtslib import NodeACL, NetworkPortal, MappedLUN
 from rtslib import Target, TPG, LUN
 from configshell import ExecutionError
 import ethtool
+import os
 
 auth_params = ('userid', 'password', 'mutual_userid', 'mutual_password')
 discovery_params = auth_params + ("enable",)
@@ -372,6 +373,11 @@ class UITPG(UIRTSLibNode):
         if tpg.has_feature('nps'):
             UIPortals(self.rtsnode, self)
 
+        if self.rtsnode.has_feature('auth') \
+            and os.path.exists(self.rtsnode.path + "/auth"):
+            for param in auth_params:
+                self.define_config_group_param('auth', param, 'string')
+
     def summary(self):
         status = None
         if self.rtsnode.has_feature('nexus'):
@@ -385,6 +391,17 @@ class UITPG(UIRTSLibNode):
                 int(self.rtsnode.get_attribute("authentication")):
             description += ", auth"
         return (description, status)
+
+    def ui_getgroup_auth(self, auth_attr):
+        return getattr(self.rtsnode, "chap_" + auth_attr)
+
+    def ui_setgroup_auth(self, auth_attr, value):
+        self.assert_root()
+
+        if value is None:
+            value = ''
+
+        setattr(self.rtsnode, "chap_" + auth_attr, value)
 
     def ui_command_enable(self):
         '''
