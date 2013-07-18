@@ -379,17 +379,44 @@ class UITPG(UIRTSLibNode):
                 self.define_config_group_param('auth', param, 'string')
 
     def summary(self):
+        tpg = self.rtsnode
         status = None
-        if self.rtsnode.has_feature('nexus'):
+
+        if tpg.has_feature('nexus'):
             description = str(self.rtsnode.nexus)
-        elif self.rtsnode.enable:
+        elif tpg.enable:
             description = "enabled"
         else:
             description, status = ("disabled", False)
 
-        if self.rtsnode.has_feature("auth") and \
-                int(self.rtsnode.get_attribute("authentication")):
-            description += ", auth"
+        if tpg.has_feature("acls"):
+            if int(tpg.get_attribute("generate_node_acls")):
+                description += ", gen-acls"
+            else:
+                description += ", no-gen-acls"
+
+            # 'auth' feature requires 'acls'
+            if tpg.has_feature("auth"):
+                if not int(tpg.get_attribute("authentication")):
+                    description += ", no-auth"
+                    if int(tpg.get_attribute("generate_node_acls")):
+                        # if auth=0, g_n_a=1 is recommended
+                        status = True
+                else:
+                    if not int(tpg.get_attribute("generate_node_acls")):
+                        description += ", auth per-acl"
+                    else:
+                        description += ", tpg-auth"
+
+                        status = True
+                        if not (tpg.chap_password and tpg.chap_userid):
+                            status = False
+
+                        if tpg.authenticate_target:
+                            description += ", mutual"
+                        else: 
+                            description += ", 1-way"
+
         return (description, status)
 
     def ui_getgroup_auth(self, auth_attr):
@@ -735,15 +762,20 @@ class UINodeACL(UIRTSLibNode):
 
         status = None
         na = self.rtsnodes[0]
-        if self.parent.parent.rtsnode.has_feature("auth") and \
-                int(self.parent.parent.rtsnode.get_attribute("authentication")):
-            if not (na.chap_password and na.chap_userid):
-                status = False
-
-            if na.authenticate_target:
-                msg += ", mutual auth"
+        tpg = self.parent.parent.rtsnode
+        if tpg.has_feature("auth") and \
+                int(tpg.get_attribute("authentication")):
+            if int(tpg.get_attribute("generate_node_acls")):
+                msg += ", auth via tpg"
             else:
-                msg += ", auth"
+                status = True
+                if not (na.chap_password and na.chap_userid):
+                    status = False
+
+                if na.authenticate_target:
+                    msg += ", mutual auth"
+                else:
+                    msg += ", 1-way auth"
 
         return (msg, status)
 
