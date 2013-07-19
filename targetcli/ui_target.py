@@ -140,19 +140,23 @@ class UIFabricModule(UIRTSLibNode):
 
     def summary(self):
         status = None
-        msg = "Targets: %d" % len(self._children)
+        msg = []
 
         fm = self.rtsnode
         if fm.has_feature('discovery_auth') and fm.discovery_enable_auth:
             if not (fm.discovery_password and fm.discovery_userid):
                 status = False
+            else:
+                status = True
 
             if fm.discovery_authenticate_target:
-                msg += ", mutual disc auth"
+                msg.append("mutual disc auth")
             else:
-                msg += ", disc auth"
+                msg.append("1-way disc auth")
 
-        return (msg, status)
+        msg.append("Targets: %d" % len(self._children))
+
+        return (", ".join(msg), status)
 
     def ui_command_create(self, wwn=None):
         '''
@@ -382,42 +386,43 @@ class UITPG(UIRTSLibNode):
         tpg = self.rtsnode
         status = None
 
+        msg = []
         if tpg.has_feature('nexus'):
-            description = str(self.rtsnode.nexus)
-        elif tpg.enable:
-            description = "enabled"
-        else:
-            description, status = ("disabled", False)
+            msg.append(str(self.rtsnode.nexus))
+
+        if not tpg.enable:
+            return ("disabled", False)
 
         if tpg.has_feature("acls"):
-            if int(tpg.get_attribute("generate_node_acls")):
-                description += ", gen-acls"
+            if "generate_node_acls" in tpg.list_attributes() and \
+                    int(tpg.get_attribute("generate_node_acls")):
+                msg.append("gen-acls")
             else:
-                description += ", no-gen-acls"
+                msg.append("no-gen-acls")
 
             # 'auth' feature requires 'acls'
             if tpg.has_feature("auth"):
                 if not int(tpg.get_attribute("authentication")):
-                    description += ", no-auth"
+                    msg.append("no-auth")
                     if int(tpg.get_attribute("generate_node_acls")):
                         # if auth=0, g_n_a=1 is recommended
                         status = True
                 else:
                     if not int(tpg.get_attribute("generate_node_acls")):
-                        description += ", auth per-acl"
+                        msg.append("auth per-acl")
                     else:
-                        description += ", tpg-auth"
+                        msg.append("tpg-auth")
 
                         status = True
                         if not (tpg.chap_password and tpg.chap_userid):
                             status = False
 
                         if tpg.authenticate_target:
-                            description += ", mutual"
+                            msg.append("mutual auth")
                         else: 
-                            description += ", 1-way"
+                            msg.append("1-way auth")
 
-        return (description, status)
+        return (", ".join(msg), status)
 
     def ui_getgroup_auth(self, auth_attr):
         return getattr(self.rtsnode, "chap_" + auth_attr)
@@ -749,16 +754,13 @@ class UINodeACL(UIRTSLibNode):
             UIMappedLUN(mlun, self)
 
     def summary(self):
+        msg = []
 
         if self.name != self.rtsnodes[0].node_wwn:
             if len(self.rtsnodes) > 1:
-                msg = "(group of %d) " % len(self.rtsnodes)
+                msg.append("(group of %d) " % len(self.rtsnodes))
             else:
-                msg = "(%s) " % self.rtsnodes[0].node_wwn
-        else:
-            msg = ""
-
-        msg += "Mapped LUNs: %d" % len(self._children)
+                msg.append("(%s) " % self.rtsnodes[0].node_wwn)
 
         status = None
         na = self.rtsnodes[0]
@@ -766,18 +768,20 @@ class UINodeACL(UIRTSLibNode):
         if tpg.has_feature("auth") and \
                 int(tpg.get_attribute("authentication")):
             if int(tpg.get_attribute("generate_node_acls")):
-                msg += ", auth via tpg"
+                msg.append("auth via tpg")
             else:
                 status = True
                 if not (na.chap_password and na.chap_userid):
                     status = False
 
                 if na.authenticate_target:
-                    msg += ", mutual auth"
+                    msg.append("mutual auth")
                 else:
-                    msg += ", 1-way auth"
+                    msg.append("1-way auth")
 
-        return (msg, status)
+        msg.append("Mapped LUNs: %d" % len(self._children))
+
+        return (", ".join(msg), status)
 
     def ui_command_create(self, mapped_lun, tpg_lun_or_backstore, write_protect=None):
         '''
