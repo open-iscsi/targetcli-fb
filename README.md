@@ -8,7 +8,7 @@ SCSI target, present in 3.x Linux kernel versions.
 
 targetcli-fb development
 ------------------------
-targetcli-fb is licensed under the Affero GPLv3. Contributions are welcome.
+targetcli-fb is licensed under the Apache 2.0 license. Contributions are welcome.
 
  * Mailing list: [targetcli-fb-devel](https://lists.fedorahosted.org/mailman/listinfo/targetcli-fb-devel)
  * Source repo: [GitHub](https://github.com/agrover/targetcli-fb)
