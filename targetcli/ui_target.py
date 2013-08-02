@@ -916,7 +916,7 @@ class UINodeACL(UIRTSLibNode):
             na.set_attribute(attribute, value)
 
     def ui_getgroup_parameter(self, parameter):
-        return self.rtsnode[0].get_parameter(parameter)
+        return self.rtsnodes[0].get_parameter(parameter)
 
     def ui_setgroup_parameter(self, parameter, value):
         self.assert_root()
