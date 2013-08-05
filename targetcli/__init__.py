@@ -17,7 +17,7 @@ under the License.
 
 from ui_root import UIRoot
 
-__version__ = "2.1.27"
+__version__ = "2.1.28"
 __author__ = "Jerome Martin <jxm@risingtidesystems.com>"
 __url__ = "http://www.risingtidesystems.com"
 __description__ = "An administration shell for RTS storage targets."
