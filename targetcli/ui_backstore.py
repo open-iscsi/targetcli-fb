@@ -316,6 +316,8 @@ class UIFileIOBackstore(UIBackstore):
                     self.shell.log.info("%s exists, using its size (%s bytes) instead" 
                                         % (file_or_dev, new_size))
                 size = new_size
+            elif os.path.exists(file_or_dev):
+                raise ExecutionError("Path %s exists but is not a file" % file_or_dev)
             else:
                 # create file and extend to given file size
                 if not size:
