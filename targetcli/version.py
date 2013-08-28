@@ -15,5 +15,4 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from ui_root import UIRoot
-from version import __version__
+__version__ = '2.1.fb28'

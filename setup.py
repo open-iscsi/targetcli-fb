@@ -16,25 +16,19 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-import re
 from distutils.core import setup
-import targetcli
 
-PKG = targetcli
-VERSION = str(PKG.__version__)
-(AUTHOR, EMAIL) = re.match('^(.*?)\s*<(.*)>$', PKG.__author__).groups()
-URL = PKG.__url__
-LICENSE = PKG.__license__
-SCRIPTS = ["scripts/targetcli"]
-DESCRIPTION = PKG.__description__
+__version__ = ''
+execfile('targetcli/version.py')
 
-setup(name=PKG.__name__,
-      description=DESCRIPTION,
-      version=VERSION,
-      author=AUTHOR,
-      author_email=EMAIL,
-      license=LICENSE,
-      url=URL,
-      scripts=SCRIPTS,
-      packages=[PKG.__name__],
-      package_data = {'':[]})
+setup(
+    name = 'targetcli-fb',
+    version = __version__,
+    description = 'An administration shell for RTS storage targets.',
+    license = 'Apache 2.0',
+    maintainer = 'Andy Grover',
+    maintainer_email = 'agrover@redhat.com',
+    url = 'http://github.com/agrover/targetcli-fb',
+    packages = ['targetcli'],
+    scripts = ['scripts/targetcli'],
+    )
