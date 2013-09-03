@@ -376,9 +376,10 @@ which controls if exiting targetcli saves the configuration;
 to automatically add existing LUNs to new ACLs, and new LUNS to
 existing ACLs; and
 .BR auto_cd_after_create ,
-to change working directory to newly-created nodes.  Global settings
+to change working path to newly-created nodes.  Global settings
 are user-specific and are saved to ~/.targetcli/ upon exit, unlike
-other groups.
+other groups, which are system-wide and kept in
+.BR /etc/target/saveconfig.json .
 .SS BACKSTORE-SPECIFIC
 .B attribute
 .br
