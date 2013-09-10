@@ -18,12 +18,9 @@ under the License.
 
 from distutils.core import setup
 
-__version__ = ''
-execfile('targetcli/version.py')
-
 setup(
     name = 'targetcli-fb',
-    version = __version__,
+    version = '2.1.fb29',
     description = 'An administration shell for RTS storage targets.',
     license = 'Apache 2.0',
     maintainer = 'Andy Grover',
