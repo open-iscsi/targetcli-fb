@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 '''
 This file is part of targetcli.
 Copyright (c) 2011-2013 by Datera, Inc
@@ -16,19 +15,4 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from distutils.core import setup
-
-__version__ = ''
-execfile('targetcli/version.py')
-
-setup(
-    name = 'targetcli-fb',
-    version = __version__,
-    description = 'An administration shell for RTS storage targets.',
-    license = 'Apache 2.0',
-    maintainer = 'Andy Grover',
-    maintainer_email = 'agrover@redhat.com',
-    url = 'http://github.com/agrover/targetcli-fb',
-    packages = ['targetcli'],
-    scripts = ['scripts/targetcli'],
-    )
+__version__ = '2.1.fb28'
