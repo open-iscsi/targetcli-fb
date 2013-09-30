@@ -4,8 +4,12 @@ build_dir   = build
 install_dir = debian/tmp
 python      = $(shell \
 	      python=$$(which python2.6 2>/dev/null); \
-	      if [ -z $$python ]; then python=$$(which python 2>/dev/null); fi; \
-	      if [ -z $$python ]; then python="/usr/bin/python"; fi; \
+	      if [ -z $$python ]; then \
+	      	python=$$(which python2.7 2>/dev/null); fi; \
+	      if [ -z $$python ]; then \
+	      	python=$$(which python 2>/dev/null); fi; \
+	      if [ -z $$python ]; then \
+	      	python="/usr/bin/python"; fi; \
 	      echo $$python)
 setup       = $(python) ./setup.py --quiet
 
@@ -37,7 +41,7 @@ build-stamp:
 	dh_testdir
 	# Build the source package
 	$(setup) build --build-base $(build_dir) install --no-compile --install-purelib $(install_dir)/lib/targetcli --install-scripts $(install_dir)/bin
-	echo "2.6" > $(install_dir)/lib/targetcli/.version
+	echo "2.6, 2.7" > $(install_dir)/lib/targetcli/.version
 	# Cleanup
 	rm -f $(install_dir)/lib/targetcli/targetcli/*.pyc
 	touch build-stamp

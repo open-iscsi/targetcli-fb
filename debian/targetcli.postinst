@@ -1,6 +1,6 @@
 #!/bin/sh
 for lib in lib lib64; do
-	for python in python2.6; do
+	for python in python2.6 python2.7; do
 		if [ -e /usr/${lib}/${python} ]; then
 			if [ ! -e /usr/${lib}/${python}/targetcli ]; then
 				mkdir /usr/${lib}/${python}/targetcli
