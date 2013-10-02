@@ -44,8 +44,8 @@ class UINode(ConfigNode):
         ConfigNode.__init__(self, name, parent, shell)
         self.cfs_cwd = RTSRoot.configfs_dir
         self.define_config_group_param(
-            'global', 'auto_enable_tpgt', 'bool',
-            'If true, automatically enables TPGTs upon creation.')
+            'global', 'auto_enable_tpg', 'bool',
+            'If true, automatically enables TPGs upon creation.')
         self.define_config_group_param(
             'global', 'auto_add_mapped_luns', 'bool',
             'If true, automatically create node ACLs mapped LUNs '

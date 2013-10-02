@@ -255,7 +255,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         '''
         Creates a new Target Portal Group within the target. The I{tag} must be
         a strictly positive integer value. If omitted, the next available
-        Target Portal Group Tag (TPGT) will be used.
+        Target Portal Group Tag (TPG) will be used.
 
         SEE ALSO
         ========
@@ -293,8 +293,8 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
     def ui_command_delete(self, tag):
         '''
-        Deletes the Target Portal Group with TPGT I{tag} from the target. The
-        I{tag} must be a positive integer matching an existing TPGT.
+        Deletes the Target Portal Group with TPG I{tag} from the target. The
+        I{tag} must be a positive integer matching an existing TPG.
 
         SEE ALSO
         ========
@@ -303,7 +303,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         self.assert_root()
         tpg = TPG(self.rtsnode, tag, mode='lookup')
         tpg.delete()
-        self.shell.log.info("Deleted TPGT %s." % tag)
+        self.shell.log.info("Deleted TPG %s." % tag)
         self.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
@@ -366,10 +366,10 @@ class UITPG(UIRTSLibNode):
         '''
         self.assert_root()
         if self.rtsnode.enable:
-            self.shell.log.info("The TPGT is already enabled.")
+            self.shell.log.info("The TPG is already enabled.")
         else:
             self.rtsnode.enable = True
-            self.shell.log.info("The TPGT has been enabled.")
+            self.shell.log.info("The TPG has been enabled.")
 
     def ui_command_disable(self):
         '''
@@ -382,9 +382,9 @@ class UITPG(UIRTSLibNode):
         self.assert_root()
         if self.rtsnode.enable:
             self.rtsnode.enable = False
-            self.shell.log.info("The TPGT has been disabled.")
+            self.shell.log.info("The TPG has been disabled.")
         else:
-            self.shell.log.info("The TPGT is already disabled.")
+            self.shell.log.info("The TPG is already disabled.")
 
 
 class UITarget(UITPG):
