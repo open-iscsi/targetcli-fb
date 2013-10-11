@@ -19,7 +19,7 @@ under the License.
 from distutils.core import setup
 
 __version__ = ''
-execfile('targetcli/version.py')
+exec(open('targetcli/version.py').read())
 
 setup(
     name = 'targetcli-fb',
