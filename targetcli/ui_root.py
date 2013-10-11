@@ -217,7 +217,7 @@ class UIRoot(UINode):
                                      connection, base_steps + 1)
 
         if sid:
-            printed_sessions = filter(lambda x: x['id'] == int(sid), root.sessions)
+            printed_sessions = [x for x in root.sessions if x['id'] == int(sid)]
         else:
             printed_sessions = list(root.sessions)
 
