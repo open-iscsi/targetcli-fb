@@ -62,7 +62,7 @@ def main():
 
     try:
         root_node.refresh()
-    except Exception, error:
+    except Exception as error:
         shell.con.display(shell.con.render_text(str(error), 'red'))
         if not is_root:
             shell.con.display(shell.con.render_text("Retry as root.", 'red'))
