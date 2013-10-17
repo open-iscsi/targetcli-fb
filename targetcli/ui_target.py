@@ -22,8 +22,11 @@ from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
 from rtslib import Target, TPG, LUN
 from configshell import ExecutionError
-import ethtool
 import os
+try:
+    import ethtool
+except ImportError:
+    ethtool = None
 
 auth_params = ('userid', 'password', 'mutual_userid', 'mutual_password')
 discovery_params = auth_params + ("enable",)
@@ -1242,6 +1245,9 @@ class UIPortals(UINode):
         '''
 
         def list_eth_ips():
+            if not ethtool:
+                return []
+
             devcfgs = ethtool.get_interfaces_info(ethtool.get_devices())
             addrs = set()
             for d in devcfgs:
