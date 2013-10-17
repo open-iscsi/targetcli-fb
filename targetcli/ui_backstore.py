@@ -26,7 +26,6 @@ from rtslib.utils import get_block_type
 from configshell import ExecutionError
 import os
 import re
-import string
 
 def human_to_bytes(hsize, kilo=1024):
     '''
@@ -48,9 +47,9 @@ def human_to_bytes(hsize, kilo=1024):
     @type kilo: int
     @return: An int representing the human-readable string converted to bytes
     '''
-    trans = string.maketrans("KMGTB", "kmgtb")
-    size = hsize.translate(trans, "i")
-    if not re.match("^[0-9]+[k|m|g|t]?[i]?[b]?$", size):
+    size = hsize.replace('i', '')
+    size = size.lower()
+    if not re.match("^[0-9]+[k|m|g|t]?[b]?$", size):
         raise RTSLibError("Cannot interpret size, wrong format: %s" % hsize)
 
     size = size.rstrip('ib')
