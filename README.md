@@ -6,6 +6,8 @@ A command shell for managing the Linux LIO kernel target
 targetcli-fb is a command-line interface for configuring the LIO generic
 SCSI target, present in 3.x Linux kernel versions.
 
+This runs with Python 2.7 and 2to3 is run by setup.py to run on Python 3.
+
 targetcli-fb development
 ------------------------
 targetcli-fb is licensed under the Apache 2.0 license. Contributions are welcome.
