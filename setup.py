@@ -16,7 +16,7 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from distutils.core import setup
+from setuptools import setup
 
 __version__ = ''
 exec(open('targetcli/version.py').read())
@@ -31,4 +31,5 @@ setup(
     url = 'http://github.com/agrover/targetcli-fb',
     packages = ['targetcli'],
     scripts = ['scripts/targetcli'],
+    use_2to3 = True,
     )
