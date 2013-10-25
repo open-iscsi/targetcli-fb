@@ -1,15 +1,24 @@
 #!/usr/bin/make -f
 
 build_dir   = build
-install_dir = $(CURDIR)/debian/tmp
+install_dir = $(CURDIR)/debian/targetcli-fb
 
 #export DH_VERBOSE=1
 
+PYTHON3=$(shell py3versions -vr)
+
+# prevent internet access / don't use PyPi
 export http_proxy = http://127.0.0.1:9
 
 
 %:
-	dh $@ --with python2
+	dh $@ --with python3
+
+override_dh_auto_build:
+	python$(PYTHON3) setup.py build
+
+override_dh_auto_install:
+	python$(PYTHON3) setup.py install --root=$(install_dir) --install-layout=deb
 
 override_dh_installinit:
 	dh_installinit --name target
