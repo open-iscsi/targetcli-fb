@@ -4,6 +4,8 @@ build_dir   = build
 install_dir = debian/tmp
 setup       = python ./setup.py --quiet
 
+export PYTHONPATH = $$PYTHONPATH:./$(install_dir)/lib/targetcli/
+
 binary: binary-indep
 
 binary-arch:
@@ -30,6 +32,7 @@ install: build
 build: build-stamp
 build-stamp: 
 	dh_testdir
+	mkdir -p $(install_dir)/lib/targetcli
 	# Build the source package
 	$(setup) build --build-base $(build_dir) install --no-compile --install-purelib $(install_dir)/lib/targetcli --install-scripts $(install_dir)/bin
 	echo "2.6" > $(install_dir)/lib/targetcli/.version
