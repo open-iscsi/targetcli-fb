@@ -1,54 +1,17 @@
 #!/usr/bin/make -f
 
 build_dir   = build
-install_dir = debian/tmp
-setup       = python ./setup.py --quiet
+install_dir = $(CURDIR)/debian/tmp
 
-export PYTHONPATH = $$PYTHONPATH:./$(install_dir)/lib/targetcli/
+#export DH_VERBOSE=1
 
-binary: binary-indep
+export http_proxy = http://127.0.0.1:9
 
-binary-arch:
 
-binary-indep: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs 
-	dh_installdocs
-	dh_installman
-	dh_install --list-missing --sourcedir $(install_dir)
-	dh_fixperms
-	dh_compress -X.py
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
+%:
+	dh $@ --with python2
 
-install: build
-	dh_testdir
-	dh_testroot
-	dh_installdirs 
-
-build: build-stamp
-build-stamp: 
-	dh_testdir
-	mkdir -p $(install_dir)/lib/targetcli
-	# Build the source package
-	$(setup) build --build-base $(build_dir) install --no-compile --install-purelib $(install_dir)/lib/targetcli --install-scripts $(install_dir)/bin
-	echo "2.6" > $(install_dir)/lib/targetcli/.version
-	# Cleanup
-	rm -f $(install_dir)/lib/targetcli/targetcli/*.pyc
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp
-	$(setup) clean
-	find . -name "*.pyc" | xargs rm -f
-	find . -name "*.pyo" | xargs rm -f
-	rm -rf $(build_dir) $(install_dir)
-	dh_clean
-
-.PHONY: binary binary-indep install build clean
-
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf build
+	rm -rf *.egg-info
