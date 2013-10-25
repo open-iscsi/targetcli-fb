@@ -18,6 +18,16 @@ targetcli-fb is licensed under the Apache 2.0 license. Contributions are welcome
  * Tarballs: [fedorahosted](https://fedorahosted.org/releases/t/a/targetcli-fb/)
  * Playlist of instructional screencast videos: [YouTube](https://www.youtube.com/playlist?list=PLC2C75481A3ABB067)
 
+In-repo packaging
+-----------------
+Packaging scripts for RPM and DEB are included, but these are to make end-user
+custom packaging easier -- distributions tend to maintain their own packaging
+scripts separately. If you run into issues with packaging, start with opening
+a bug on your distro's bug reporting system.
+
+Some people do use these scripts, so we want to keep them around. Fixes for
+any breakage you encounter are welcome.
+
 "fb" -- "free branch"
 ---------------------
 
