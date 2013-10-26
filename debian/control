@@ -1,15 +1,15 @@
-Source: targetcli
+Source: targetcli-fb
 Section: python
 Priority: optional
-Maintainer: Jerome Martin <jxm@risingtidesystems.com>
-Build-Depends: debhelper(>= 5.0.1), python2.6, build-essential, python-dev, python2.6-dev, python-epydoc, zlib1g-dev, python-configshell, python-rtslib
-Standards-Version: 3.8.1
+Maintainer: Andy Grover <andy@groveronline.com>
+Build-Depends: debhelper(>= 8), python3 , python3-setuptools, python3-configshell-fb, python3-rtslib-fb
+Standards-Version: 3.9.4
+X-Python3-Version: >= 3.1
 
-Package: targetcli
+Package: targetcli-fb
 Architecture: all
-Depends: python (>= 2.6)|python2.6, python-configshell, python-rtslib, lio-utils
-Suggests: targetcli-doc
-Conflicts: targetcli-frozen
-Description: CLI shell for the RisingTide Systems target.
+Depends: python3:any (>= 3.1), ${misc:Depends}, python3-configshell-fb, python3-rtslib-fb
+Conflicts: targetcli, targetcli-frozen, lio-utils
+Description: CLI shell for the RisingTide Systems target (free branch).
  .
- This package contains the targetcli CLI.  
+ This package contains the targetcli CLI.

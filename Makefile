@@ -1,6 +1,7 @@
+PKGNAME = targetcli-fb
 NAME = targetcli
 GIT_BRANCH = $$(git branch | grep \* | tr -d \*)
-VERSION = $$(basename $$(git describe --tags | tr - .))
+VERSION = $$(basename $$(git describe --tags | tr - . | sed 's/^v//'))
 
 all:
 	@echo "Usage:"
@@ -21,8 +22,8 @@ clean:
 	@rm -fv dpkg-buildpackage.log dpkg-buildpackage.version
 	@rm -frv *.rpm
 	@rm -fv debian/files debian/*.log debian/*.substvars
-	@rm -frv debian/${NAME}-doc/ debian/python2.5-${NAME}/
-	@rm -frv debian/python2.6-${NAME}/ debian/python-${NAME}/
+	@rm -frv debian/${PKGNAME}-doc/ debian/python2.5-${PKGNAME}/
+	@rm -frv debian/python2.6-${PKGNAME}/ debian/python-${PKGNAME}/
 	@rm -frv results
 	@rm -fv rpm/*.spec *.spec rpm/sed* sed*
 	@rm -frv ${NAME}-*
@@ -40,17 +41,17 @@ release: build/release-stamp
 build/release-stamp:
 	@mkdir -p build
 	@echo "Exporting the repository files..."
-	@git archive ${GIT_BRANCH} --prefix ${NAME}-${VERSION}/ \
+	@git archive ${GIT_BRANCH} --prefix ${PKGNAME}-${VERSION}/ \
 		| (cd build; tar xfp -)
 	@echo "Cleaning up the target tree..."
-	@rm -f build/${NAME}-${VERSION}/Makefile
-	@rm -f build/${NAME}-${VERSION}/.gitignore
-	@rm -rf build/${NAME}-${VERSION}/bin
+	@rm -f build/${PKGNAME}-${VERSION}/Makefile
+	@rm -f build/${PKGNAME}-${VERSION}/.gitignore
+	@rm -rf build/${PKGNAME}-${VERSION}/bin
 	@echo "Fixing version string..."
 	@sed -i "s/__version__ = .*/__version__ = '${VERSION}'/g" \
-		build/${NAME}-${VERSION}/${NAME}/__init__.py
+		build/${PKGNAME}-${VERSION}/${NAME}/__init__.py
 	@echo "Generating rpm specfile from template..."
-	@cd build/${NAME}-${VERSION}; \
+	@cd build/${PKGNAME}-${VERSION}; \
 		for spectmpl in rpm/*.spec.tmpl; do \
 			sed -i "s/Version:\( *\).*/Version:\1${VERSION}/g" $${spectmpl}; \
 			mv $${spectmpl} $$(basename $${spectmpl} .tmpl); \
@@ -58,17 +59,17 @@ build/release-stamp:
 		rmdir rpm
 	@echo "Generating rpm changelog..."
 	@( \
-		version=$$(basename $$(git describe HEAD --tags | tr - .)); \
+		version=${VERSION}; \
 		author=$$(git show HEAD --format="format:%an <%ae>" -s); \
 		date=$$(git show HEAD --format="format:%ad" -s \
 			| awk '{print $$1,$$2,$$3,$$5}'); \
 		hash=$$(git show HEAD --format="format:%H" -s); \
 	   	echo '* '"$${date} $${author} $${version}-1"; \
 		echo "  - Generated from git commit $${hash}."; \
-	) >> $$(ls build/${NAME}-${VERSION}/*.spec)
+	) >> $$(ls build/${PKGNAME}-${VERSION}/*.spec)
 	@echo "Generating debian changelog..."
 	@( \
-		version=$$(basename $$(git describe HEAD --tags | tr - .)); \
+		version=${VERSION}; \
 		author=$$(git show HEAD --format="format:%an <%ae>" -s); \
 		date=$$(git show HEAD --format="format:%aD" -s); \
 		day=$$(git show HEAD --format='format:%ai' -s \
@@ -77,30 +78,30 @@ build/release-stamp:
 		date=$$(echo $${date} \
 			| awk '{print $$1, "'"$${day}"'", $$3, $$4, $$5, $$6}'); \
 		hash=$$(git show HEAD --format="format:%H" -s); \
-	   	echo "${NAME} ($${version}) unstable; urgency=low"; \
+		echo "${PKGNAME} ($${version}) unstable; urgency=low"; \
 		echo; \
 		echo "  * Generated from git commit $${hash}."; \
 		echo; \
 		echo " -- $${author}  $${date}"; \
 		echo; \
-	) > build/${NAME}-${VERSION}/debian/changelog
-	@find build/${NAME}-${VERSION}/ -exec \
+	) > build/${PKGNAME}-${VERSION}/debian/changelog
+	@find build/${PKGNAME}-${VERSION}/ -exec \
 		touch -t $$(date -d @$$(git show -s --format="format:%at") \
 			+"%Y%m%d%H%M.%S") {} \;
 	@mkdir -p dist
 	@cd build; tar -c --owner=0 --group=0 --numeric-owner \
 		--format=gnu -b20 --quoting-style=escape \
-		-f ../dist/${NAME}-${VERSION}.tar \
-		$$(find ${NAME}-${VERSION} -type f | sort)
-	@gzip -6 -n dist/${NAME}-${VERSION}.tar
+		-f ../dist/${PKGNAME}-${VERSION}.tar \
+		$$(find ${PKGNAME}-${VERSION} -type f | sort)
+	@gzip -6 -n dist/${PKGNAME}-${VERSION}.tar
 	@echo "Generated release tarball:"
-	@echo "    $$(ls dist/${NAME}-${VERSION}.tar.gz)"
+	@echo "    $$(ls dist/${PKGNAME}-${VERSION}.tar.gz)"
 	@touch build/release-stamp
 
 deb: release build/deb-stamp
 build/deb-stamp:
 	@echo "Building debian packages..."
-	@cd build/${NAME}-${VERSION}; \
+	@cd build/${PKGNAME}-${VERSION}; \
 		dpkg-buildpackage -rfakeroot -us -uc
 	@mv build/*_${VERSION}_*.deb dist/
 	@echo "Generated debian packages:"
@@ -114,7 +115,7 @@ build/rpm-stamp:
 	@build=$$(pwd)/build/rpm; dist=$$(pwd)/dist/; rpmbuild \
 		--define "_topdir $${build}" --define "_sourcedir $${dist}" \
 		--define "_rpmdir $${build}" --define "_buildir $${build}" \
-		--define "_srcrpmdir $${build}" -ba build/${NAME}-${VERSION}/*.spec
+		--define "_srcrpmdir $${build}" -ba build/${PKGNAME}-${VERSION}/*.spec
 	@mv build/rpm/*-${VERSION}*.src.rpm dist/
 	@mv build/rpm/*/*-${VERSION}*.rpm dist/
 	@echo "Generated rpm packages:"
