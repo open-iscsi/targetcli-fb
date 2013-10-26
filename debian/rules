@@ -11,6 +11,9 @@ export http_proxy = http://127.0.0.1:9
 %:
 	dh $@ --with python2
 
+override_dh_installinit:
+	dh_installinit --name target
+
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf build

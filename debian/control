@@ -10,7 +10,7 @@ Package: targetcli-fb
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-configshell-fb, python-rtslib-fb
 Suggests: targetcli-fb-doc
-Conflicts: targetcli, targetcli-frozen
+Conflicts: targetcli, targetcli-frozen, lio-utils
 Description: CLI shell for the RisingTide Systems target (free branch).
  .
  This package contains the targetcli CLI.  
