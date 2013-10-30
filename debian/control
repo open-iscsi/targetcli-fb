@@ -8,7 +8,7 @@ X-Python3-Version: >= 3.1
 
 Package: targetcli-fb
 Architecture: all
-Depends: python3:any (>= 3.1), ${misc:Depends}, python3-configshell-fb, python3-rtslib-fb
+Depends: python3 (>= 3.1), ${misc:Depends}, python3-configshell-fb, python3-rtslib-fb
 Conflicts: targetcli, targetcli-frozen, lio-utils
 Description: CLI shell for the RisingTide Systems target (free branch).
  .
