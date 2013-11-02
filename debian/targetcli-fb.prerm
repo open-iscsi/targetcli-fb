@@ -1,4 +1,0 @@
-# manual cleanup
-# debhelpers uses targetcli again to stop the service after cleanup
-# so we have to clean again
-rm -rf /usr/lib/python*/dist-packages/targetcli/*.pyc
