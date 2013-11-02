@@ -20,9 +20,6 @@ override_dh_auto_build:
 override_dh_auto_install:
 	python$(PYTHON3) setup.py install --root=$(install_dir) --install-layout=deb
 
-override_dh_installinit:
-	dh_installinit --name target
-
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf build
