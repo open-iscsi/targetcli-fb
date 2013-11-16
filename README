@@ -1,10 +1,14 @@
-targetcli is an administration tool for managing RisingTide
-Systems storage targets using the kernel LIO core target and compatible target
-fabric modules. The targetcli CLI is built on top of the python configshell CLI
-framework.
+targetcli is an administration tool for managing the LIO Linux SCSI Target,
+and its third-party target fabric modules and backend storage objects.
+The targetcli CLI is built on top of the python configshell CLI framework.
 
-The latest version of this program might be obtained at:
-http://www.risingtidesystems.com/git/
+targetcli was developed by Datera, Inc. (www.daterainc.com). It is useful
+for developing 3rd-party applications, and as a foundation for the Datera
+userspace tools.
+
+For documentation on how to use targetcli, please see the User's Guide at:
+
+http://linux-iscsi.org/wiki/targetcli
 
 To run the CLI from this directory use:
 sudo PYTHONPATH=. ./scripts/targetcli
