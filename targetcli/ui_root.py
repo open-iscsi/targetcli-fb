@@ -65,12 +65,6 @@ class UIRoot(UINode):
 
         savefile = os.path.expanduser(savefile)
 
-        with open(savefile+".temp", "w+") as f:
-            os.fchmod(f.fileno(), stat.S_IRUSR | stat.S_IWUSR)
-            f.write(json.dumps(self.rtsroot.dump(), sort_keys=True, indent=2))
-            f.write("\n")
-            os.fsync(f.fileno())
-
         # Only save backups if saving to default location
         if savefile == default_save_file:
             backup_dir = os.path.dirname(savefile) + "/backup"
@@ -78,7 +72,7 @@ class UIRoot(UINode):
                 datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
             backupfile = backup_dir + "/" + backup_name
             with ignored(IOError):
-                shutil.move(savefile, backupfile)
+                shutil.copy(savefile, backupfile)
 
             # Kill excess backups
             backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
@@ -89,7 +83,8 @@ class UIRoot(UINode):
             self.shell.log.info("Last %d configs saved in %s." % \
                                     (kept_backups, backup_dir))
 
-        os.rename(savefile+".temp", savefile)
+        self.rtsroot.save_to_file(savefile)
+
         self.shell.log.info("Configuration saved to %s" % savefile)
 
     def ui_command_restoreconfig(self, savefile=default_save_file, clear_existing=False):
@@ -104,15 +99,11 @@ class UIRoot(UINode):
             self.shell.log.info("Restore file %s not found" % savefile)
             return
 
-        with open(savefile, "r") as f:
-            try:
-                errors = self.rtsroot.restore(json.loads(f.read()), clear_existing)
-            except ValueError:
-                self.shell.log.error("Error parsing savefile: %s" % savefile)
-                return
+        errors = self.rtsroot.restore_from_file(savefile, clear_existing)
 
         if errors:
-            self.shell.log.error("Configuration restored, %d recoverable errors:" % len(errors))
+            self.shell.log.error("Configuration restored, %d recoverable errors:" % \
+                                     len(errors))
             for error in errors:
                 self.shell.log.error(error)
         else:
