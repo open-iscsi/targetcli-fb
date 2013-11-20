@@ -41,6 +41,7 @@ class UIRoot(UINode):
     def __init__(self, shell, as_root=False):
         UINode.__init__(self, '/', shell=shell)
         self.as_root = as_root
+        self.rtsroot = RTSRoot()
 
     def refresh(self):
         '''
@@ -51,7 +52,7 @@ class UIRoot(UINode):
         UIBackstores(self)
 
         # only show fabrics present in the system
-        for fm in RTSRoot().fabric_modules:
+        for fm in self.rtsroot.fabric_modules:
             if fm.wwns == None or list(fm.wwns) != []:
                 UIFabricModule(fm, self)
 
@@ -66,7 +67,7 @@ class UIRoot(UINode):
 
         with open(savefile+".temp", "w+") as f:
             os.fchmod(f.fileno(), stat.S_IRUSR | stat.S_IWUSR)
-            f.write(json.dumps(RTSRoot().dump(), sort_keys=True, indent=2))
+            f.write(json.dumps(self.rtsroot.dump(), sort_keys=True, indent=2))
             f.write("\n")
             os.fsync(f.fileno())
 
@@ -105,7 +106,7 @@ class UIRoot(UINode):
 
         with open(savefile, "r") as f:
             try:
-                errors = RTSRoot().restore(json.loads(f.read()), clear_existing)
+                errors = self.rtsroot.restore(json.loads(f.read()), clear_existing)
             except ValueError:
                 self.shell.log.error("Error parsing savefile: %s" % savefile)
                 return
@@ -127,7 +128,7 @@ class UIRoot(UINode):
 
         confirm = self.ui_eval_param(confirm, 'bool', False)
 
-        RTSRoot().clear_existing(confirm=confirm)
+        self.rtsroot.clear_existing(confirm=confirm)
 
         self.shell.log.info("All configuration cleared")
 
@@ -166,7 +167,6 @@ class UIRoot(UINode):
         indent_step = 4
         base_steps = 0
         action_list = ("list", "detail")
-        root = RTSRoot()
 
         if action not in action_list:
             raise ExecutionError("action must be one of: %s" %
@@ -217,9 +217,9 @@ class UIRoot(UINode):
                                      connection, base_steps + 1)
 
         if sid:
-            printed_sessions = [x for x in root.sessions if x['id'] == int(sid)]
+            printed_sessions = [x for x in self.rtsroot.sessions if x['id'] == int(sid)]
         else:
-            printed_sessions = list(root.sessions)
+            printed_sessions = list(self.rtsroot.sessions)
 
         if len(printed_sessions):
             for session in printed_sessions:
