@@ -24,7 +24,9 @@ from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib import RTSLibError
 from rtslib.utils import get_block_type
 from configshell import ExecutionError
+import glob
 import os
+import stat
 import re
 
 def human_to_bytes(hsize, kilo=1024):
@@ -78,6 +80,18 @@ def bytes_to_human(size):
             return "%3.1f%s" % (size, x)
         size /= kilo
 
+def complete_path(path, stat_fn):
+    filtered = []
+    for entry in glob.glob(path + '*'):
+        st = os.stat(entry)
+        if stat.S_ISDIR(st.st_mode):
+            filtered.append(entry + '/')
+        elif stat_fn(st.st_mode):
+            filtered.append(entry)
+
+    # Put directories at the end
+    return sorted(filtered,
+                  key=lambda s: '~'+s if s.endswith('/') else s)
 
 class UIBackstores(UINode):
     '''
@@ -332,6 +346,16 @@ class UIFileIOBackstore(UIBackstore):
                             % (name, so.size))
         return self.new_node(ui_so)
 
+    def ui_complete_create(self, parameters, text, current_param):
+        '''
+        Auto-completes the file name
+        '''
+        if current_param != 'file_or_dev':
+            return []
+        completions = complete_path(text, stat.S_ISREG)
+        if len(completions) == 1 and not completions[0].endswith('/'):
+            completions = [completions[0] + ' ']
+        return completions
 
 class UIBlockBackstore(UIBackstore):
     '''
@@ -358,6 +382,16 @@ class UIBlockBackstore(UIBackstore):
                             % (name, dev))
         return self.new_node(ui_so)
 
+    def ui_complete_create(self, parameters, text, current_param):
+        '''
+        Auto-completes the device name
+        '''
+        if current_param != 'dev':
+            return []
+        completions = complete_path(text, stat.S_ISBLK)
+        if len(completions) == 1 and not completions[0].endswith('/'):
+            completions = [completions[0] + ' ']
+        return completions
 
 class UIStorageObject(UIRTSLibNode):
     '''
