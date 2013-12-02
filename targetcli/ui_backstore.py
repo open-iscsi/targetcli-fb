@@ -258,21 +258,30 @@ class UIFileIOBackstore(UIBackstore):
         UIBackstore.__init__(self, 'fileio', parent)
 
     def _create_file(self, filename, size, sparse=True):
-        f = open(filename, "w+")
+        try:
+            f = open(filename, "w+")
+        except (OSError, IOError):
+            raise ExecutionError("Could not open %s" % filename)
         try:
             if sparse:
-                os.ftruncate(f.fileno(), size)
+                try:
+                    os.posix_fallocate(f.fileno(), 0, size)
+                except AttributeError:
+                    # Prior to version 3.3, Python does not provide fallocate
+                    os.ftruncate(f.fileno(), size)
             else:
-                self.shell.log.info("Writing %s bytes" % size)
+                self.shell.log.info("Writing %d bytes" % size)
                 while size > 0:
                     write_size = min(size, 1024)
                     f.write("\0" * write_size)
                     size -= write_size
-        except IOError:
-            f.close()
+        except (OSError, IOError):
             os.remove(filename)
-            raise ExecutionError("Could not expand file to size")
-        f.close()
+            raise ExecutionError("Could not expand file to %d bytes" % size)
+        except OverflowError:
+            raise ExecutionError("The file size is too large (%d bytes)" % size)
+        finally:
+            f.close()
 
     def ui_command_create(self, name, file_or_dev, size=None, write_back=None,
                           sparse=None):
