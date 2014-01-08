@@ -180,6 +180,9 @@ class UIFabricModule(UIRTSLibNode):
 
         target = Target(self.rtsnode, wwn, mode='create')
         wwn = target.wwn
+        if self.rtsnode.wwns != None and wwn not in self.rtsnode.wwns:
+            self.shell.log.warning("Hardware missing for this WWN")
+
         if target.has_feature('tpgts'):
             ui_target = UIMultiTPGTarget(target, self)
             self.shell.log.info("Created target %s." % wwn)
