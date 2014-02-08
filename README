@@ -2,7 +2,7 @@ targetcli is an administration tool for managing the LIO Linux SCSI Target,
 and its third-party target fabric modules and backend storage objects.
 targetcli is built on top of the python configshell CLI framework.
 
-targetcli was developed by Datera, Inc. (www.daterainc.com). For more
+targetcli was developed by Datera, Inc. (www.datera.io). For more
 documentation on how to use it, please see the User's Guide at:
 
 http://linux-iscsi.org/wiki/targetcli
