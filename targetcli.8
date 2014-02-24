@@ -46,6 +46,30 @@ set to
 .BR true ,
 the default.
 .P
+.SH QUICKSTART
+To create an iSCSI target and share a file-backed LUN without any auth checks:
+.P
+$ sudo targetcli
+.br
+/> backstores/fileio create test /tmp/test.img 100m
+.br
+/> iscsi/ create iqn.2006-04.example.com:test-target
+.br
+/> cd iscsi/iqn.2006-04.example.com:test-target/tpg1/
+.br
+tpg1/> portals/ create
+.br
+tpg1/> luns/ create /backstores/fileio/test
+.br
+tpg1/> set attribute authentication=0
+.br
+tpg1/> set attribute generate_node_acls=1
+.br
+tpg1/> exit
+.P
+See
+.B EXAMPLES
+below for more detailed information.
 .SH BACKSTORES
 .B Backstores
 are different kinds of local storage resources that the kernel target
