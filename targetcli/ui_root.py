@@ -101,15 +101,13 @@ class UIRoot(UINode):
 
         errors = self.rtsroot.restore_from_file(savefile, clear_existing)
 
-        if errors:
-            self.shell.log.error("Configuration restored, %d recoverable errors:" % \
-                                     len(errors))
-            for error in errors:
-                self.shell.log.error(error)
-        else:
-            self.shell.log.info("Configuration restored from %s" % savefile)
-
         self.refresh()
+
+        if errors:
+            raise ExecutionError("Configuration restored, %d recoverable errors:\n%s" % \
+                                     (len(errors), "\n".join(errors)))
+
+        self.shell.log.info("Configuration restored from %s" % savefile)
 
     def ui_command_clearconfig(self, confirm=None):
         '''

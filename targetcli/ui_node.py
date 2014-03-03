@@ -77,21 +77,6 @@ class UINode(ConfigNode):
         for child in self.children:
             child.refresh()
 
-    def execute_command(self, command, pparams=[], kparams={}):
-        '''
-        We overload this one in order to handle our own exceptions cleanly,
-        and not just configshell's ExecutionError.
-        '''
-        try:
-            result = ConfigNode.execute_command(self, command,
-                                                pparams, kparams)
-        except RTSLibError as msg:
-            self.shell.log.error(str(msg))
-        else:
-            self.shell.log.debug("Command %s succeeded." % command)
-            return result
-
-
     def ui_command_refresh(self):
         '''
         Refreshes and updates the objects tree from the current path.

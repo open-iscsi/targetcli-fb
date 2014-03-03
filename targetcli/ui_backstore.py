@@ -145,12 +145,12 @@ class UIBackstore(UINode):
         try:
             child = self.get_child(name)
         except ValueError:
-            self.shell.log.error("No storage object named %s." % name)
-        else:
-            child.rtsnode.delete()
-            self.remove_child(child)
-            self.shell.log.info("Deleted storage object %s." % name)
-            self.parent.parent.refresh()
+            raise ExecutionError("No storage object named %s." % name)
+
+        child.rtsnode.delete()
+        self.remove_child(child)
+        self.shell.log.info("Deleted storage object %s." % name)
+        self.parent.parent.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
@@ -181,7 +181,7 @@ class UIBackstore(UINode):
             try:
                 storageobject.set_attribute("emulate_model_alias", 1)
             except RTSLibError:
-                self.shell.log.error("'export_backstore_name_as_model' is set but"
+                raise ExecutionError("'export_backstore_name_as_model' is set but"
                                      " emulate_model_alias\n  not supported by kernel.")
 
 

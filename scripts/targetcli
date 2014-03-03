@@ -18,10 +18,12 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+from __future__ import print_function
+
 from os import getuid
 from targetcli import UIRoot
 from rtslib import RTSLibError
-from configshell import ConfigShell
+from configshell import ConfigShell, ExecutionError
 import sys
 from targetcli import __version__ as targetcli_version
 
@@ -69,7 +71,11 @@ def main():
         sys.exit(-1)
 
     if len(sys.argv) > 1:
-        shell.run_cmdline(" ".join(sys.argv[1:]))
+        try:
+            shell.run_cmdline(" ".join(sys.argv[1:]))
+        except Exception as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(1)
         sys.exit(0)
 
     shell.con.display("targetcli shell version %s\n"
@@ -79,7 +85,12 @@ def main():
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
-    shell.run_interactive()
+    while not shell._exit:
+        try:
+            shell.run_interactive()
+        except (RTSLibError, ExecutionError) as msg:
+            shell.log.error(str(msg))
+
     if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")
         root_node.ui_command_saveconfig()

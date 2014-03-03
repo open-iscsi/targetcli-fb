@@ -456,8 +456,8 @@ class UITPG(UIRTSLibNode):
             try:
                 self.rtsnode.enable = True
                 self.shell.log.info("The TPGT has been enabled.")
-            except:
-                self.shell.log.error("The TPGT could not be enabled.")
+            except RTSLibError:
+                raise ExecutionError("The TPGT could not be enabled.")
 
     def ui_command_disable(self):
         '''
@@ -626,13 +626,11 @@ class UINodeACLs(UINode):
 
         # Since all WWNs have a '.' in them, let's avoid confusion.
         if '.' in new_tag:
-            self.shell.log.error("'.' not permitted in tag names.")
-            return
+            raise ExecutionError("'.' not permitted in tag names.")
 
         src = list(self.find_tagged(wwn_or_tag))
         if not src:
-            self.shell.log.error("wwn_or_tag %s not found." % wwn_or_tag)
-            return
+            raise ExecutionError("wwn_or_tag %s not found." % wwn_or_tag)
 
         old_tag_members = list(self.find_tagged(new_tag))
 
@@ -809,8 +807,7 @@ class UINodeACL(UIRTSLibNode):
         try:
             mapped_lun = int(mapped_lun)
         except ValueError:
-            self.shell.log.error("mapped_lun must be an integer")
-            return
+            raise ExecutionError("mapped_lun must be an integer")
 
         try:
             if tpg_lun_or_backstore.startswith("lun"):
@@ -820,8 +817,7 @@ class UINodeACL(UIRTSLibNode):
             try:
                 so = self.get_node(tpg_lun_or_backstore).rtsnode
             except ValueError:
-                self.shell.log.error("LUN or storage object not found")
-                return
+                raise ExecutionError("LUN or storage object not found")
 
             ui_tpg = self.parent.parent
 
@@ -1027,8 +1023,7 @@ class UILUNs(UINode):
         try:
             so = self.get_node(storage_object).rtsnode
         except ValueError:
-            self.shell.log.error("Invalid storage object %s." % storage_object)
-            return
+            raise ExecutionError("Invalid storage object %s." % storage_object)
 
         if so in (l.storage_object for l in self.parent.rtsnode.luns):
             raise ExecutionError("lun for storage object %s already exists" \
