@@ -321,6 +321,9 @@ class UIMultiTPGTarget(UIRTSLibNode):
         if tpg.has_feature("auth"):
                 tpg.set_attribute("authentication", 0)
 
+        if tpg.has_feature("nps"):
+            NetworkPortal(tpg, "0.0.0.0")
+
         self.shell.log.info("Created TPG %s." % tpg.tag)
         ui_tpg = UITPG(tpg, self)
         return self.new_node(ui_tpg)
