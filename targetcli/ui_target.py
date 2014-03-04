@@ -762,9 +762,9 @@ class UINodeACL(UIRTSLibNode):
 
         if self.name != self.rtsnodes[0].node_wwn:
             if len(self.rtsnodes) > 1:
-                msg.append("(group of %d) " % len(self.rtsnodes))
+                msg.append("(group of %d)" % len(self.rtsnodes))
             else:
-                msg.append("(%s) " % self.rtsnodes[0].node_wwn)
+                msg.append("(%s)" % self.rtsnodes[0].node_wwn)
 
         status = None
         na = self.rtsnodes[0]
