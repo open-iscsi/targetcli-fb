@@ -18,11 +18,13 @@ under the License.
 '''
 
 from ui_node import UINode, UIRTSLibNode
+from ui_backstore import complete_path
 from rtslib import RTSLibError, RTSLibBrokenLink, utils
 from rtslib import NodeACL, NetworkPortal, MappedLUN
-from rtslib import Target, TPG, LUN
+from rtslib import Target, TPG, LUN, StorageObjectFactory
 from configshell import ExecutionError
 import os
+import stat
 try:
     import ethtool
 except ImportError:
@@ -802,6 +804,10 @@ class UINodeACL(UIRTSLibNode):
         mapping the LUN to the initiator. If a TPG LUN for the backstore already
         exists, the Mapped LUN will map to that TPG LUN.
 
+        Finally, a path to an existing block device or file can be given. If so,
+        a storage object of the appropriate type is created with default parameters,
+        followed by the TPG LUN and the Mapped LUN.
+
         SEE ALSO
         ========
         B{delete}
@@ -820,7 +826,12 @@ class UINodeACL(UIRTSLibNode):
             try:
                 so = self.get_node(tpg_lun_or_backstore).rtsnode
             except ValueError:
-                raise ExecutionError("LUN or storage object not found")
+                try:
+                    so = StorageObjectFactory(tpg_lun_or_backstore)
+                    self.shell.log.info("Created storage object %s." % so.name)
+                except RTSLibError:
+                    raise ExecutionError("LUN, storage object, or path not valid")
+                self.get_node("/backstores").refresh()
 
             ui_tpg = self.parent.parent
 
@@ -863,6 +874,9 @@ class UINodeACL(UIRTSLibNode):
                 for storage_object in backstore.children:
                     completions.append(storage_object.path)
             completions.extend(lun.name for lun in self.parent.parent.get_node("luns").children)
+
+            completions.extend(complete_path(text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x)))
+
             completions = [c for c in completions if c.startswith(text)]
         else:
             completions = []
@@ -1004,9 +1018,11 @@ class UILUNs(UINode):
         Alternatively, the syntax I{lunX} where I{X} is a positive number is
         also accepted.
 
-        The I{storage_object} must be the path of an existing storage object,
+        The I{storage_object} may be the path of an existing storage object,
         i.e. B{/backstore/pscsi0/mydisk} to reference the B{mydisk} storage
-        object of the virtual HBA B{pscsi0}.
+        object of the virtual HBA B{pscsi0}. It also may be the path to an
+        existing block device or image file, in which case a storage object
+        will be created for it first, with default parameters.
 
         If I{add_mapped_luns} is omitted, the global parameter
         B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
@@ -1026,11 +1042,16 @@ class UILUNs(UINode):
         try:
             so = self.get_node(storage_object).rtsnode
         except ValueError:
-            raise ExecutionError("Invalid storage object %s." % storage_object)
+            try:
+                so = StorageObjectFactory(storage_object)
+                self.shell.log.info("Created storage object %s." % so.name)
+            except RTSLibError:
+                raise ExecutionError("storage object or path not valid")
+            self.get_node("/backstores").refresh()
 
         if so in (l.storage_object for l in self.parent.rtsnode.luns):
-            raise ExecutionError("lun for storage object %s already exists" \
-                                     % storage_object)
+            raise ExecutionError("lun for storage object %s/%s already exists" \
+                                     % (so.plugin, so.name))
 
         if lun and lun.lower().startswith('lun'):
             lun = lun[3:]
@@ -1082,6 +1103,8 @@ class UILUNs(UINode):
                 for storage_object in backstore.children:
                     storage_objects.append(storage_object.path)
             completions = [so for so in storage_objects if so.startswith(text)]
+
+            completions.extend(complete_path(text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x)))
         else:
             completions = []
 
