@@ -1,6 +1,6 @@
 #!/bin/sh
 for lib in lib lib64; do
-	for python in python2.6 python2.7; do
+	for python in python2.7; do
 		if [ -e /usr/${lib}/${python}/targetcli ]; then
 			rm -rf /usr/${lib}/${python}/targetcli
 		fi
