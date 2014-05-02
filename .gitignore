@@ -20,3 +20,4 @@ dpkg-buildpackage.version
 redhat/*.spec
 ./rtsadmin-*
 log/
+\#*#
