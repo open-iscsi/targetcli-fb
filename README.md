@@ -42,7 +42,7 @@ you're familiar with your Linux Distribution's package manager:
 4.  The newly built packages will be generated in the `dist/` directory.
 
 5.  To cleanup the repository, use `make clean` or `make cleanall` which also
-    removes dist/* files.
+    removes `dist/*` files.
 
 ## Documentation
 
