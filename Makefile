@@ -14,7 +14,6 @@ all:
 
 clean:
 	@rm -fv ${NAME}/*.pyc ${NAME}/*.html
-	@rm -frv doc
 	@rm -frv ${NAME}.egg-info MANIFEST build
 	@rm -frv debian/tmp
 	@rm -fv build-stamp

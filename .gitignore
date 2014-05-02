@@ -12,7 +12,6 @@ debian/rtsadmin.substvars
 debian/rtsadmin/
 debian/tmp/
 dist/
-doc/
 *.pyc
 *.swp
 dpkg-buildpackage.log
