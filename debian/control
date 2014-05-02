@@ -1,15 +1,16 @@
 Source: targetcli
-Section: python
+Section: net
 Priority: optional
-Maintainer: Jerome Martin <jxm@risingtidesystems.com>
-Build-Depends: debhelper(>= 5.0.1), python2.7, build-essential, python-dev, python2.7-dev, python-epydoc, zlib1g-dev, python-configshell, python-rtslib
-Standards-Version: 3.8.1
+Standards-Version: 3.9.2
+Homepage: https://github.com/Datera/targetcli
+Maintainer: Jerome Martin <jxm@netiant.com>
+Build-Depends: debhelper(>= 7.0.50~), python(>= 2.6.6-3~), python-rtslib, python-configshell, lio-utils
 
 Package: targetcli
 Architecture: all
-Depends: python2.7, python-configshell, python-rtslib, lio-utils
-Suggests: targetcli-doc
-Conflicts: targetcli-frozen
-Description: CLI shell for the RisingTide Systems target.
+Depends: ${python:Depends}, ${misc:Depends}, python-configshell, lio-utils, python-rtslib
+Provides: ${python:Provides}
+Conflicts: targetcli-frozen, rtsadmin-frozen, rtsadmin
+Description: CLI and interactive shell to manage Linux SCSI Targets
  .
- This package contains the targetcli CLI.  
+ Part of the Linux Kernel SCSI Target's userspace management tools

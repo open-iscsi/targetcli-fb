@@ -1,11 +1,4 @@
-This package was originally debianized by Jerome Martin <jxm@risingtidesystems.com>
-on Thu Nov 19 12:00:01 UTC 2009.  It is currently maintained by Jerome Martin 
-<jxm@risingtidesystems.com>.
-
-Upstream Author: Jerome Martin <jxm@risingtidesystems.com>
-
-This file is part of ConfigShell.
-Copyright (c) 2011-2013 by Datera, Inc
+Copyright (c) 2011-2014 by Datera, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may
 not use this file except in compliance with the License. You may obtain

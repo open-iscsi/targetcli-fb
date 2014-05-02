@@ -1,52 +1,19 @@
 #!/usr/bin/make -f
 
 build_dir   = build
-install_dir = debian/tmp
-python      = /usr/bin/python
-setup       = $(python) ./setup.py --quiet
+install_dir = debian/targetcli
 
-binary: binary-indep
 
-binary-arch:
+%:
+	dh $@ --with python2
 
-binary-indep: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs 
-	dh_installdocs
-	dh_installman
-	dh_install --list-missing --sourcedir $(install_dir)
-	dh_fixperms
-	dh_compress -X.py
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
+override_dh_auto_clean:
+	# manually clean any *.pyc files
+	rm -rf targetcli/*.pyc
 
-install: build
-	dh_testdir
-	dh_testroot
-	dh_installdirs 
+override_dh_auto_build:
+	python setup.py build --build-base $(build_dir) 
 
-build: build-stamp
-build-stamp: 
-	dh_testdir
-	# Build the source package
-	$(setup) build --build-base $(build_dir) install --no-compile --install-purelib $(install_dir)/lib/targetcli --install-scripts $(install_dir)/bin
-	echo "2.7" > $(install_dir)/lib/targetcli/.version
-	# Cleanup
-	rm -f $(install_dir)/lib/targetcli/targetcli/*.pyc
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp
-	$(setup) clean
-	find . -name "*.pyc" | xargs rm -f
-	find . -name "*.pyo" | xargs rm -f
-	rm -rf $(build_dir) $(install_dir)
-	dh_clean
-
-.PHONY: binary binary-indep install build clean
-
+override_dh_auto_install:
+	python setup.py install --prefix=/usr --no-compile  \
+		--install-layout=deb --root=$(CURDIR)/$(install_dir)
