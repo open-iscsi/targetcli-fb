@@ -25,10 +25,10 @@ the best way to get it running.
 The packages are very easy to build and install from source as long as
 you're familiar with your Linux Distribution's package manager:
 
-1.  Clone the github repository for targetcli using `git clone
+1.  Clone the github repository for TargetCLI using `git clone
     https://github.com/Datera/targetcli.git`.
 
-2.  Make sure build dependencies are installed. To build targetcli, you will need:
+2.  Make sure build dependencies are installed. To build TargetCLI, you will need:
 
 	* GNU Make.
 	* python 2.6 or 2.7
@@ -39,7 +39,7 @@ you're familiar with your Linux Distribution's package manager:
 3.  From the cloned git repository, run `make deb` to generate a Debian
     package, or `make rpm` for a Redhat package.
 
-4.  The newly built packages will be generated in the dist/ directory.
+4.  The newly built packages will be generated in the `dist/` directory.
 
 5.  To cleanup the repository, use `make clean` or `make cleanall` which also
     removes dist/* files.
