@@ -6,6 +6,8 @@ all:
 	@echo "Usage:"
 	@echo
 	@echo "  make deb         - Builds debian packages."
+	@echo "  make debinstall  - Builds and installs debian packages."
+	@echo "                     (requires sudo access)"
 	@echo "  make rpm         - Builds rpm packages."
 	@echo "  make release     - Generates the release tarball."
 	@echo
@@ -105,6 +107,10 @@ build/deb-stamp:
 	@echo "Generated debian packages:"
 	@for pkg in $$(ls dist/*_${VERSION}_*.deb); do echo "  $${pkg}"; done
 	@touch build/deb-stamp
+
+debinstall: deb
+	@echo "Installing $$(ls dist/*_${VERSION}_*.deb)"
+	@sudo dpkg -i $$(ls dist/*_${VERSION}_*.deb)
 
 rpm: release build/rpm-stamp
 build/rpm-stamp:
