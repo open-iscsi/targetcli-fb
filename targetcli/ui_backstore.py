@@ -16,7 +16,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 '''
-
+import os
 from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
