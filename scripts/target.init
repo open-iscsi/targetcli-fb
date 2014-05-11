@@ -34,12 +34,9 @@ load_specfiles()
 {
 FABRIC_MODS=$(python 2>/dev/null << EOF
 from rtslib import RTSRoot
-print(" ".join([fm.spec["kernel_module"] for fm in RTSRoot().fabric_modules]))
-EOF
-)
-CFS_GROUPS=$(python 2>/dev/null << EOF
-from rtslib import RTSRoot
-print(" ".join([fm.spec["configfs_group"] for fm in RTSRoot().fabric_modules]))
+print(" ".join(["%s:%s" % (fm.spec["kernel_module"],
+                           fm.spec["configfs_group"])
+                for fm in RTSRoot().fabric_modules]))
 EOF
 )
 }
@@ -79,49 +76,77 @@ load_configfs()
 
 load_modules()
 {
-    for MODULE in ${CORE_MODS} ${FABRIC_MODS}; do
+    for MODULE in ${CORE_MODS}; do
         modprobe "${MODULE}" > /dev/null 2>&1
         if [ "$?" != 0 ]; then
-            log_failure_msg "Failed to load kernel module ${MODULE}"
+            log_failure_msg "Failed to load target core module ${MODULE}"
             return 1
         else
             log_action_msg "Loaded ${MODULE} module"
         fi
     done
-    for GROUP in ${CFS_GROUPS}; do
-        CFS_GROUP="${CFS_TGT}/${GROUP}"
-        mkdir "${CFS_GROUP}" > /dev/null 2>&1
-        if [ ! -d "${CFS_GROUP}" ]; then
-            log_failure_msg "Failed to create ${CFS_GROUP}"
-            return 1
+    for MOD_SPEC in ${FABRIC_MODS}; do
+        MODULE="$(echo ${MOD_SPEC} | awk -F : '{print $1}')"
+        CFS_GROUP="${CFS_TGT}/$(echo ${MOD_SPEC} | awk -F : '{print $2}')"
+        modprobe "${MODULE}" > /dev/null 2>&1
+        if [ "$?" != 0 ]; then
+            log_warning_msg "Failed to load fabric module ${MODULE}"
+        else
+            mkdir "${CFS_GROUP}" > /dev/null 2>&1
+            if [ ! -d "${CFS_GROUP}" ]; then
+                log_warning_msg "Failed to create ${CFS_GROUP}"
+            else
+                log_action_msg "Loaded and enabled fabric module ${MODULE}"
+            fi
         fi
     done
 }
 
 unload_modules()
 {
+    RETCODE=0
     for GROUP in ${CFS_GROUPS}; do
         CFS_GROUP="${CFS_TGT}/${GROUP}"
-        rmdir "${CFS_GROUP}" > /dev/null 2>&1
-        if [ -d "${CFS_GROUP}" ]; then
-            log_failure_msg "Failed to remove ${CFS_GROUP}"
-            return 1
+    done
+
+    for MOD_SPEC in ${FABRIC_MODS}; do
+        MODULE="$(echo ${MOD_SPEC} | awk -F : '{print $1}')"
+        CFS_GROUP="${CFS_TGT}/$(echo ${MOD_SPEC} | awk -F : '{print $2}')"
+        if [ ! -z "$(lsmod | grep ^${MODULE}\ )" ]; then
+            rmdir "${CFS_GROUP}" > /dev/null 2>&1
+            if [ -d "${CFS_GROUP}" ]; then
+                log_failure_msg "Failed to remove ${CFS_GROUP}"
+                RETCODE=1
+            else
+                rmmod "${MODULE}" > /dev/null 2>&1
+                if [ "$?" != 0 ]; then
+                    log_failure_msg "Failed to unload fabric module ${MODULE}"
+                    RETCODE=1
+                else
+                    log_action_msg "Unloaded ${MODULE} fabric module"
+                fi
+            fi
+        else
+            log_warning_msg "Fabric module ${MODULE} is not loaded"
         fi
     done
-    MODULES="$(echo ${CORE_MODS} ${FABRIC_MODS} | tac -s ' ')"
+
+    MODULES="$(echo ${CORE_MODS} | tac -s ' ')"
     for MODULE in ${MODULES}; do
         if [ ! -z "$(lsmod | grep ^${MODULE}\ )" ]; then
             rmmod "${MODULE}" > /dev/null 2>&1
             if [ "$?" != 0 ]; then
-                log_failure_msg "Failed to unload kernel module ${MODULE}"
-                return 1
+                log_failure_msg "Failed to unload target core module ${MODULE}"
+                RETCODE=1
             else
-                log_action_msg "Unloaded ${MODULE} module"
+                log_action_msg "Unloaded ${MODULE} target core module"
             fi
         else
-            log_warning_msg "Module ${MODULE} is not loaded"
+            log_warning_msg "Target core module ${MODULE} is not loaded"
         fi
     done
+
+    return "${RETCODE}"
 }
 
 load_config()
