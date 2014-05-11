@@ -25,7 +25,7 @@ VERSION = str(PKG.__version__)
 (AUTHOR, EMAIL) = re.match('^(.*?)\s*<(.*)>$', PKG.__author__).groups()
 URL = PKG.__url__
 LICENSE = PKG.__license__
-SCRIPTS = ["scripts/targetcli"]
+SCRIPTS = ["scripts/targetcli", "scripts/targetcli-ng"]
 DESCRIPTION = PKG.__description__
 
 setup(name=PKG.__name__,

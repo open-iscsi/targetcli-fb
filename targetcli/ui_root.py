@@ -16,11 +16,12 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 '''
-
 from os import system
+import readline, tempfile
 from rtslib import RTSRoot, Config
 from ui_node import UINode, STARTUP_CONFIG
 from socket import gethostname
+from cli_config import CliConfig
 from ui_target import UIFabricModule
 from ui_backstore import UIBackstores
 from ui_backstore_legacy import UIBackstoresLegacy
@@ -94,6 +95,38 @@ class UIRoot(UINode):
                 fd.write(config.dump())
         else:
             self.shell.log.warning("Aborted, configuration left untouched.")
+
+    def ui_command_configure(self):
+        '''
+        Enters the config mode.
+
+        This mode allows editing a candidate configuration without
+        impacting the running system. This candidate configuration can
+        then either be commited or discarded at will. If commited, it
+        will be applied to the running system and saved as the new
+        startup configuration.
+
+        Other features include loading a configuration from file, undo
+        support, rollback support, configuration backups and more.
+
+        This mode is a functionnal but early preview version of the next-
+        generation targetcli environment.
+        '''
+        self.assert_root()
+        self.shell.log.warning("Entering configure mode")
+        self.shell.log.warning("This mode is a functionnal but early "
+                               "preview version of the next-generation "
+                               "targetcli")
+        #tmp_fd = tempfile.NamedTemporaryFile()
+        #tmp_history = tmp_fd.name
+        #tmp_fd.close()
+        #readline.write_history_file(tmp_history)
+        #readline.clear_history()
+        #CliConfig(interactive=True).cmdloop()
+        #readline.clear_history()
+        #readline.read_history_file(tmp_history)
+        system("targetcli-ng configure")
+        self.refresh()
 
     def ui_command_version(self):
         '''
