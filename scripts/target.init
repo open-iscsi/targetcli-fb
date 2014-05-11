@@ -156,7 +156,7 @@ export __STARTUP_CONFIG="${STARTUP_CONFIG}"
 python 2> /dev/null << EOF
 import os, rtslib
 config = rtslib.Config()
-config.load(os.environ['__STARTUP_CONFIG'])
+config.load(os.environ['__STARTUP_CONFIG'], allow_new_attrs=True)
 list(config.apply())
 EOF
     if [ "$?" != 0 ]; then

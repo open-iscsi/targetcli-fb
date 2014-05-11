@@ -114,7 +114,7 @@ class UINode(ConfigNode):
         if getuid() == 0:
             config = Config()
             if isfile(STARTUP_CONFIG):
-                config.load(STARTUP_CONFIG)
+                config.load(STARTUP_CONFIG, allow_new_attrs=True)
             saved_config = config.dump()
             config.load_live()
             live_config = config.dump()
