@@ -1,6 +1,6 @@
 NAME = targetcli
 GIT_BRANCH = $$(git branch | grep \* | tr -d \*)
-VERSION = $$(basename $$(git describe --tags | tr - .))
+VERSION = $$(basename $$(git describe --tags | tr - . | grep -o '[0-9].*$$'))
 
 all:
 	@echo "Usage:"
@@ -61,7 +61,7 @@ build/release-stamp:
 		rmdir rpm
 	@echo "Generating rpm changelog..."
 	@( \
-		version=$$(basename $$(git describe HEAD --tags | tr - .)); \
+		version=$$(basename $$(git describe HEAD --tags | tr - . | grep -o '[0-9].*$$')); \
 		author=$$(git show HEAD --format="format:%an <%ae>" -s); \
 		date=$$(git show HEAD --format="format:%ad" -s \
 			| awk '{print $$1,$$2,$$3,$$5}'); \
@@ -71,7 +71,7 @@ build/release-stamp:
 	) >> $$(ls build/${NAME}-${VERSION}/*.spec)
 	@echo "Generating debian changelog..."
 	@( \
-		version=$$(basename $$(git describe HEAD --tags | tr - .)); \
+		version=$$(basename $$(git describe HEAD --tags | tr - . | grep -o '[0-9].*$$')); \
 		author=$$(git show HEAD --format="format:%an <%ae>" -s); \
 		date=$$(git show HEAD --format="format:%aD" -s); \
 		day=$$(git show HEAD --format='format:%ai' -s \
