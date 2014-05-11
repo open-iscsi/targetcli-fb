@@ -32,6 +32,8 @@ clean:
 	@rm -fvr debian/${NAME}-frozen/ debian/${NAME}-python2.5/
 	@rm -fvr debian/${NAME}-python2.6/ debian/${NAME}/ debian/${NAME}-doc/
 	@rm -frv log/
+	@find . -name *~ -exec rm -v {} \;
+	@find . -name \#*\# -exec rm -v {} \;
 	@echo "Finished cleanup."
 
 cleanall: clean
