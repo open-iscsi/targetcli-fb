@@ -11,7 +11,8 @@ Source:         %{oname}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-rpmroot
 BuildArch:      noarch
 BuildRequires:  python-devel, python-rtslib, python-configshell
-Requires:       python-rtslib, python-configshell, lio-utils
+Requires:       python-rtslib, python-configshell
+Conflicts:      targetcli-frozen, rtsadmin-frozen, rtsadmin, lio-utils
 Vendor:         Datera, Inc.
 
 %description
@@ -28,6 +29,7 @@ rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root=%{buildroot} --prefix=usr
 mkdir -p %_mandir/man8/
 mv doc/targetcli.8 %_mandir/man8/targetcli.8.gz
+mkdir -p /etc/target
 
 %clean
 rm -rf %{buildroot}
@@ -35,6 +37,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{python_sitelib}
+/etc/target
 %{_bindir}/targetcli
 %doc COPYING README.md %_mandir/man8/targetcli.8.gz
 

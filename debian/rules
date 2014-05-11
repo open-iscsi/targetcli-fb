@@ -3,7 +3,6 @@
 build_dir   = build
 install_dir = debian/targetcli
 
-
 %:
 	dh $@ --with python2
 
@@ -17,3 +16,6 @@ override_dh_auto_build:
 override_dh_auto_install:
 	python setup.py install --prefix=/usr --no-compile  \
 		--install-layout=deb --root=$(CURDIR)/$(install_dir)
+
+override_dh_installinit:
+	dh_installinit --name target

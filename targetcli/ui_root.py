@@ -18,11 +18,10 @@ under the License.
 '''
 
 from os import system
-from rtslib import RTSRoot
-from ui_node import UINode
+from rtslib import RTSRoot, Config
+from ui_node import UINode, STARTUP_CONFIG
 from socket import gethostname
 from ui_target import UIFabricModule
-from tcm_dump import tcm_full_backup
 from ui_backstore import UIBackstores
 from ui_backstore_legacy import UIBackstoresLegacy
 
@@ -89,7 +88,10 @@ class UIRoot(UINode):
             input = None
             self.shell.con.display('')
         if input == "yes":
-            tcm_full_backup(None, None, '1', None)
+            config = Config()
+            config.load_live()
+            with open(STARTUP_CONFIG, "w") as fd:
+                fd.write(config.dump())
         else:
             self.shell.log.warning("Aborted, configuration left untouched.")
 

@@ -1,0 +1,216 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          target
+# Required-Start:    $network $remote_fs $syslog
+# Required-Stop:     $network $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: The Linux SCSI Target service
+### END INIT INFO
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="The Linux SCSI Target"
+NAME=target
+DAEMON=/usr/bin/targetcli
+DAEMON_ARGS=""
+SCRIPTNAME=/etc/init.d/$NAME
+
+CFS_BASE="/sys/kernel/config/"
+CFS_TGT="${CFS_BASE}/target"
+CORE_MODS="target_core_mod target_core_pscsi target_core_iblock target_core_file"
+STARTUP_CONFIG="/etc/target/scsi_target.lio"
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions - requires lsb-base (>= 3.2-14)
+. /lib/lsb/init-functions
+
+load_specfiles()
+{
+FABRIC_MODS=$(python 2>/dev/null << EOF
+from rtslib import RTSRoot
+print(" ".join([fm.spec["kernel_module"] for fm in RTSRoot().fabric_modules]))
+EOF
+)
+CFS_GROUPS=$(python 2>/dev/null << EOF
+from rtslib import RTSRoot
+print(" ".join([fm.spec["configfs_group"] for fm in RTSRoot().fabric_modules]))
+EOF
+)
+}
+
+check_install()
+{
+    # Check the system installation
+    INSTALL=ok
+
+    python -c "from rtslib import Config" > /dev/null 2>&1
+    if [ $? != 0 ]; then
+        log_failure_msg "Cannot load rtslib"
+        INSTALL=nok
+    fi
+
+    if [ "${INSTALL}" != ok ]; then
+        exit 0
+    else
+        log_action_msg "${DESC} looks properly installed"
+    fi
+}
+
+load_configfs()
+{
+    modprobe configfs > /dev/null 2>&1
+    if [ "$?" != 0 ]; then
+        log_failure_msg "Failed to load configfs kernel module"
+        return 1
+    fi
+    mount -t configfs configfs ${CFS_BASE} > /dev/null 2>&1
+    case "$?" in
+        0) log_warning_msg "The configfs filesystem was not mounted, consider adding it to fstab";;
+        32) log_action_msg "The configfs filesystem is already mounted";;
+        *) log_failure_msg "Failed to mount configfs"; return 1;;
+    esac
+}
+
+load_modules()
+{
+    for MODULE in ${CORE_MODS} ${FABRIC_MODS}; do
+        modprobe "${MODULE}" > /dev/null 2>&1
+        if [ "$?" != 0 ]; then
+            log_failure_msg "Failed to load kernel module ${MODULE}"
+            return 1
+        else
+            log_action_msg "Loaded ${MODULE} module"
+        fi
+    done
+    for GROUP in ${CFS_GROUPS}; do
+        CFS_GROUP="${CFS_TGT}/${GROUP}"
+        mkdir "${CFS_GROUP}" > /dev/null 2>&1
+        if [ ! -d "${CFS_GROUP}" ]; then
+            log_failure_msg "Failed to create ${CFS_GROUP}"
+            return 1
+        fi
+    done
+}
+
+unload_modules()
+{
+    for GROUP in ${CFS_GROUPS}; do
+        CFS_GROUP="${CFS_TGT}/${GROUP}"
+        rmdir "${CFS_GROUP}" > /dev/null 2>&1
+        if [ -d "${CFS_GROUP}" ]; then
+            log_failure_msg "Failed to remove ${CFS_GROUP}"
+            return 1
+        fi
+    done
+    MODULES="$(echo ${CORE_MODS} ${FABRIC_MODS} | tac -s ' ')"
+    for MODULE in ${MODULES}; do
+        if [ ! -z "$(lsmod | grep ^${MODULE}\ )" ]; then
+            rmmod "${MODULE}" > /dev/null 2>&1
+            if [ "$?" != 0 ]; then
+                log_failure_msg "Failed to unload kernel module ${MODULE}"
+                return 1
+            else
+                log_action_msg "Unloaded ${MODULE} module"
+            fi
+        else
+            log_warning_msg "Module ${MODULE} is not loaded"
+        fi
+    done
+}
+
+load_config()
+{
+if [ -e "${STARTUP_CONFIG}" ]; then
+export __STARTUP_CONFIG="${STARTUP_CONFIG}"
+python 2> /dev/null << EOF
+import os, rtslib
+config = rtslib.Config()
+config.load(os.environ['__STARTUP_CONFIG'])
+list(config.apply())
+EOF
+    if [ "$?" != 0 ]; then
+        unset __STARTUP_CONFIG
+        log_failure_msg "Failed to load ${STARTUP_CONFIG}"
+        return 1
+    else
+        unset __STARTUP_CONFIG
+        log_action_msg "Loaded ${STARTUP_CONFIG}"
+    fi
+else
+    log_warning_msg "No ${STARTUP_CONFIG} to load"
+fi
+}
+
+clear_config()
+{
+python 2> /dev/null << EOF
+from rtslib import Config
+config = Config()
+list(config.apply())
+EOF
+
+if [ "$?" != 0 ]; then
+    log_failure_msg "Failed to clear configuration"
+    return 1
+else
+    log_action_msg "Cleared configuration"
+fi
+}
+
+do_start()
+{
+    load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
+    check_install && load_configfs && load_modules && load_config
+    if [ "$?" != 0 ]; then
+        log_failure_msg "Could not start ${DESC}"
+        return 1
+    else
+        log_success_msg "Started ${DESC}"
+    fi
+}
+
+do_stop()
+{
+    load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
+    clear_config && unload_modules
+    if [ "$?" != 0 ]; then
+        log_failure_msg "Could not stop ${DESC}"
+        return 1
+    else
+        log_success_msg "Stopped ${DESC}"
+    fi
+}
+
+do_status()
+{
+    if [ -d ${CFS_TGT} ]; then
+        log_action_msg "${DESC} is started"
+        return 0
+    else
+        log_action_msg "${DESC} is stopped"
+        return 1
+    fi
+}
+
+case "$1" in
+    start)
+	    do_start
+        ;;
+    stop)
+	    do_stop
+        ;;
+    status)
+        do_status ;;
+    restart|force-reload)
+	    do_stop && do_start ;;
+    *)
+	    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	    exit 3
+	    ;;
+esac

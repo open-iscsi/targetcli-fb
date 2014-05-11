@@ -18,10 +18,12 @@ under the License.
 '''
 
 from configshell import ConfigNode, ExecutionError
-from rtslib import RTSLibError, RTSRoot
+from rtslib import RTSLibError, RTSRoot, Config
 from subprocess import PIPE, Popen
 from os.path import isfile
 from os import getuid
+
+STARTUP_CONFIG = "/etc/target/scsi_target.lio"
 
 def exec3(cmd):
     '''
@@ -64,7 +66,7 @@ class UINode(ConfigNode):
         node's as_root attribute is False.
         '''
         root_node = self.get_root()
-        if hasattr(root_node, 'as_root') and not self.get_root().as_root:
+        if hasattr(root_node, 'as_root') and not root_node.as_root:
             raise ExecutionError("This privileged command is disabled: "
                                  + "you are not root.")
 
@@ -109,34 +111,30 @@ class UINode(ConfigNode):
         '''
         Exits the command line interface.
         '''
-        config_needs_save = False
-        config_paths = {'tcm': "/etc/target/tcm_start.sh",
-                        'lio': "/etc/target/lio_start.sh"}
-        for mod_name, config_path in config_paths.items():
-            saved_config = ''
-            live_config = exec3("%s_dump --stdout" % mod_name)[1]
-            if isfile(config_path):
-                with open(config_path) as config_fh:
-                    saved_config = config_fh.read()
+        if getuid() == 0:
+            config = Config()
+            if isfile(STARTUP_CONFIG):
+                config.load(STARTUP_CONFIG)
+            saved_config = config.dump()
+            config.load_live()
+            live_config = config.dump()
             if saved_config != live_config:
-                config_needs_save = True
-                break
-
-        if config_needs_save and getuid() == 0:
-            self.shell.con.display("There are unsaved configuration changes.\n"
-                                   "If you exit now, configuration will not "
-                                   "be updated and changes will be lost upon "
-                                   "reboot.")
-            try:
-                input = raw_input("Type 'exit' if you want to exit anyway: ")
-            except EOFError:
-                input = None
-                self.shell.con.display('')
-            if input == "exit":
-                return 'EXIT'
+                self.shell.con.display("There are unsaved configuration changes.\n"
+                                       "If you exit now, configuration will not "
+                                       "be updated and changes will be lost upon "
+                                       "reboot.")
+                try:
+                    input = raw_input("Type 'exit' if you want to exit anyway: ")
+                except EOFError:
+                    input = None
+                    self.shell.con.display('')
+                if input == "exit":
+                    return 'EXIT'
+                else:
+                    self.shell.log.warning("Aborted exit, use 'saveconfig' to "
+                                           "save the current configuration.")
             else:
-                self.shell.log.warning("Aborted exit, use 'saveconfig' to "
-                                       "save the current configuration.")
+                return 'EXIT'
         else:
             return 'EXIT'
 
