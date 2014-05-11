@@ -301,7 +301,9 @@ class UIMultiTPGTarget(UIRTSLibNode):
         B{create}
         '''
         self.assert_root()
-        tpg = TPG(self.rtsnode, tag, mode='lookup')
+        if tag.startswith("tpg"):
+            tag = tag[3:]
+        tpg = TPG(self.rtsnode, int(tag), mode='lookup')
         tpg.delete()
         self.shell.log.info("Deleted TPG %s." % tag)
         self.refresh()
@@ -456,7 +458,7 @@ class UINodeACLs(UINode):
         try:
             node_acl = NodeACL(self.tpg, wwn, mode="create")
         except RTSLibError, msg:
-            self.shell.log.error(msg)
+            self.shell.log.error(str(msg))
             return
         else:
             self.shell.log.info("Created Node ACL for %s"
@@ -578,6 +580,10 @@ class UINodeACL(UIRTSLibNode):
         except ValueError:
             self.shell.log.error("Incorrect LUN value.")
             return
+
+        if tpg_lun in (ml.tpg_lun.lun for ml in self.rtsnode.mapped_luns):
+            self.shell.log.warning(
+                "Warning: TPG LUN %d already mapped to this NodeACL" % tpg_lun)
 
         mlun = MappedLUN(self.rtsnode, mapped_lun, tpg_lun, write_protect)
         ui_mlun = UIMappedLUN(mlun, self)

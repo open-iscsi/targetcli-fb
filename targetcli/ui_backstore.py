@@ -62,6 +62,7 @@ class UIBackstores(UINode):
 class UIBackstore(UINode):
     '''
     A backstore UI.
+    Abstract Base Class, do not instantiate.
     '''
     def __init__(self, plugin, parent):
         UINode.__init__(self, plugin, parent)
@@ -195,6 +196,11 @@ class UIPSCSIBackstore(UIBackstore):
         self.assert_root()
         self.assert_available_so_name(name)
         backstore = PSCSIBackstore(self.next_hba_index(), mode='create')
+
+        if get_block_type(dev) is not None or is_disk_partition(dev):
+            self.shell.log.info("Note: block backstore recommended for "
+                                "SCSI block devices")
+
         try:
             so = PSCSIStorageObject(backstore, name, dev)
         except Exception, exception:
@@ -302,8 +308,7 @@ class UIFileIOBackstore(UIBackstore):
         f = open(filename, "w+")
         try:
             if sparse:
-                f.seek(size-1)
-                f.write("\0")
+                os.ftruncate(f.fileno(), size)
             else:
                 self.shell.log.info("Writing %s bytes" % size)
                 while size > 0:
@@ -328,8 +333,8 @@ class UIFileIOBackstore(UIBackstore):
         a block device.  The optional I{generate_wwn} parameter is a boolean
         specifying whether or not we should generate a T10 wwn Serial for the
         unit (by default, yes).  The I{buffered} parameter is a boolean stating
-        whether or not to enable buffered mode. It is disabled by default
-        (synchronous mode). The I{sparse} parameter is only applicable when
+        whether or not to enable buffered mode. It is enabled by default
+        (asynchronous mode). The I{sparse} parameter is only applicable when
         creating a new backing file. It is a boolean stating if the
         created file should be created as a sparse file (the default), or
         fully initialized.
@@ -396,6 +401,8 @@ class UIFileIOBackstore(UIBackstore):
                                         " instead"
                                         % (file_or_dev, new_size))
                 size = new_size
+            elif os.path.exists(file_or_dev):
+                raise ExecutionError("Path %s exists but is not a file" % file_or_dev)
             else:
                 # create file and extend to given file size
                 if not size:
@@ -437,6 +444,7 @@ class UIIBlockBackstore(UIBackstore):
 class UIStorageObject(UIRTSLibNode):
     '''
     A storage object UI.
+    Abstract Base Class, do not instantiate.
     '''
     def __init__(self, storage_object, parent):
         name = storage_object.name
