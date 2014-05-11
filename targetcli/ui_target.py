@@ -280,8 +280,8 @@ class UIMultiTPGTarget(UIRTSLibNode):
                 self.shell.log.error("The TPG Tag must be an integer value.")
                 return
             else:
-                if tag < 1:
-                    self.shell.log.error("The TPG Tag must be >0.")
+                if tag < 0:
+                    self.shell.log.error("The TPG Tag must be 0 or more.")
                     return
 
         tpg = TPG(self.rtsnode, tag, mode='create')
