@@ -8,7 +8,7 @@ Build-Depends: debhelper(>= 7.0.50~), python(>= 2.6.6-3~), python-rtslib, python
 
 Package: targetcli
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-configshell, python-rtslib, lsb-base(>=3.2-14)
+Depends: ${python:Depends}, ${misc:Depends}, python-configshell, python-rtslib, python-prettytable, lsb-base(>=3.2-14)
 Provides: ${python:Provides}
 Conflicts: targetcli-frozen, rtsadmin-frozen, rtsadmin, lio-utils
 Description: CLI and interactive shell to manage Linux SCSI Targets
