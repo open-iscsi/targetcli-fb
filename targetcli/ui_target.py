@@ -908,6 +908,12 @@ class UIPortals(UINode):
         B{delete}
         '''
         self.assert_root()
+        try:
+            listen_all = int(ip_address.replace(".", "")) == 0
+        except:
+            listen_all = False
+        if listen_all:
+            ip_address = "0.0.0.0"
         if ip_port is None:
             # FIXME: Add a specfile parameter to determine that
             ip_port = 3260
@@ -922,7 +928,7 @@ class UIPortals(UINode):
                     self.shell.log.error("Cannot find a usable IP address to "
                                          + "create the Network Portal.")
                     return
-        elif ip_address not in utils.list_eth_ips():
+        elif ip_address not in utils.list_eth_ips() and not listen_all:
             self.shell.log.error("IP address does not exist: %s" % ip_address)
             return
 
