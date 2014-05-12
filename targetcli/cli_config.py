@@ -267,6 +267,10 @@ class CliConfig(Cli):
                      % backup_path)
             shutil.copyfile(self.config_path, backup_path)
             log.info("Saving new startup configuration")
+            # We reload the config from live before saving it, in
+            # case this kernel has new attributes not yet in our
+            # policy files
+            self.config.load_live()
             self.config.save(self.config_path)
             self.needs_save = False
         else:
