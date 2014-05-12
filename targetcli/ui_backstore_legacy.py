@@ -20,9 +20,9 @@ under the License.
 from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOBackstore, IBlockBackstore
-from rtslib import PSCSIBackstore, RDDRBackstore, RDMCPBackstore
+from rtslib import PSCSIBackstore, RDMCPBackstore
 from rtslib import FileIOStorageObject, IBlockStorageObject
-from rtslib import PSCSIStorageObject, RDDRStorageObject, RDMCPStorageObject
+from rtslib import PSCSIStorageObject, RDMCPStorageObject
 from rtslib.utils import get_block_type, is_disk_partition
 
 class UIBackstoresLegacy(UINode):
@@ -40,8 +40,6 @@ class UIBackstoresLegacy(UINode):
             backstore_plugin = backstore.plugin
             if backstore_plugin == 'pscsi':
                 UIPSCSIBackstoreLegacy(backstore, self)
-            elif backstore_plugin == 'rd_dr':
-                UIRDDRBackstoreLegacy(backstore, self)
             elif backstore_plugin == 'rd_mcp':
                 UIRDMCPBackstoreLegacy(backstore, self)
             elif backstore_plugin == 'fileio':
@@ -92,18 +90,11 @@ class UIBackstoresLegacy(UINode):
         block I/O with various methods (synchronous or asynchronous) and
         (buffered or direct).
 
-        B{rd_dr}
-        -------
-        This I{backstore_plugin} provides the same level of SCSI emulation than
-        the I{fileio} and I{iblock} backstores, but uses a B{ramdisk}, based on
-        direct memory mapping. It is the fastest of all backstores, and is
-        typically used for bandwidth testing.
-
         B{rd_mcp}
         --------
-        This I{backstore_plugin} is a bit slower than B{rd_dr}, but more robust
-        with multiple initiators, with a separate memory mapping using memory
-        copy. Also typically used for bandwidth testing.
+        This I{backstore_plugin} uses a ramdisk with a separate
+        mapping using memory copy. Typically used for bandwidth
+        testing.
 
         EXAMPLE
         =======
@@ -134,9 +125,6 @@ class UIBackstoresLegacy(UINode):
         if backstore_plugin == 'pscsi':
             backstore = PSCSIBackstore(backstore_index, mode='create')
             return self.new_node(UIPSCSIBackstoreLegacy(backstore, self))
-        elif backstore_plugin == 'rd_dr':
-            backstore = RDDRBackstore(backstore_index, mode='create')
-            return self.new_node(UIRDDRBackstoreLegacy(backstore, self))
         elif backstore_plugin == 'rd_mcp':
             backstore = RDMCPBackstore(backstore_index, mode='create')
             return self.new_node(UIRDMCPBackstoreLegacy(backstore, self))
@@ -166,7 +154,7 @@ class UIBackstoresLegacy(UINode):
         @rtype: list of str
         '''
         if current_param == 'backstore_plugin':
-            plugins = ['pscsi', 'rd_dr', 'rd_mcp', 'fileio', 'iblock']
+            plugins = ['pscsi', 'rd_mcp', 'fileio', 'iblock']
             completions = [plugin for plugin in plugins
                            if plugin.startswith(text)]
         else:
@@ -338,37 +326,6 @@ class UIPSCSIBackstoreLegacy(UIBackstoreLegacy):
         self.shell.log.info("Created pscsi storage object %s using %s."
                             % (name, dev))
         return self.new_node(ui_so)
-
-
-class UIRDDRBackstoreLegacy(UIBackstoreLegacy):
-    '''
-    RDDR backstore UI.
-    '''
-    def ui_command_create(self, name, size, generate_wwn=None):
-        '''
-        Creates an RDDR storage object. I{size} is the size of the ramdisk, and
-        the optional I{generate_wwn} parameter is a boolean specifying whether
-        or not we should generate a T10 wwn serial for the unit (by default,
-        yes).
-
-        SIZE SYNTAX
-        ===========
-        - If size is an int, it represents a number of bytes.
-        - If size is a string, the following units can be used:
-            - B{B} or no unit present for bytes
-            - B{k}, B{K}, B{kB}, B{KB} for kB (kilobytes)
-            - B{m}, B{M}, B{mB}, B{MB} for MB (megabytes)
-            - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
-            - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
-        '''
-        self.assert_root()
-        so = RDDRStorageObject(self.rtsnode, name, size,
-                               self.prm_gen_wwn(generate_wwn))
-        ui_so = UIStorageObjectLegacy(so, self)
-        self.shell.log.info("Created rd_dr ramdisk %s with size %s."
-                            % (name, size))
-        return self.new_node(ui_so)
-
 
 class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
     '''
