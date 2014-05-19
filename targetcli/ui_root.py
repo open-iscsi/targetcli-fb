@@ -117,14 +117,6 @@ class UIRoot(UINode):
         self.shell.log.warning("This mode is a functionnal but early "
                                "preview version of the next-generation "
                                "targetcli")
-        #tmp_fd = tempfile.NamedTemporaryFile()
-        #tmp_history = tmp_fd.name
-        #tmp_fd.close()
-        #readline.write_history_file(tmp_history)
-        #readline.clear_history()
-        #CliConfig(interactive=True).cmdloop()
-        #readline.clear_history()
-        #readline.read_history_file(tmp_history)
         system("targetcli-ng configure")
         self.refresh()
 
