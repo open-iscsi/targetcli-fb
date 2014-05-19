@@ -20,6 +20,31 @@ TargetCLI is currently part of several Linux distributions. In most cases,
 simply installing the version packaged by your favorite Linux distribution is
 the best way to get it running.
 
+## Migrating away from a targetcli < 3.0 setup
+
+Prior to version 3.x, TargetCLI relied on lio-utils for managing the target's
+startup configuration. Unfortunately, rtslib.Config - now used by targetcli and
+the `/etc/init.d/target` initscript for startup config save and restore
+operations - is incompatible with the legacy lio-utils config files.
+
+However, the new initscript has a special provision for this case. 
+When attempting to start the target service when there is no
+`/etc/target/scsi_target.lio` configuration file present, a check is made to see
+if there is a target configuration currently running on the system. If there is,
+it is assumed to be a keeper, and the initscript will attempt to dump it to the
+system startup configuration file `/etc/target/scsi_target.lio`.
+
+When migrating from a lio-utils install, the trick is to prevent the old lio-utils
+package removal from stopping the service. For this, you can simply empty the
+lio-utils version of `/etc/init.d/target` - or the equivalent location for your
+Linux distribution.
+
+Example on Debian:
+
+        echo > /etc/init.d/target
+        dpkg --purge lio-utils
+        apt-get install targetcli
+
 ## Building from source
 
 The packages are very easy to build and install from source as long as

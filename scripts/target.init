@@ -41,6 +41,16 @@ EOF
 )
 }
 
+save_running_config()
+{
+python << EOF
+import rtslib
+config = rtslib.Config()
+config.load_live()
+config.save("${STARTUP_CONFIG}")
+EOF
+}
+
 check_install()
 {
     # Check the system installation
@@ -190,6 +200,15 @@ fi
 
 do_start()
 {
+    # If the target is running and we do not have a config file on the
+    # system, dump the running system config to the config file. This
+    # helps migrating away from lio-utils or other legacy/devel systems.
+    if [ ! -e "${STARTUP_CONFIG}" ] && [ -d "${CFS_TGT}" ]; then
+        log_action_msg "Possible config migration detected, saving the " \
+            "running target to ${STARTUP_CONFIG}"
+        save_running_config
+    fi
+
     load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
     check_install && load_configfs && load_modules && load_config
     if [ "$?" != 0 ]; then
