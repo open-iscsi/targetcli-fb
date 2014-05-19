@@ -44,7 +44,7 @@ class UIRoot(UINode):
         else:
             UIBackstores(self)
 
-        for fabric_module in RTSRoot().loaded_fabric_modules:
+        for fabric_module in RTSRoot().fabric_modules:
             self.shell.log.debug("Using fabric module %s." % fabric_module.name)
             UIFabricModule(fabric_module, self)
 
