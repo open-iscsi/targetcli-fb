@@ -97,17 +97,11 @@ load_modules()
     done
     for MOD_SPEC in ${FABRIC_MODS}; do
         MODULE="$(echo ${MOD_SPEC} | awk -F : '{print $1}')"
-        CFS_GROUP="${CFS_TGT}/$(echo ${MOD_SPEC} | awk -F : '{print $2}')"
         modprobe "${MODULE}" > /dev/null 2>&1
         if [ "$?" != 0 ]; then
             log_warning_msg "Failed to load fabric module ${MODULE}"
         else
-            mkdir "${CFS_GROUP}" > /dev/null 2>&1
-            if [ ! -d "${CFS_GROUP}" ]; then
-                log_warning_msg "Failed to create ${CFS_GROUP}"
-            else
-                log_action_msg "Loaded and enabled fabric module ${MODULE}"
-            fi
+            log_action_msg "Loaded fabric module ${MODULE}"
         fi
     done
 }
@@ -115,9 +109,6 @@ load_modules()
 unload_modules()
 {
     RETCODE=0
-    for GROUP in ${CFS_GROUPS}; do
-        CFS_GROUP="${CFS_TGT}/${GROUP}"
-    done
 
     for MOD_SPEC in ${FABRIC_MODS}; do
         MODULE="$(echo ${MOD_SPEC} | awk -F : '{print $1}')"
