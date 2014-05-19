@@ -86,21 +86,29 @@ load_configfs()
 load_modules()
 {
     for MODULE in ${CORE_MODS}; do
-        modprobe "${MODULE}" > /dev/null 2>&1
-        if [ "$?" != 0 ]; then
-            log_failure_msg "Failed to load target core module ${MODULE}"
-            return 1
+        if [ ! -z "$(cat /proc/modules | grep ^${MODULE}\ )" ]; then
+            log_warning_msg "Core module ${MODULE} already loaded"
         else
-            log_action_msg "Loaded ${MODULE} module"
+            modprobe "${MODULE}" > /dev/null 2>&1
+            if [ "$?" != 0 ]; then
+                log_failure_msg "Failed to load core module ${MODULE}"
+                return 1
+            else
+                log_action_msg "Loaded core module ${MODULE}"
+            fi
         fi
     done
     for MOD_SPEC in ${FABRIC_MODS}; do
         MODULE="$(echo ${MOD_SPEC} | awk -F : '{print $1}')"
-        modprobe "${MODULE}" > /dev/null 2>&1
-        if [ "$?" != 0 ]; then
-            log_warning_msg "Failed to load fabric module ${MODULE}"
+        if [ ! -z "$(cat /proc/modules | grep ^${MODULE}\ )" ]; then
+            log_warning_msg "Fabric module ${MODULE} already loaded"
         else
-            log_action_msg "Loaded fabric module ${MODULE}"
+            modprobe "${MODULE}" > /dev/null 2>&1
+            if [ "$?" != 0 ]; then
+                log_warning_msg "Failed to load fabric module ${MODULE}"
+            else
+                log_action_msg "Loaded fabric module ${MODULE}"
+            fi
         fi
     done
 }
