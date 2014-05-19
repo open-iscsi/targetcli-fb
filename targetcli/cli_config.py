@@ -46,12 +46,29 @@ class CliConfig(Cli):
     '''
     config_path = "/etc/target/scsi_target.lio"
     history_path = os.path.expanduser("~/.targetcli/history_configure.txt")
+    backup_dir = "/var/target"
+
+    @classmethod
+    def save_running_config(cls):
+        if os.path.isfile(cls.config_path):
+            # TODO remove/rotate older backups
+            ts = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+            backup_path = "%s/backup-%s.lio" % (cls.backup_dir, ts)
+            log.info("Performing backup of startup configuration: %s"
+                     % backup_path)
+            shutil.copyfile(cls.config_path, backup_path)
+        log.info("Saving new startup configuration")
+        # We reload the config from live before saving it, in
+        # case this kernel has new attributes not yet in our
+        # policy files
+        config = Config()
+        config.load_live()
+        config.save(cls.config_path)
 
     def __init__(self, interactive=False):
         Cli.__init__(self, interactive, self.history_path)
         self.set_prompt()
         log.info("Syncing policy and configuration...")
-        self.backup_dir = "/var/target"
         self.config = Config()
         self.config.load_live()
         self.edit_levels = ['']
@@ -259,19 +276,7 @@ class CliConfig(Cli):
                         return
                 else:
                     log.info(msg)
-                
-            # TODO remove older backups
-            ts = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-            backup_path = "%s/backup-%s.lio" % (self.backup_dir, ts)
-            log.info("Performing backup of startup configuration: %s"
-                     % backup_path)
-            shutil.copyfile(self.config_path, backup_path)
-            log.info("Saving new startup configuration")
-            # We reload the config from live before saving it, in
-            # case this kernel has new attributes not yet in our
-            # policy files
-            self.config.load_live()
-            self.config.save(self.config_path)
+            self.save_running_config()
             self.needs_save = False
         else:
             log.info("Cancelled configuration commit")

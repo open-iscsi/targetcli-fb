@@ -89,12 +89,9 @@ class UIRoot(UINode):
             input = None
             self.shell.con.display('')
         if input == "yes":
-            config = Config()
-            config.load_live()
-            with open(STARTUP_CONFIG, "w") as fd:
-                fd.write(config.dump())
+            CliConfig.save_running_config()
         else:
-            self.shell.log.warning("Aborted, configuration left untouched.")
+            self.shell.log.warning("Aborted, startup configuration left untouched.")
 
     def ui_command_configure(self):
         '''
