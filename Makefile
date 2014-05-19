@@ -31,7 +31,7 @@ all:
 	@echo "  make cleanall    - Also remove dist/*"
 
 clean:
-	@rm -fv ${NAME}/*.pyc ${NAME}/*.html
+	@rm -frv ${NAME}/*.html
 	@rm -frv ${NAME}.egg-info MANIFEST build
 	@rm -frv debian/tmp
 	@rm -fv build-stamp
@@ -48,6 +48,8 @@ clean:
 	@rm -fvr debian/${NAME}-frozen/ debian/${NAME}-python2.5/
 	@rm -fvr debian/${NAME}-python2.6/ debian/${NAME}/ debian/${NAME}-doc/
 	@rm -frv log/
+	@find . -name *.swp -exec rm -v {} \;
+	@find . -name *.pyc -exec rm -vf {} \;
 	@find . -name *~ -exec rm -v {} \;
 	@find . -name \#*\# -exec rm -v {} \;
 	@echo "Finished cleanup."
