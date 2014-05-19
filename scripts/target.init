@@ -33,10 +33,10 @@ STARTUP_CONFIG="/etc/target/scsi_target.lio"
 load_specfiles()
 {
 FABRIC_MODS=$(python 2>/dev/null << EOF
-from rtslib import RTSRoot
+from rtslib import FabricModule
 print(" ".join(["%s:%s" % (fm.spec["kernel_module"],
                            fm.spec["configfs_group"])
-                for fm in RTSRoot().fabric_modules]))
+                for fm in FabricModule.all()]))
 EOF
 )
 }
