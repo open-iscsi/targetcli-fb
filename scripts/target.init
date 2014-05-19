@@ -221,13 +221,17 @@ do_start()
 
 do_stop()
 {
-    load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
-    clear_config && unload_modules
-    if [ "$?" != 0 ]; then
-        log_failure_msg "Could not stop ${DESC}"
-        return 1
+    if [ ! -d ${CFS_TGT} ]; then
+        log_success_msg "${DESC} is already stopped"
     else
-        log_success_msg "Stopped ${DESC}"
+        load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
+        clear_config && unload_modules
+        if [ "$?" != 0 ]; then
+            log_failure_msg "Could not stop ${DESC}"
+            return 1
+        else
+            log_success_msg "Stopped ${DESC}"
+        fi
     fi
 }
 
