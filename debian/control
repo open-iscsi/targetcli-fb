@@ -4,11 +4,11 @@ Priority: optional
 Standards-Version: 3.9.2
 Homepage: https://github.com/Datera/targetcli
 Maintainer: Jerome Martin <jxm@netiant.com>
-Build-Depends: debhelper(>= 7.0.50~), python(>= 2.6.6-3~), python-rtslib, python-configshell
+Build-Depends: debhelper(>=7.0.50~), python(>=2.6.6-3~), python-rtslib(>=3.0~), python-configshell(>=1.5)
 
 Package: targetcli
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-configshell, python-rtslib, python-prettytable, lsb-base(>=3.2-14)
+Depends: ${python:Depends}, ${misc:Depends}, python-configshell, python-rtslib(>=3.0~), python-prettytable, lsb-base(>=3.2-14)
 Provides: ${python:Provides}
 Conflicts: targetcli-frozen, rtsadmin-frozen, rtsadmin, lio-utils
 Description: CLI and interactive shell to manage Linux SCSI Targets
