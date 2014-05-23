@@ -517,8 +517,9 @@ class UINodeACL(UIRTSLibNode):
     '''
     def __init__(self, node_acl, parent):
         UIRTSLibNode.__init__(self, node_acl.node_wwn, node_acl, parent)
-        self.define_config_group_param(
-            'attribute', 'tcq_depth', 'string', "Command queue depth.", True)
+        if self.rtsnode.has_feature("acls_tcq_depth"):
+            self.define_config_group_param(
+                'attribute', 'tcq_depth', 'string', "Command queue depth.", True)
         self.cfs_cwd = node_acl.path
         self.refresh()
 
@@ -530,7 +531,7 @@ class UINodeACL(UIRTSLibNode):
         @return: The attribute's value
         @rtype: arbitrary
         '''
-        if attribute == 'tcq_depth':
+        if attribute == 'tcq_depth' and self.rtsnode.has_feature("acls_tcq_depth"):
             return self.rtsnode.tcq_depth
         else:
             return self.rtsnode.get_attribute(attribute)
@@ -544,7 +545,7 @@ class UINodeACL(UIRTSLibNode):
         @type value: arbitrary
         '''
         self.assert_root()
-        if attribute == 'tcq_depth':
+        if attribute == 'tcq_depth' and self.rtsnode.has_feature("acls_tcq_depth"):
             self.rtsnode.tcq_depth = value
         else:
             self.rtsnode.set_attribute(attribute, value)
