@@ -1,7 +1,8 @@
 # TargetCLI
 
-TargetCLI is an administration tool for managing the LIO Linux SCSI Target,
-and its third-party target fabric modules and backend storage objects.
+TargetCLI is the LIO(tm) commmand-line administration tool for managing the
+Linux SCSI Target, and its third-party target fabric modules and backend storage
+objects.
 
 Based on RTSLib, it allows direct manipulation of all SCSI Target objects like
 storage objects, SCSI targets, TPGs, LUNs and ACLs, as well as manage startup
@@ -92,7 +93,7 @@ http://dir.gmane.org/gmane.linux.scsi.target.devel
 
 ## Author
 
-TargetCLI was developed by Datera, Inc.
+LIO(tm) was developed by Datera, Inc.
 http://www.datera.io
 
 The original author and current maintainer is

@@ -1,7 +1,7 @@
 '''
 Implements the targetcli base UI node.
 
-This file is part of targetcli.
+This file is part of LIO(tm).
 Copyright (c) 2011-2014 by Datera, Inc
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may

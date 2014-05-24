@@ -1,5 +1,5 @@
 '''
-This file is part of the LIO SCSI Target.
+This file is part of LIO(tm).
 
 Copyright (c) 2012-2014 by Datera, Inc.
 More information on www.datera.io.
