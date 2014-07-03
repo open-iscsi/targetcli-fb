@@ -20,7 +20,7 @@ under the License.
 from ui_node import UINode, UIRTSLibNode
 from rtslib import RTSRoot
 from rtslib import FileIOStorageObject, BlockStorageObject
-from rtslib import PSCSIStorageObject, RDMCPStorageObject
+from rtslib import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
 from rtslib import RTSLibError
 from rtslib.utils import get_block_type
 from configshell import ExecutionError
@@ -108,6 +108,7 @@ class UIBackstores(UINode):
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
         UIBlockBackstore(self)
+        UIUserBackedBackstore(self)
 
 
 class UIBackstore(UINode):
@@ -249,6 +250,7 @@ class UIRDMCPBackstore(UIBackstore):
                             % (name, size))
         return self.new_node(ui_so)
 
+
 class UIFileIOBackstore(UIBackstore):
     '''
     FileIO backstore UI.
@@ -366,6 +368,7 @@ class UIFileIOBackstore(UIBackstore):
             completions = [completions[0] + ' ']
         return completions
 
+
 class UIBlockBackstore(UIBackstore):
     '''
     Block backstore UI.
@@ -400,6 +403,28 @@ class UIBlockBackstore(UIBackstore):
         if len(completions) == 1 and not completions[0].endswith('/'):
             completions = [completions[0] + ' ']
         return completions
+
+
+class UIUserBackedBackstore(UIBackstore):
+    '''
+    User backstore UI.
+    '''
+    def __init__(self, parent):
+        self.so_cls = UIUserBackedStorageObject
+        super(UIUserBackedBackstore, self).__init__('user', parent)
+
+    def ui_command_create(self, name, size, config=None, level=None):
+        '''
+        Creates a User-backed storage object.
+        '''
+        size = human_to_bytes(size)
+        so = UserBackedStorageObject(name, size, config=config, level=level)
+        ui_so = UIUserBackedStorageObject(so, self)
+        self.setup_model_alias(so)
+        self.shell.log.info("Created user-backed storage object %s size %d."
+                            % (name, size))
+        return self.new_node(ui_so)
+
 
 class UIStorageObject(UIRTSLibNode):
     '''
@@ -465,3 +490,15 @@ class UIBlockStorageObject(UIStorageObject):
 
         return ("%s (%s) %s%s %s" % (so.udev_path, bytes_to_human(so.size),
                                    ro_str, wb_str, so.status), True)
+
+
+class UIUserBackedStorageObject(UIStorageObject):
+    def summary(self):
+        so = self.rtsnode
+
+        if not so.config:
+            config_str = "(no config)"
+        else:
+            config_str = so.config
+
+        return ("%s (%s) %s" % (config_str, bytes_to_human(so.size), so.status), True)
