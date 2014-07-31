@@ -69,6 +69,7 @@ build/release-stamp:
 	@echo "Exporting the repository files..."
 	@git archive ${GIT_BRANCH} --prefix ${NAME}-${VERSION}/ \
 		| (cd build; tar xfp -)
+	@cp -pr debian/ build/${NAME}-${VERSION}
 	@echo "Cleaning up the target tree..."
 	@rm -f build/${NAME}-${VERSION}/Makefile
 	@rm -f build/${NAME}-${VERSION}/.gitignore
