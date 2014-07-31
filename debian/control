@@ -4,7 +4,7 @@ Priority: optional
 Standards-Version: 3.9.2
 Homepage: https://github.com/Datera/targetcli
 Maintainer: Jerome Martin <jxm@netiant.com>
-Build-Depends: debhelper(>=7.0.50~), python(>=2.6.6-3~), python-rtslib(>=3.0~), python-configshell(>=1.5)
+Build-Depends: debhelper(>=7.0.50~), python(>=2.6.6-3~), python-rtslib(>=3.0~), python-configshell(>=1.5), python-prettytable
 
 Package: targetcli
 Architecture: all
