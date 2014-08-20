@@ -413,12 +413,12 @@ class UIUserBackedBackstore(UIBackstore):
         self.so_cls = UIUserBackedStorageObject
         super(UIUserBackedBackstore, self).__init__('user', parent)
 
-    def ui_command_create(self, name, size, config=None, level=None):
+    def ui_command_create(self, name, size, config=None):
         '''
         Creates a User-backed storage object.
         '''
         size = human_to_bytes(size)
-        so = UserBackedStorageObject(name, size, config=config, level=level)
+        so = UserBackedStorageObject(name, size, config=config)
         ui_so = UIUserBackedStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created user-backed storage object %s size %d."
