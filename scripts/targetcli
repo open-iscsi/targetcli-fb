@@ -27,6 +27,8 @@ from configshell import ConfigShell, ExecutionError
 import sys
 from targetcli import __version__ as targetcli_version
 
+err = sys.stderr
+
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
                      'color_command': 'cyan',
@@ -48,6 +50,19 @@ class TargetCLI(ConfigShell):
                      'auto_cd_after_create': False,
                      'auto_save_on_exit': True,
                     }
+
+def usage():
+    print("Usage: %s [--version|--help|CMD]" % sys.argv[0], file=err)
+    print("  --version\t\tPrint version", file=err)
+    print("  --help\t\tPrint this information", file=err)
+    print("  CMD\t\t\tRun targetcli shell command and exit", file=err)
+    print("  <nothing>\t\tEnter configuration shell", file=err)
+    print("See man page for more information.", file=err)
+    sys.exit(-1)
+
+def version():
+    print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
+    sys.exit(-1)
 
 def main():
     '''
@@ -71,6 +86,12 @@ def main():
         sys.exit(-1)
 
     if len(sys.argv) > 1:
+        if sys.argv[1] in ("--help", "-h"):
+            usage()
+
+        if sys.argv[1] in ("--version", "-v"):
+            version()
+
         try:
             shell.run_cmdline(" ".join(sys.argv[1:]))
         except Exception as e:
