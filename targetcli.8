@@ -63,9 +63,13 @@ tpg1/> set attribute generate_node_acls=1
 .br
 tpg1/> exit
 .P
+Although by default targetcli saves the running configuration upon exit,
+restoring configuration on reboot likely requires enabling a service.
+See distribution documentation for specifics.
+.P
 See
 .B EXAMPLES
-below for more detailed information.
+below for more detailed information on commands and using the shell.
 .SH BACKSTORES
 .B Backstores
 are different kinds of local storage resources that the kernel target
@@ -139,11 +143,12 @@ one.
 An iSCSI target may be reached via multiple IP addresses and
 ports. These addr:port pairs are called
 .BR portals .
-This node allows these to be configured. The common case is to listen
-on all IPs on port 3260, so the
-.B create
-command here defaults to those values. Both IPv4 and IPv6 addresses
-are supported.
+Both IPv4 and IPv6 addresses are supported.
+.P
+When a target is created, targetcli automatically creates a default
+portal listening on all IPv4 addresses (shown as 0.0.0.0) on port 3260.
+If a different configuration is needed, the default portal can be
+removed and portals configured as desired.
 .P
 If the hardware supports it,
 .B iSER
@@ -278,8 +283,8 @@ target.)
 .B portals/ create
 .br
 Add a portal, i.e. an IP address and TCP port via which the target can
-be contacted by initiators. Sane defaults are used if these are not
-specified.
+be contacted by initiators. Only required if the default 0.0.0.0:3260
+portal is not present.
 .P
 .B luns/ create /backstores/fileio/disk1
 .br
