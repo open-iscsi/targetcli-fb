@@ -27,9 +27,11 @@ RisingTide Systems generic SCSI target CLI shell.
 %install
 rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root=%{buildroot} --prefix=usr
-mkdir -p %_mandir/man8/
-mv doc/targetcli.8 %_mandir/man8/targetcli.8.gz
-mkdir -p /etc/target
+mkdir -p %{buildroot}/etc/target
+mkdir -p %{buildroot}/etc/init.d/
+mkdir -p %{buildroot}/%{_mandir}/man8
+cp doc/targetcli.8 %{buildroot}/%{_mandir}/man8
+cp scripts/target.init %{buildroot}/etc/init.d/target
 
 %clean
 rm -rf %{buildroot}
@@ -38,8 +40,10 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{python_sitelib}
 /etc/target
+/etc/init.d/target
 %{_bindir}/targetcli
 %{_bindir}/targetcli-ng
-%doc COPYING README.md %_mandir/man8/targetcli.8.gz
+%{_mandir}/man8/*
+%doc COPYING README.md
 
 %changelog
