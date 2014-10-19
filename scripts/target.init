@@ -34,7 +34,7 @@ elif [ -r /etc/init.d/functions ]; then
 fi
 
 is_func() {
-    [ x$(type -t $1) == x'function' ]
+    type $1 2>/dev/null | grep -q 'function'
 }
 
 log_success () {
