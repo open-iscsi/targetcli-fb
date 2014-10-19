@@ -108,6 +108,14 @@ check_install()
         INSTALL=nok
     fi
 
+    SYSTEM_DIRS="/var/target/pr /var/target/alua /etc/target"
+    for DIR in ${SYSTEM_DIRS}; do
+        if [ ! -d ${DIR} ]; then
+            log_warning "Creating missing directory ${DIR}"
+            mkdir -p ${DIR}
+        fi
+    done
+
     if [ "${INSTALL}" != ok ]; then
         exit 0
     else
