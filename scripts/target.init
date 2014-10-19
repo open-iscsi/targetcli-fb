@@ -24,11 +24,58 @@ STARTUP_CONFIG="/etc/target/scsi_target.lio"
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
-# Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
+# How we log messages depends on the system
+if [ -r /lib/lsb/init-functions ]; then
+    # LSB systems like Debian
+    . /lib/lsb/init-functions
+elif [ -r /etc/init.d/functions ]; then
+    # RHEL without optional redhat-lsb
+    . /etc/init.d/functions
+fi
 
-# Define LSB log_* functions - requires lsb-base (>= 3.2-14)
-. /lib/lsb/init-functions
+is_func() {
+    [ x$(type -t $1) == x'function' ]
+}
+
+log_success () {
+    if is_func log_success_msg; then
+        log_success_msg "$*"
+    elif is_func success; then
+        echo -n $*; success "$*"; echo
+    else
+        echo "[ ok ] $*"
+    fi
+}
+
+log_failure () {
+    if is_func log_failure_msg; then
+        log_failure_msg "$*"
+    elif is_func failure; then
+        echo -n $*; failure "$*"; echo
+    else
+        echo "[FAIL] $* ... failed!"
+    fi
+}
+
+log_warning () {
+    if is_func log_warning_msg; then
+        log_warning_msg "$*"
+    elif is_func warning; then
+        echo -n $*; warning "$*"; echo
+    else
+        echo "[warn] $* ... (warning)."
+    fi
+}
+
+log_action () {
+    if is_func log_action_msg; then
+        log_action_msg "$*"
+    elif is_func action; then
+        echo -n $*; passed "$*"; echo
+    else
+        echo "[info] $*."
+    fi
+}
 
 load_specfiles()
 {
@@ -57,14 +104,14 @@ check_install()
 
     python -c "from rtslib import Config" > /dev/null 2>&1
     if [ $? != 0 ]; then
-        log_failure_msg "Cannot load rtslib"
+        log_failure "Cannot load rtslib"
         INSTALL=nok
     fi
 
     if [ "${INSTALL}" != ok ]; then
         exit 0
     else
-        log_action_msg "${DESC} looks properly installed"
+        log_action "${DESC} looks properly installed"
     fi
 }
 
@@ -72,14 +119,14 @@ load_configfs()
 {
     modprobe configfs > /dev/null 2>&1
     if [ "$?" != 0 ]; then
-        log_failure_msg "Failed to load configfs kernel module"
+        log_failure "Failed to load configfs kernel module"
         return 1
     fi
     mount -t configfs configfs ${CFS_BASE} > /dev/null 2>&1
     case "$?" in
-        0) log_warning_msg "The configfs filesystem was not mounted, consider adding it to fstab";;
-        32) log_action_msg "The configfs filesystem is already mounted";;
-        *) log_failure_msg "Failed to mount configfs"; return 1;;
+        0) log_warning "The configfs filesystem was not mounted, consider adding it to fstab";;
+        32) log_action "The configfs filesystem is already mounted";;
+        *) log_failure "Failed to mount configfs"; return 1;;
     esac
 }
 
@@ -87,27 +134,27 @@ load_modules()
 {
     for MODULE in ${CORE_MODS}; do
         if [ ! -z "$(cat /proc/modules | grep ^${MODULE}\ )" ]; then
-            log_warning_msg "Core module ${MODULE} already loaded"
+            log_warning "Core module ${MODULE} already loaded"
         else
             modprobe "${MODULE}" > /dev/null 2>&1
             if [ "$?" != 0 ]; then
-                log_failure_msg "Failed to load core module ${MODULE}"
+                log_failure "Failed to load core module ${MODULE}"
                 return 1
             else
-                log_action_msg "Loaded core module ${MODULE}"
+                log_action "Loaded core module ${MODULE}"
             fi
         fi
     done
     for MOD_SPEC in ${FABRIC_MODS}; do
         MODULE="$(echo ${MOD_SPEC} | awk -F : '{print $1}')"
         if [ ! -z "$(cat /proc/modules | grep ^${MODULE}\ )" ]; then
-            log_warning_msg "Fabric module ${MODULE} already loaded"
+            log_warning "Fabric module ${MODULE} already loaded"
         else
             modprobe "${MODULE}" > /dev/null 2>&1
             if [ "$?" != 0 ]; then
-                log_warning_msg "Failed to load fabric module ${MODULE}"
+                log_warning "Failed to load fabric module ${MODULE}"
             else
-                log_action_msg "Loaded fabric module ${MODULE}"
+                log_action "Loaded fabric module ${MODULE}"
             fi
         fi
     done
@@ -123,19 +170,19 @@ unload_modules()
         if [ ! -z "$(lsmod | grep ^${MODULE}\ )" ]; then
             rmdir "${CFS_GROUP}" > /dev/null 2>&1
             if [ -d "${CFS_GROUP}" ]; then
-                log_failure_msg "Failed to remove ${CFS_GROUP}"
+                log_failure "Failed to remove ${CFS_GROUP}"
                 RETCODE=1
             else
                 rmmod "${MODULE}" > /dev/null 2>&1
                 if [ "$?" != 0 ]; then
-                    log_failure_msg "Failed to unload fabric module ${MODULE}"
+                    log_failure "Failed to unload fabric module ${MODULE}"
                     RETCODE=1
                 else
-                    log_action_msg "Unloaded ${MODULE} fabric module"
+                    log_action "Unloaded ${MODULE} fabric module"
                 fi
             fi
         else
-            log_warning_msg "Fabric module ${MODULE} is not loaded"
+            log_warning "Fabric module ${MODULE} is not loaded"
         fi
     done
 
@@ -144,13 +191,13 @@ unload_modules()
         if [ ! -z "$(lsmod | grep ^${MODULE}\ )" ]; then
             rmmod "${MODULE}" > /dev/null 2>&1
             if [ "$?" != 0 ]; then
-                log_failure_msg "Failed to unload target core module ${MODULE}"
+                log_failure "Failed to unload target core module ${MODULE}"
                 RETCODE=1
             else
-                log_action_msg "Unloaded ${MODULE} target core module"
+                log_action "Unloaded ${MODULE} target core module"
             fi
         else
-            log_warning_msg "Target core module ${MODULE} is not loaded"
+            log_warning "Target core module ${MODULE} is not loaded"
         fi
     done
 
@@ -169,14 +216,14 @@ list(config.apply())
 EOF
     if [ "$?" != 0 ]; then
         unset __STARTUP_CONFIG
-        log_failure_msg "Failed to load ${STARTUP_CONFIG}"
+        log_failure "Failed to load ${STARTUP_CONFIG}"
         return 1
     else
         unset __STARTUP_CONFIG
-        log_action_msg "Loaded ${STARTUP_CONFIG}"
+        log_action "Loaded ${STARTUP_CONFIG}"
     fi
 else
-    log_warning_msg "No ${STARTUP_CONFIG} to load"
+    log_warning "No ${STARTUP_CONFIG} to load"
 fi
 }
 
@@ -189,10 +236,10 @@ list(config.apply())
 EOF
 
 if [ "$?" != 0 ]; then
-    log_failure_msg "Failed to clear configuration"
+    log_failure "Failed to clear configuration"
     return 1
 else
-    log_action_msg "Cleared configuration"
+    log_action "Cleared configuration"
 fi
 }
 
@@ -202,7 +249,7 @@ do_start()
     # system, dump the running system config to the config file. This
     # helps migrating away from lio-utils or other legacy/devel systems.
     if [ ! -e "${STARTUP_CONFIG}" ] && [ -d "${CFS_TGT}" ]; then
-        log_action_msg "Possible config migration detected, saving the " \
+        log_action "Possible config migration detected, saving the " \
             "running target to ${STARTUP_CONFIG}"
         save_running_config
     fi
@@ -210,25 +257,25 @@ do_start()
     load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
     check_install && load_configfs && load_modules && load_config
     if [ "$?" != 0 ]; then
-        log_failure_msg "Could not start ${DESC}"
+        log_failure "Could not start ${DESC}"
         return 1
     else
-        log_success_msg "Started ${DESC}"
+        log_success "Started ${DESC}"
     fi
 }
 
 do_stop()
 {
     if [ ! -d ${CFS_TGT} ]; then
-        log_success_msg "${DESC} is already stopped"
+        log_success "${DESC} is already stopped"
     else
         load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
         clear_config && unload_modules
         if [ "$?" != 0 ]; then
-            log_failure_msg "Could not stop ${DESC}"
+            log_failure "Could not stop ${DESC}"
             return 1
         else
-            log_success_msg "Stopped ${DESC}"
+            log_success "Stopped ${DESC}"
         fi
     fi
 }
@@ -236,10 +283,10 @@ do_stop()
 do_status()
 {
     if [ -d ${CFS_TGT} ]; then
-        log_action_msg "${DESC} is started"
+        log_action "${DESC} is started"
         return 0
     else
-        log_action_msg "${DESC} is stopped"
+        log_action "${DESC} is stopped"
         return 1
     fi
 }
