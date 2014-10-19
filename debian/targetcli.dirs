@@ -1,1 +1,4 @@
 /etc/target/
+/var/target/
+/var/target/pr/
+/var/target/alua/
