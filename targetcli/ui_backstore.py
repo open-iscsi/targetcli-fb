@@ -82,15 +82,6 @@ class UIBackstore(UINode):
             msg = "%d Storage Object" % no_storage_objects
         return (msg, None)
 
-    def prm_gen_wwn(self, generate_wwn):
-        generate_wwn = \
-                self.ui_eval_param(generate_wwn, 'bool', True)
-        if generate_wwn:
-            self.shell.log.info("Generating a wwn serial.")
-        else:
-            self.shell.log.info("Not generating a wwn serial.")
-        return generate_wwn
-
     def prm_buffered(self, buffered):
         buffered = \
                 self.ui_eval_param(buffered, 'bool', True)
@@ -216,12 +207,11 @@ class UIRDMCPBackstore(UIBackstore):
     def __init__(self, parent):
         UIBackstore.__init__(self, 'rd_mcp', parent)
 
-    def ui_command_create(self, name, size, generate_wwn=None, nullio=None):
+    def ui_command_create(self, name, size, nullio=None):
         '''
         Creates an RDMCP storage object. I{size} is the size of the ramdisk,
-        and the optional I{generate_wwn} parameter is a boolean specifying
-        whether or not we should generate a T10 wwn Serial for the unit (by
-        default, yes).
+        and the optional I{nullio} parameter is a boolean specifying
+        whether or not we should use a stub nullio instead of a real ramdisk.
 
         SIZE SYNTAX
         ===========
@@ -238,9 +228,7 @@ class UIRDMCPBackstore(UIBackstore):
         backstore = RDMCPBackstore(self.next_hba_index(), mode='create')
         nullio = self.ui_eval_param(nullio, 'bool', False)
         try:
-            so = RDMCPStorageObject(backstore, name, size,
-                                    self.prm_gen_wwn(generate_wwn),
-                                    nullio=nullio)
+            so = RDMCPStorageObject(backstore, name, size, nullio=nullio)
 
         except Exception, exception:
             backstore.delete()
@@ -279,7 +267,7 @@ class UIFileIOBackstore(UIBackstore):
         f.close()
 
     def ui_command_create(self, name, file_or_dev, size=None,
-                          generate_wwn=None, buffered=None, sparse=None):
+                          buffered=None, sparse=None):
 
         '''
         Creates a FileIO storage object. If I{file_or_dev} is a path to a
@@ -287,9 +275,7 @@ class UIFileIOBackstore(UIBackstore):
         mandatory. Else, if I{file_or_dev} is a path to a block device, the
         size parameter B{must} be ommited. If present, I{size} is the size of
         the file to be used, I{file} the path to the file or I{dev} the path to
-        a block device.  The optional I{generate_wwn} parameter is a boolean
-        specifying whether or not we should generate a T10 wwn Serial for the
-        unit (by default, yes).  The I{buffered} parameter is a boolean stating
+        a block device. The I{buffered} parameter is a boolean stating
         whether or not to enable buffered mode. It is enabled by default
         (asynchronous mode). The I{sparse} parameter is only applicable when
         creating a new backing file. It is a boolean stating if the
@@ -308,9 +294,9 @@ class UIFileIOBackstore(UIBackstore):
         '''
         self.assert_root()
         self.assert_available_so_name(name)
-        self.shell.log.debug("Using params size=%s generate_wwn=%s buffered=%s"
+        self.shell.log.debug("Using params size=%s buffered=%s"
                              " sparse=%s"
-                             % (size, generate_wwn, buffered, sparse))
+                             % (size, buffered, sparse))
 
         sparse = self.ui_eval_param(sparse, 'bool', True)
 
@@ -324,7 +310,6 @@ class UIFileIOBackstore(UIBackstore):
             try:
                 so = FileIOStorageObject(
                     backstore, name, file_or_dev,
-                    gen_wwn=self.prm_gen_wwn(generate_wwn),
                     buffered_mode=self.prm_buffered(buffered))
             except Exception, exception:
                 backstore.delete()
@@ -341,7 +326,6 @@ class UIFileIOBackstore(UIBackstore):
                 so = FileIOStorageObject(
                     backstore, name, file_or_dev,
                     size,
-                    gen_wwn=self.prm_gen_wwn(generate_wwn),
                     buffered_mode=self.prm_buffered(buffered))
             except Exception, exception:
                 backstore.delete()
@@ -376,19 +360,16 @@ class UIIBlockBackstore(UIBackstore):
     def __init__(self, parent):
         UIBackstore.__init__(self, 'iblock', parent)
 
-    def ui_command_create(self, name, dev, generate_wwn=None):
+    def ui_command_create(self, name, dev):
         '''
         Creates an IBlock Storage object. I{dev} is the path to the TYPE_DISK
-        block device to use and the optional I{generate_wwn} parameter is a
-        boolean specifying whether or not we should generate a T10 wwn Serial
-        for the unit (by default, yes).
+        block device to use.
         '''
         self.assert_root()
         self.assert_available_so_name(name)
         backstore = IBlockBackstore(self.next_hba_index(), mode='create')
         try:
-            so = IBlockStorageObject(backstore, name, dev,
-                                     self.prm_gen_wwn(generate_wwn))
+            so = IBlockStorageObject(backstore, name, dev)
         except Exception, exception:
             backstore.delete()
             raise exception

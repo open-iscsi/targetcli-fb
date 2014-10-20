@@ -235,17 +235,8 @@ class UIBackstoreLegacy(UIRTSLibNode):
             msg = "%d Storage Object" % no_storage_objects
         return (msg, None)
 
-    def prm_gen_wwn(self, generate_wwn):
-        generate_wwn = \
-                self.ui_eval_param(generate_wwn, 'bool', True)
-        if generate_wwn:
-            self.shell.log.info("Generating a wwn serial.")
-        else:
-            self.shell.log.info("Not generating a wwn serial.")
-        return generate_wwn
-
     def prm_buffered(self, buffered):
-        generate_wwn = \
+        buffered = \
                 self.ui_eval_param(buffered, 'bool', True)
         if buffered:
             self.shell.log.info("Using buffered mode.")
@@ -331,12 +322,9 @@ class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
     '''
     RDMCP backstore UI.
     '''
-    def ui_command_create(self, name, size, generate_wwn=None):
+    def ui_command_create(self, name, size):
         '''
-        Creates an RDMCP storage object. I{size} is the size of the ramdisk,
-        and the optional I{generate_wwn} parameter is a boolean specifying
-        whether or not we should generate a T10 wwn Serial for the unit (by
-        default, yes).
+        Creates an RDMCP storage object. I{size} is the size of the ramdisk.
 
         SIZE SYNTAX
         ===========
@@ -349,8 +337,7 @@ class UIRDMCPBackstoreLegacy(UIBackstoreLegacy):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        so = RDMCPStorageObject(self.rtsnode, name, size,
-                                self.prm_gen_wwn(generate_wwn))
+        so = RDMCPStorageObject(self.rtsnode, name, size)
         ui_so = UIStorageObjectLegacy(so, self)
         self.shell.log.info("Created rd_mcp ramdisk %s with size %s."
                             % (name, size))
@@ -361,19 +348,16 @@ class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
     '''
     FileIO backstore UI.
     '''
-    def ui_command_create(self, name, file_or_dev, size=None,
-                          generate_wwn=None, buffered=None):
+    def ui_command_create(self, name, file_or_dev, size=None, buffered=None):
         '''
         Creates a FileIO storage object. If I{file_or_dev} is a path to a
         regular file to be used as backend, then the I{size} parameter is
         mandatory. Else, if I{file_or_dev} is a path to a block device, the
         size parameter B{must} be ommited. If present, I{size} is the size of
         the file to be used, I{file} the path to the file or I{dev} the path to
-        a block device.  The optional I{generate_wwn} parameter is a boolean
-        specifying whether or not we should generate a T10 wwn Serial for the
-        unit (by default, yes).  The I{buffered} parameter is a boolean stating
-        whether or not to enable buffered mode. It is disabled by default
-        (synchronous mode).
+        a block device. The I{buffered} parameter is a boolean stating
+        whether or not to enable buffered mode. It is disabled by
+        default (synchronous mode).
 
         SIZE SYNTAX
         ===========
@@ -386,14 +370,13 @@ class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
         '''
         self.assert_root()
-        self.shell.log.debug('Using params size=%s generate_wwn=%s buffered=%s'
-                             % (size, generate_wwn, buffered))
+        self.shell.log.debug('Using params size=%s buffered=%s'
+                             % (size, buffered))
         is_dev = get_block_type(file_or_dev) is not None \
                 or is_disk_partition(file_or_dev)
 
         if size is None and is_dev:
             so = FileIOStorageObject(self.rtsnode, name, file_or_dev,
-                                     gen_wwn=self.prm_gen_wwn(generate_wwn),
                                      buffered_mode=self.prm_buffered(buffered))
             self.shell.log.info("Created fileio %s with size %s."
                                 % (name, size))
@@ -401,7 +384,6 @@ class UIFileIOBackstoreLegacy(UIBackstoreLegacy):
             return self.new_node(ui_so)
         elif size is not None and not is_dev:
             so = FileIOStorageObject(self.rtsnode, name, file_or_dev, size,
-                                     gen_wwn=self.prm_gen_wwn(generate_wwn),
                                      buffered_mode=self.prm_buffered(buffered))
             self.shell.log.info("Created fileio storage object %s." % name)
             ui_so = UIStorageObjectLegacy(so, self)
@@ -415,16 +397,13 @@ class UIIBlockBackstoreLegacy(UIBackstoreLegacy):
     '''
     IBlock backstore UI.
     '''
-    def ui_command_create(self, name, dev, generate_wwn=None):
+    def ui_command_create(self, name, dev):
         '''
         Creates an IBlock Storage object. I{dev} is the path to the TYPE_DISK
-        block device to use and the optional I{generate_wwn} parameter is a
-        boolean specifying whether or not we should generate a T10 wwn Serial
-        for the unit (by default, yes).
+        block device to use.
         '''
         self.assert_root()
-        so = IBlockStorageObject(self.rtsnode, name, dev,
-                                 self.prm_gen_wwn(generate_wwn))
+        so = IBlockStorageObject(self.rtsnode, name, dev)
         ui_so = UIStorageObjectLegacy(so, self)
         self.shell.log.info("Created iblock storage object %s using %s."
                             % (name, dev))
