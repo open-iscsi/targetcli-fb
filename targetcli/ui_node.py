@@ -129,14 +129,22 @@ class UINode(ConfigNode):
         Exits the command line interface.
         '''
         if getuid() == 0:
-            config = Config()
-            if isfile(STARTUP_CONFIG):
-                config.load(STARTUP_CONFIG, allow_new_attrs=True)
-            saved_config = config.dump()
-            config.load_live()
-            live_config = config.dump()
-            if saved_config != live_config:
-                self.ui_command_saveconfig()
+            self.shell.log.info("Comparing startup and running configs...")
+            try:
+                config = Config()
+                if isfile(STARTUP_CONFIG):
+                    config.load(STARTUP_CONFIG, allow_new_attrs=True)
+                saved_config = config.dump()
+                config.load_live()
+                live_config = config.dump()
+                if saved_config != live_config:
+                    self.shell.log.info("Some changes need saving.")
+                    self.ui_command_saveconfig()
+                else:
+                    self.shell.log.info("Startup config is up-to-date.")
+            except Exception, e:
+                self.shell.log.warning(e)
+
         return 'EXIT'
 
     def ui_command_refresh(self):
