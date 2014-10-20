@@ -214,7 +214,10 @@ unload_modules()
 
 load_config()
 {
-if [ -e "${STARTUP_CONFIG}" ]; then
+
+if [ $(cat /etc/target/scsi_target.lio 2>/dev/null | tr -d " \n\t" | wc -c) = 0 ]; then
+    log_warning "Startup config ${STARTUP_CONFIG} is empty, skipping"
+elif [ -e "${STARTUP_CONFIG}" ]; then
 export __STARTUP_CONFIG="${STARTUP_CONFIG}"
 python 2> /dev/null << EOF
 import os, rtslib
@@ -304,6 +307,8 @@ do_status()
 
 case "$1" in
     start)
+        # FIXME This is because stop fails with systemd on debian jessie
+	    do_stop
 	    do_start
         ;;
     stop)
