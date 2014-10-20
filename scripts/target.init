@@ -16,7 +16,7 @@ DAEMON=/usr/bin/targetcli
 DAEMON_ARGS=""
 SCRIPTNAME=/etc/init.d/$NAME
 
-CFS_BASE="/sys/kernel/config/"
+CFS_BASE="/sys/kernel/config"
 CFS_TGT="${CFS_BASE}/target"
 CORE_MODS="target_core_mod target_core_pscsi target_core_iblock target_core_file"
 STARTUP_CONFIG="/etc/target/scsi_target.lio"
@@ -256,10 +256,13 @@ do_start()
     # If the target is running and we do not have a config file on the
     # system, dump the running system config to the config file. This
     # helps migrating away from lio-utils or other legacy/devel systems.
-    if [ ! -e "${STARTUP_CONFIG}" ] && [ -d "${CFS_TGT}" ]; then
+    if [ ! -e "${STARTUP_CONFIG}" ] && [ $(ls /sys/kernel/config/target/core/ 2>/dev/null | wc -l) -gt 1 ]; then
         log_action "Possible config migration detected, saving the " \
             "running target to ${STARTUP_CONFIG}"
         save_running_config
+    elif [ -d  ${CFS_TGT} ]; then
+        log_failure "Not starting: ${CFS_TGT} already exists"
+        return 1
     fi
 
     load_specfiles # Fill in FABRIC_MODS and CFS_GROUPS
