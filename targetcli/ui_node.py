@@ -20,6 +20,7 @@ under the License.
 from configshell import ConfigNode, ExecutionError
 from rtslib import RTSLibError, RTSRoot, Config
 from subprocess import PIPE, Popen
+from cli_config import CliConfig
 from os.path import isfile
 from os import getuid
 
@@ -107,6 +108,22 @@ class UINode(ConfigNode):
             self.shell.log.debug("Command %s succeeded." % command)
             return result
 
+    def ui_command_saveconfig(self):
+        '''
+        Saves the whole configuration tree to disk so that it will be restored
+        on next boot. Unless you do that, changes are lost accross reboots.
+        '''
+        self.assert_root()
+        try:
+            input = raw_input("Save configuration? [Y/n]: ")
+        except EOFError:
+            input = None
+            self.shell.con.display('')
+        if input in ["y", "Y", ""]:
+            CliConfig.save_running_config()
+        else:
+            self.shell.log.warning("Configuration not saved.")
+
     def ui_command_exit(self):
         '''
         Exits the command line interface.
@@ -119,24 +136,8 @@ class UINode(ConfigNode):
             config.load_live()
             live_config = config.dump()
             if saved_config != live_config:
-                self.shell.con.display("There are unsaved configuration changes.\n"
-                                       "If you exit now, configuration will not "
-                                       "be updated and changes will be lost upon "
-                                       "reboot.")
-                try:
-                    input = raw_input("Type 'exit' if you want to exit anyway: ")
-                except EOFError:
-                    input = None
-                    self.shell.con.display('')
-                if input == "exit":
-                    return 'EXIT'
-                else:
-                    self.shell.log.warning("Aborted exit, use 'saveconfig' to "
-                                           "save the current configuration.")
-            else:
-                return 'EXIT'
-        else:
-            return 'EXIT'
+                self.ui_command_saveconfig()
+        return 'EXIT'
 
     def ui_command_refresh(self):
         '''

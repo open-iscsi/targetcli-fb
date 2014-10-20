@@ -20,8 +20,6 @@ from os import system
 import readline, tempfile
 from rtslib import RTSRoot, Config
 from ui_node import UINode, STARTUP_CONFIG
-from socket import gethostname
-from cli_config import CliConfig
 from ui_target import UIFabricModule
 from ui_backstore import UIBackstores
 from ui_backstore_legacy import UIBackstoresLegacy
@@ -47,27 +45,6 @@ class UIRoot(UINode):
         for fabric_module in RTSRoot().fabric_modules:
             self.shell.log.debug("Using fabric module %s." % fabric_module.name)
             UIFabricModule(fabric_module, self)
-
-    def ui_command_saveconfig(self):
-        '''
-        Saves the whole configuration tree to disk so that it will be restored
-        on next boot. Unless you do that, changes are lost accross reboots.
-        '''
-        self.assert_root()
-        self.shell.con.display("WARNING: Saving %s current configuration to "
-                               % gethostname()
-                               + "disk will overwrite your boot settings.")
-        self.shell.con.display("The current target configuration will become "
-                               + "the default boot config.")
-        try:
-            input = raw_input("Are you sure? Type 'yes': ")
-        except EOFError:
-            input = None
-            self.shell.con.display('')
-        if input == "yes":
-            CliConfig.save_running_config()
-        else:
-            self.shell.log.warning("Aborted, startup configuration left untouched.")
 
     def ui_command_configure(self):
         '''
