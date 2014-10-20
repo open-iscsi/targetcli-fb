@@ -419,6 +419,10 @@ class UIStorageObject(UIRTSLibNode):
             errors.append("LEGACY: " + ", ".join(legacy))
 
         size = convert_bytes_to_human(getattr(so, "size", 0))
+        if so.status == "activated":
+            status = "in use"
+        else:
+            status = "not in use"
         nullio_str = ""
         try:
             if so.nullio:
@@ -429,8 +433,9 @@ class UIStorageObject(UIRTSLibNode):
         if errors:
             msg = ", ".join(errors)
             if path:
-                msg += " (%s %s)" % (path, so.status)
+                msg += " (%s %s)" % (path, status)
             return (msg, False)
+        elif size:
+            return ("%s [%s] %s [%s]%s" % (path, so.wwn, size, status, nullio_str), True)
         else:
-            return ("%s %s%s%s" % (path, size, so.status, nullio_str), True)
-
+            return ("%s [%s] [%s]%s" % (path, so.wwn, status, nullio_str), True)
