@@ -19,7 +19,7 @@ under the License.
 '''
 
 import sys
-from os import getuid
+from os import getuid, listdir
 from targetcli import UIRoot
 from rtslib import RTSLibError
 from configshell import ConfigShell
@@ -51,12 +51,19 @@ def main():
     '''
     Start the targetcli shell.
     '''
+    shell = TargetCLI('~/.targetcli')
+
+    try:
+        listdir("/sys/kernel/config/target")
+    except:
+        shell.con.display("The target service is not running.")
+        exit()
+
     if getuid() == 0:
         is_root = True
     else:
         is_root = False
 
-    shell = TargetCLI('~/.targetcli')
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
