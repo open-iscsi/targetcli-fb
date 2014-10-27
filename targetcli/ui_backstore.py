@@ -429,16 +429,17 @@ class UIStorageObject(UIRTSLibNode):
         nullio_str = ""
         try:
             if so.nullio:
-                nullio_str = " (nullio)"
+                nullio_str = "nullio"
         except AttributeError:
             pass
 
         if errors:
-            msg = ", ".join(errors)
+            info = ", ".join(errors)
             if path:
-                msg += " (%s %s)" % (path, status)
-            return (msg, False)
-        elif size:
-            return ("%s [%s] %s [%s]%s" % (path, so.wwn, size, status, nullio_str), True)
+                info += " (%s %s)" % (path, status)
+            return (info, False)
         else:
-            return ("%s [%s] [%s]%s" % (path, so.wwn, status, nullio_str), True)
+            info = ", ".join(["%s" % str(data)
+                            for data in (size, path, status, nullio_str)
+                            if data])
+            return (info, True)
