@@ -41,6 +41,7 @@ def dedup_so_name(storage_object):
     else:
         return storage_object.name
 
+
 class UIBackstores(UINode):
     '''
     The backstores container UI.
@@ -56,6 +57,7 @@ class UIBackstores(UINode):
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
         UIIBlockBackstore(self)
+
 
 class UIBackstore(UINode):
     '''
@@ -199,6 +201,7 @@ class UIPSCSIBackstore(UIBackstore):
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
         return self.new_node(ui_so)
+
 
 class UIRDMCPBackstore(UIBackstore):
     '''
