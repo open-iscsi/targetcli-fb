@@ -351,7 +351,7 @@ class UITPG(UIRTSLibNode):
 
     def summary(self):
         if self.rtsnode.has_feature('nexus'):
-            description = ("%s" % self.rtsnode.nexus, True)
+            description = ("nexus WWN %s" % self.rtsnode.nexus_wwn, True)
         elif self.rtsnode.enable:
             description = ("enabled", True)
         else:
