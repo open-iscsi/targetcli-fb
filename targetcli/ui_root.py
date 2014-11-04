@@ -190,7 +190,7 @@ class UIRoot(UINode):
                                  base_steps + 1)
 
                 for mlun in acl.mapped_luns:
-                    plugin = mlun.tpg_lun.storage_object.backstore.plugin
+                    plugin = mlun.tpg_lun.storage_object.plugin
                     name = mlun.tpg_lun.storage_object.name
                     if mlun.write_protect:
                         mode = "r"
