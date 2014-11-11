@@ -151,7 +151,6 @@ class UIBackstore(UINode):
         child.rtsnode.delete()
         self.remove_child(child)
         self.shell.log.info("Deleted storage object %s." % name)
-        self.parent.parent.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
