@@ -75,9 +75,8 @@ def main():
 
     shell = TargetCLI('~/.targetcli')
 
-    root_node = UIRoot(shell, as_root=is_root)
-
     try:
+        root_node = UIRoot(shell, as_root=is_root)
         root_node.refresh()
     except Exception as error:
         shell.con.display(shell.con.render_text(str(error), 'red'))
