@@ -17,9 +17,9 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from rtslib import RTSRoot
-from rtslib.utils import ignored
-from configshell import ExecutionError
+from rtslib_fb import RTSRoot
+from rtslib_fb.utils import ignored
+from configshell_fb import ExecutionError
 from ui_node import UINode
 from socket import gethostname
 from ui_target import UIFabricModule

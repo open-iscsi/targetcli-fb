@@ -17,8 +17,8 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from configshell import ConfigNode, ExecutionError
-from rtslib import RTSLibError, RTSRoot
+from configshell_fb import ConfigNode, ExecutionError
+from rtslib_fb import RTSLibError, RTSRoot
 
 class UINode(ConfigNode):
     '''

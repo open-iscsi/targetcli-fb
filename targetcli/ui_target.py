@@ -19,10 +19,10 @@ under the License.
 
 from ui_node import UINode, UIRTSLibNode
 from ui_backstore import complete_path
-from rtslib import RTSLibError, RTSLibBrokenLink, utils
-from rtslib import NodeACL, NetworkPortal, MappedLUN
-from rtslib import Target, TPG, LUN, StorageObjectFactory
-from configshell import ExecutionError
+from rtslib_fb import RTSLibError, RTSLibBrokenLink, utils
+from rtslib_fb import NodeACL, NetworkPortal, MappedLUN
+from rtslib_fb import Target, TPG, LUN, StorageObjectFactory
+from configshell_fb import ExecutionError
 import os
 import stat
 try:

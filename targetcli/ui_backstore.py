@@ -18,12 +18,12 @@ under the License.
 '''
 
 from ui_node import UINode, UIRTSLibNode
-from rtslib import RTSRoot
-from rtslib import FileIOStorageObject, BlockStorageObject
-from rtslib import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
-from rtslib import RTSLibError
-from rtslib.utils import get_block_type
-from configshell import ExecutionError
+from rtslib_fb import RTSRoot
+from rtslib_fb import FileIOStorageObject, BlockStorageObject
+from rtslib_fb import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
+from rtslib_fb import RTSLibError
+from rtslib_fb.utils import get_block_type
+from configshell_fb import ExecutionError
 import glob
 import os
 import stat

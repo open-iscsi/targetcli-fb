@@ -22,8 +22,8 @@ from __future__ import print_function
 
 from os import getuid
 from targetcli import UIRoot
-from rtslib import RTSLibError
-from configshell import ConfigShell, ExecutionError
+from rtslib_fb import RTSLibError
+from configshell_fb import ConfigShell, ExecutionError
 import sys
 from targetcli import __version__ as targetcli_version
 
