@@ -23,7 +23,7 @@ from configshell_fb import ExecutionError
 from ui_node import UINode
 from socket import gethostname
 from ui_target import UIFabricModule
-from ui_backstore import UIBackstores
+from ui_backstore import UIBackstores, complete_path
 import json
 import shutil
 import os
@@ -108,6 +108,19 @@ class UIRoot(UINode):
                                      (len(errors), "\n".join(errors)))
 
         self.shell.log.info("Configuration restored from %s" % savefile)
+
+    def ui_complete_saveconfig(self, parameters, text, current_param):
+        '''
+        Auto-completes the file name
+        '''
+        if current_param != 'savefile':
+            return []
+        completions = complete_path(text, stat.S_ISREG)
+        if len(completions) == 1 and not completions[0].endswith('/'):
+            completions = [completions[0] + ' ']
+        return completions
+
+    ui_complete_restoreconfig = ui_complete_saveconfig
 
     def ui_command_clearconfig(self, confirm=None):
         '''
