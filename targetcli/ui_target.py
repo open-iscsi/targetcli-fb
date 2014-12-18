@@ -335,10 +335,15 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
         self.shell.log.info("Created TPG %s." % tpg.tag)
 
-        if tpg.has_feature("nps"):
-            NetworkPortal(tpg, "0.0.0.0")
-            self.shell.log.info("Created default portal listening on all IPs"
-                                " (0.0.0.0), port 3260.")
+        if tpg.has_feature("nps") and self.shell.prefs['auto_add_default_portal']:
+            try:
+                NetworkPortal(tpg, "0.0.0.0")
+                self.shell.log.info("Global pref auto_add_default_portal=true")
+                self.shell.log.info("Created default portal listening on all IPs"
+                                    " (0.0.0.0), port 3260.")
+            except RTSLibError:
+                self.shell.log.info("Default portal not created, TPGs within a " +
+                                    "target cannot share ip:port.")
 
         ui_tpg = UITPG(tpg, self)
         return self.new_node(ui_tpg)

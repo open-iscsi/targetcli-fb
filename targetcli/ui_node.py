@@ -43,6 +43,9 @@ class UINode(ConfigNode):
         self.define_config_group_param(
             'global', 'auto_save_on_exit', 'bool',
             'If true, saves configuration on exit.')
+        self.define_config_group_param(
+            'global', 'auto_add_default_portal', 'bool',
+            'If true, adds a portal listening on all IPs to new targets.')
 
     def assert_root(self):
         '''
