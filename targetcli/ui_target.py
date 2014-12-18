@@ -306,15 +306,25 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
     def ui_command_create(self, tag=None):
         '''
-        Creates a new Target Portal Group within the target. The I{tag} must be
-        a strictly positive integer value. If omitted, the next available
-        Target Portal Group Tag (TPGT) will be used.
+        Creates a new Target Portal Group within the target. The
+        I{tag} must be a positive integer value, optionally prefaced
+        by 'tpg'. If omitted, the next available Target Portal Group
+        Tag (TPGT) will be used.
 
         SEE ALSO
         ========
         B{delete}
         '''
         self.assert_root()
+
+        if tag:
+            if tag.startswith("tpg"):
+                tag = tag[3:]
+
+            try:
+                tag = int(tag)
+            except ValueError:
+                raise ExecutionError("Tag argument must be a number.")
 
         tpg = TPG(self.rtsnode, tag, mode='create')
         if self.shell.prefs['auto_enable_tpgt']:
