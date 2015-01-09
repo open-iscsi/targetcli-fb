@@ -101,6 +101,29 @@ class UINode(ConfigNode):
         ConfigNode.ui_setgroup_global(self, parameter, value)
         self.get_root().refresh()
 
+    def ui_type_yesno(self, value=None, enum=False, reverse=False):
+        '''
+        UI parameter type helper for "Yes" and "No" boolean values.
+        "Yes" and "No" are used for boolean iSCSI session parameters.
+        '''
+        if reverse:
+            if value is not None:
+                return value
+            else:
+                return 'n/a'
+        type_enum = ('Yes', 'No')
+        syntax = '|'.join(type_enum)
+        if value is None:
+            if enum:
+                return enum_type
+            else:
+                return syntax
+        elif value in type_enum:
+            return value
+        else:
+            raise ValueError("Syntax error, '%s' is not %s."
+                             % (value, syntax))
+
 
 class UIRTSLibNode(UINode):
     '''
