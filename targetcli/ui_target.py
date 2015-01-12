@@ -390,6 +390,44 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
 
 class UITPG(UIRTSLibNode):
+    ui_desc_attributes = {
+        'authentication': ('number', 'If set to 1, enforce authentication for this TPG.'),
+        'cache_dynamic_acls': ('number', 'If set to 1 in demo mode, cache dynamically generated ACLs.'),
+        'default_cmdsn_depth': ('number', 'Default CmdSN (Command Sequence Number) depth.'),
+        'default_erl': ('number', 'Default Error Recovery Level.'),
+        'demo_mode_discovery': ('number', 'If set to 1 in demo mode, enable discovery.'),
+        'demo_mode_write_protect': ('number', 'If set to 1 in demo mode, prevent writes to LUNs.'),
+        'generate_node_acls': ('number', 'If set to 1, allow all initiators to login (i.e. demo mode).'),
+        'login_timeout': ('number', 'Login timeout value in seconds.'),
+        'netif_timeout': ('number', 'NIC failure timeout in seconds.'),
+        'prod_mode_write_protect': ('number', 'If set to 1, prevent writes to LUNs.'),
+        't10_pi': ('number', 'If set to 1, enable T10 Protection Information.'),
+    }
+
+    ui_desc_parameters = {
+        'AuthMethod': ('string', 'Authentication method used by the TPG.'),
+        'DataDigest': ('string', 'If set to CRC32C, the integrity of the PDU data part is verified.'),
+        'DataPDUInOrder': ('yesno', 'If set to Yes, the data PDUs within sequences must be in order.'),
+        'DataSequenceInOrder': ('yesno', 'If set to Yes, the data sequences must be in order.'),
+        'DefaultTime2Retain': ('number', 'Maximum time, in seconds, after an initial wait, before which an active task reassignment is still possible after an unexpected connection termination or a connection reset.'),
+        'DefaultTime2Wait': ('number', 'Minimum time, in seconds, to wait before attempting an explicit/implicit logout or an active task reassignment after an unexpected connection termination or a connection reset.'),
+        'ErrorRecoveryLevel': ('number', 'Recovery levels represent a combination of recovery capabilities.'),
+        'FirstBurstLength': ('number', 'Maximum amount in bytes of unsolicited data an initiator may send.'),
+        'HeaderDigest': ('yesno', 'If set to CRC32C, the integrity of the PDU header part is verified.'),
+        'IFMarker': ('yesno', 'Deprecated according to RFC 7143.'),
+        'IFMarkInt': ('string', 'Deprecated according to RFC 7143.'),
+        'ImmediateData': ('string', 'Immediate data support.'),
+        'InitialR2T': ('yesno', 'If set to No, the default use of R2T (Ready To Transfer) is disabled.'),
+        'MaxBurstLength': ('number', 'Maximum SCSI data payload in bytes in a Data-In or a solicited Data-Out iSCSI sequence.'),
+        'MaxConnections': ('number', 'Maximum number of connections acceptable.'),
+        'MaxOutstandingR2T': ('number', 'Maximum number of outstanding R2Ts per task.'),
+        'MaxRecvDataSegmentLength': ('number', 'Maximum data segment length in bytes the target can receive in an iSCSI PDU.'),
+        'MaxXmitDataSegmentLength': ('number', 'Outgoing MaxRecvDataSegmentLength sent over the wire during iSCSI login response.'),
+        'OFMarker': ('yesno', 'Deprecated according to RFC 7143.'),
+        'OFMarkInt': ('string', 'Deprecated according to RFC 7143.'),
+        'TargetAlias': ('string', 'Human-readable target name or description.'),
+    }
+
     '''
     A generic TPG UI.
     '''
@@ -734,6 +772,19 @@ class UINodeACL(UIRTSLibNode):
     All sets are performed on all NodeACLs.
     This is to make management of multiple ACLs easier.
     '''
+    ui_desc_attributes = {
+        'dataout_timeout': ('number', 'Data-Out timeout in seconds before invoking recovery.'),
+        'dataout_timeout_retries': ('number', 'Number of Data-Out timeout recovery attempts before failing a path.'),
+        'default_erl': ('number', 'Default Error Recovery Level.'),
+        'nopin_response_timeout': ('number', 'Nop-In response timeout in seconds.'),
+        'nopin_timeout': ('number', 'Nop-In timeout in seconds.'),
+        'random_datain_pdu_offsets': ('number', 'If set to 1, request random Data-In PDU offsets.'),
+        'random_datain_seq_offsets': ('number', 'If set to 1, request random Data-In sequence offsets.'),
+        'random_r2t_offsets': ('number', 'If set to 1, request random R2T (Ready To Transfer) offsets.'),
+    }
+
+    ui_desc_parameters = UITPG.ui_desc_parameters
+
     def __init__(self, name, parent):
 
         # Don't want to duplicate work in UIRTSLibNode, so call it but

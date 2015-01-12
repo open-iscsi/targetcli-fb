@@ -453,6 +453,38 @@ class UIStorageObject(UIRTSLibNode):
     A storage object UI.
     Abstract Base Class, do not instantiate.
     '''
+    ui_desc_attributes = {
+        'block_size': ('number', 'Block size of the underlying device.'),
+        'emulate_3pc': ('number', 'If set to 1, enable Third Party Copy.'),
+        'emulate_caw': ('number', 'If set to 1, enable Compare and Write.'),
+        'emulate_dpo': ('number', 'If set to 1, turn on Disable Page Out.'),
+        'emulate_fua_read': ('number', 'If set to 1, enable Force Unit Access read.'),
+        'emulate_fua_write': ('number', 'If set to 1, enable Force Unit Access write.'),
+        'emulate_model_alias': ('number', 'If set to 1, use the backend device name for the model alias.'),
+        'emulate_rest_reord': ('number', 'If set to 0, the Queue Algorithm Modifier is Restricted Reordering.'),
+        'emulate_tas': ('number', 'If set to 1, enable Task Aborted Status.'),
+        'emulate_tpu': ('number', 'If set to 1, enable Thin Provisioning Unmap.'),
+        'emulate_tpws': ('number', 'If set to 1, enable Thin Provisioning Write Same.'),
+        'emulate_ua_intlck_ctrl': ('number', 'If set to 1, enable Unit Attention Interlock.'),
+        'emulate_write_cache': ('number', 'If set to 1, turn on Write Cache Enable.'),
+        'enforce_pr_isids': ('number', 'If set to 1, enforce persistent reservation ISIDs.'),
+        'fabric_max_sectors': ('number', 'Maximum number of sectors the fabric can transfer at once.'),
+        'hw_block_size': ('number', 'Hardware block size in bytes.'),
+        'hw_max_sectors': ('number', 'Maximum number of sectors the hardware can transfer at once.'),
+        'hw_pi_prot_type': ('number', 'If non-zero, DIF protection is enabled on the underlying hardware.'),
+        'hw_queue_depth': ('number', 'Hardware queue depth.'),
+        'is_nonrot': ('number', 'If set to 1, the backstore is a non rotational device.'),
+        'max_unmap_block_desc_count': ('number', 'Maximum number of block descriptors for UNMAP.'),
+        'max_unmap_lba_count': ('number', 'Maximum number of LBA for UNMAP.'),
+        'max_write_same_len': ('number', 'Maximum length for WRITE_SAME.'),
+        'optimal_sectors': ('number', 'Optimal request size in sectors.'),
+        'pi_prot_format': ('number', 'DIF protection format.'),
+        'pi_prot_type': ('number', 'DIF protection type.'),
+        'queue_depth': ('number', 'Queue depth.'),
+        'unmap_granularity': ('number', 'UNMAP granularity.'),
+        'unmap_granularity_alignment': ('number', 'UNMAP granularity alignment.'),
+    }
+
     def __init__(self, storage_object, parent):
         name = storage_object.name
         UIRTSLibNode.__init__(self, name, storage_object, parent)
