@@ -26,7 +26,6 @@ class UINode(ConfigNode):
     '''
     def __init__(self, name, parent=None, shell=None):
         ConfigNode.__init__(self, name, parent, shell)
-        self.cfs_cwd = RTSRoot.configfs_dir
         self.define_config_group_param(
             'global', 'export_backstore_name_as_model', 'bool',
             'If true, the backstore name is used for the scsi inquiry model name.')

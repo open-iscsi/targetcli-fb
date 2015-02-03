@@ -99,7 +99,6 @@ class UIBackstores(UINode):
     '''
     def __init__(self, parent):
         UINode.__init__(self, 'backstores', parent)
-        self.cfs_cwd = "%s/core" % self.cfs_cwd
         self.refresh()
 
     def refresh(self):
@@ -118,7 +117,6 @@ class UIBackstore(UINode):
     '''
     def __init__(self, plugin, parent):
         UINode.__init__(self, plugin, parent)
-        self.cfs_cwd = "%s/core" % self.cfs_cwd
         self.refresh()
 
     def refresh(self):
@@ -488,7 +486,6 @@ class UIStorageObject(UIRTSLibNode):
     def __init__(self, storage_object, parent):
         name = storage_object.name
         UIRTSLibNode.__init__(self, name, storage_object, parent)
-        self.cfs_cwd = storage_object.path
         self.refresh()
 
     def ui_command_version(self):

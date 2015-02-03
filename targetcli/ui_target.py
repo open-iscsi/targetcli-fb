@@ -41,7 +41,6 @@ class UIFabricModule(UIRTSLibNode):
         super(UIFabricModule, self).__init__(fabric_module.name,
                                              fabric_module, parent,
                                              late_params=True)
-        self.cfs_cwd = fabric_module.path
         self.refresh()
         if self.rtsnode.has_feature('discovery_auth'):
             for param in discovery_params:
@@ -288,7 +287,6 @@ class UIMultiTPGTarget(UIRTSLibNode):
     '''
     def __init__(self, target, parent):
         super(UIMultiTPGTarget, self).__init__(target.wwn, target, parent)
-        self.cfs_cwd = target.path
         self.refresh()
 
     def refresh(self):
@@ -434,7 +432,6 @@ class UITPG(UIRTSLibNode):
     def __init__(self, tpg, parent):
         name = "tpg%d" % tpg.tag
         super(UITPG, self).__init__(name, tpg, parent)
-        self.cfs_cwd = tpg.path
         self.refresh()
 
         UILUNs(tpg, self)
@@ -563,7 +560,6 @@ class UINodeACLs(UINode):
     def __init__(self, tpg, parent):
         super(UINodeACLs, self).__init__("acls", parent)
         self.tpg = tpg
-        self.cfs_cwd = "%s/acls" % tpg.path
         self.refresh()
 
     def refresh(self):
@@ -1037,7 +1033,6 @@ class UIMappedLUN(UIRTSLibNode):
     def __init__(self, mapped_lun, parent):
         name = "mapped_lun%d" % mapped_lun.mapped_lun
         super(UIMappedLUN, self).__init__(name, mapped_lun, parent)
-        self.cfs_cwd = mapped_lun.path
         self.refresh()
 
     def summary(self):
@@ -1066,7 +1061,6 @@ class UILUNs(UINode):
     '''
     def __init__(self, tpg, parent):
         super(UILUNs, self).__init__("luns", parent)
-        self.cfs_cwd = "%s/lun" % tpg.path
         self.tpg = tpg
         self.refresh()
 
@@ -1237,7 +1231,6 @@ class UILUN(UIRTSLibNode):
     def __init__(self, lun, parent):
         name = "lun%d" % lun.lun
         super(UILUN, self).__init__(name, lun, parent)
-        self.cfs_cwd = lun.path
         self.refresh()
 
     def summary(self):
@@ -1266,7 +1259,6 @@ class UIPortals(UINode):
     def __init__(self, tpg, parent):
         super(UIPortals, self).__init__("portals", parent)
         self.tpg = tpg
-        self.cfs_cwd = "%s/np" % tpg.path
         self.refresh()
 
     def refresh(self):
@@ -1433,7 +1425,6 @@ class UIPortal(UIRTSLibNode):
     def __init__(self, portal, parent):
         name = "%s:%s" % (portal.ip_address, portal.port)
         super(UIPortal, self).__init__(name, portal, parent)
-        self.cfs_cwd = portal.path
         self.refresh()
 
     def summary(self):
