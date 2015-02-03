@@ -124,7 +124,6 @@ class UIBackstore(UINode):
         for so in RTSRoot().storage_objects:
             if so.plugin == self.name:
                 ui_so = self.so_cls(so, self)
-                ui_so.name = so.name
 
     def summary(self):
             return ("Storage Objects: %d" % len(self._children), None)
