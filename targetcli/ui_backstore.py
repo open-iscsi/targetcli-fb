@@ -29,6 +29,8 @@ import os
 import stat
 import re
 
+dynload_backstore_path = "/home/agrover/git/targetcli-fb/targetcli/dynbs_*"
+
 def human_to_bytes(hsize, kilo=1024):
     '''
     This function converts human-readable amounts of bytes to bytes.
@@ -93,6 +95,7 @@ def complete_path(path, stat_fn):
     return sorted(filtered,
                   key=lambda s: '~'+s if s.endswith('/') else s)
 
+
 class UIBackstores(UINode):
     '''
     The backstores container UI.
@@ -107,7 +110,9 @@ class UIBackstores(UINode):
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
         UIBlockBackstore(self)
-        UIUserBackedBackstore(self)
+
+        for entry in dyn_bs_list:
+            entry(self)
 
 
 class UIBackstore(UINode):
@@ -180,6 +185,21 @@ class UIBackstore(UINode):
             except RTSLibError:
                 raise ExecutionError("'export_backstore_name_as_model' is set but"
                                      " emulate_model_alias\n  not supported by kernel.")
+
+
+class UIUserBackstore(UIBackstore):
+    '''
+    Common code for user-backed backstores
+    Abstract Base Class, do not instantiate.
+    '''
+    def summary(self):
+            return ("User-backed Storage Objects: %d" % len(self._children), None)
+
+    def refresh(self):
+        self._children = set([])
+        for so in RTSRoot().storage_objects:
+            if so.plugin == 'user' and so.config.startswith(self.name + '/'):
+                ui_so = self.so_cls(so, self)
 
 
 class UIPSCSIBackstore(UIBackstore):
@@ -552,3 +572,11 @@ class UIUserBackedStorageObject(UIStorageObject):
             config_str = so.config
 
         return ("%s (%s) %s" % (config_str, bytes_to_human(so.size), so.status), True)
+
+
+dyn_bs_list = []
+def new_backstore(bs_cls):
+    dyn_bs_list.append(bs_cls)
+
+for file in glob.iglob(dynload_backstore_path):
+    execfile(file)
