@@ -63,9 +63,12 @@ tpg1/> set attribute generate_node_acls=1
 .br
 tpg1/> exit
 .P
-Although by default targetcli saves the running configuration upon exit,
-restoring configuration on reboot likely requires enabling a service.
-See distribution documentation for specifics.
+Although by default targetcli saves the running configuration upon
+exit, a distribution-specific service must be enabled to restore the
+saved configuration on reboot. See distribution documentation for
+specifics, but for example:
+.P
+$ sudo systemctl enable target.service
 .P
 See
 .B EXAMPLES
