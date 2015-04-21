@@ -358,7 +358,12 @@ class UIMultiTPGTarget(UIRTSLibNode):
         self.assert_root()
         if tag.startswith("tpg"):
             tag = tag[3:]
-        tpg = TPG(self.rtsnode, int(tag), mode='lookup')
+        try:
+            tag = int(tag)
+        except ValueError:
+            raise ExecutionError("Tag argument must be a number.")
+
+        tpg = TPG(self.rtsnode, tag, mode='lookup')
         tpg.delete()
         self.shell.log.info("Deleted TPGT %s." % tag)
         self.refresh()
