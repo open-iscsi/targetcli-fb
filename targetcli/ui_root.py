@@ -17,19 +17,20 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+from datetime import datetime
+from glob import glob
+import json
+import os
+import shutil
+import stat
+
+from configshell_fb import ExecutionError
 from rtslib_fb import RTSRoot
 from rtslib_fb.utils import ignored
-from configshell_fb import ExecutionError
-from ui_node import UINode
-from socket import gethostname
-from ui_target import UIFabricModule
-from ui_backstore import UIBackstores, complete_path
-import json
-import shutil
-import os
-import stat
-from glob import glob
-from datetime import datetime
+
+from .ui_backstore import complete_path, UIBackstores
+from .ui_node import UINode
+from .ui_target import UIFabricModule
 
 default_save_file = "/etc/target/saveconfig.json"
 kept_backups = 10

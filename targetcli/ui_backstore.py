@@ -17,17 +17,19 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from ui_node import UINode, UIRTSLibNode
-from rtslib_fb import RTSRoot
-from rtslib_fb import FileIOStorageObject, BlockStorageObject
-from rtslib_fb import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
-from rtslib_fb import RTSLibError
-from rtslib_fb.utils import get_block_type
-from configshell_fb import ExecutionError
 import glob
 import os
-import stat
 import re
+import stat
+
+from configshell_fb import ExecutionError
+from rtslib_fb import BlockStorageObject, FileIOStorageObject
+from rtslib_fb import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
+from rtslib_fb import RTSLibError
+from rtslib_fb import RTSRoot
+from rtslib_fb.utils import get_block_type
+
+from .ui_node import UINode, UIRTSLibNode
 
 def human_to_bytes(hsize, kilo=1024):
     '''

@@ -17,6 +17,8 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+import six
+
 from configshell_fb import ConfigNode, ExecutionError
 from rtslib_fb import RTSLibError, RTSRoot
 
@@ -204,6 +206,6 @@ class UIRTSLibNode(UINode):
         for item in ('attributes', 'parameters'):
             if item in info:
                 del info[item]
-        for name, value in sorted(info.iteritems()):
+        for name, value in sorted(six.iteritems(info)):
             if not isinstance (value, (dict, list)):
                 self.shell.log.info("%s: %s" % (name, value))
