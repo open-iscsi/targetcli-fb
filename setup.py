@@ -31,5 +31,9 @@ setup(
     url = 'http://github.com/agrover/targetcli-fb',
     packages = ['targetcli'],
     scripts = ['scripts/targetcli'],
-    use_2to3 = True,
+    classifiers = [
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache Software License",
+    ],
     )

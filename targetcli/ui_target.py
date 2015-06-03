@@ -17,18 +17,21 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from ui_node import UINode, UIRTSLibNode
-from ui_backstore import complete_path
-from rtslib_fb import RTSLibError, RTSLibBrokenLink, utils
-from rtslib_fb import NodeACL, NetworkPortal, MappedLUN
-from rtslib_fb import Target, TPG, LUN, StorageObjectFactory
-from configshell_fb import ExecutionError
-import os
-import stat
 try:
     import ethtool
 except ImportError:
     ethtool = None
+import os
+import six
+import stat
+
+from configshell_fb import ExecutionError
+from rtslib_fb import RTSLibBrokenLink, RTSLibError, utils
+from rtslib_fb import MappedLUN, NetworkPortal, NodeACL
+from rtslib_fb import LUN, Target, TPG, StorageObjectFactory
+
+from .ui_backstore import complete_path
+from .ui_node import UINode, UIRTSLibNode
 
 auth_params = ('userid', 'password', 'mutual_userid', 'mutual_password')
 discovery_params = auth_params + ("enable",)
@@ -1023,7 +1026,7 @@ class UINodeACL(UIRTSLibNode):
         for item in ('attributes', 'parameters', "node_wwn"):
             if item in info:
                 del info[item]
-        for name, value in sorted(info.iteritems()):
+        for name, value in sorted(six.iteritems(info)):
             if not isinstance (value, (dict, list)):
                 self.shell.log.info("%s: %s" % (name, value))
         self.shell.log.info("wwns:")
@@ -1136,7 +1139,7 @@ class UILUNs(UINode):
                 existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
                 if mapped_lun in existing_mluns:
                     mapped_lun = None
-                    for possible_mlun in xrange(LUN.MAX_LUN):
+                    for possible_mlun in six.moves.range(LUN.MAX_LUN):
                         if possible_mlun not in existing_mluns:
                             mapped_lun = possible_mlun
                             break
