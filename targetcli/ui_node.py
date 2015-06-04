@@ -116,7 +116,7 @@ class UINode(ConfigNode):
         syntax = '|'.join(type_enum)
         if value is None:
             if enum:
-                return enum_type
+                return type_enum
             else:
                 return syntax
         elif value in type_enum:
