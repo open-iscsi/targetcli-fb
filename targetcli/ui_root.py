@@ -19,7 +19,6 @@ under the License.
 
 from datetime import datetime
 from glob import glob
-import json
 import os
 import shutil
 import stat

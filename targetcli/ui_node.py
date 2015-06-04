@@ -20,7 +20,6 @@ under the License.
 import six
 
 from configshell_fb import ConfigNode, ExecutionError
-from rtslib_fb import RTSLibError, RTSRoot
 
 class UINode(ConfigNode):
     '''

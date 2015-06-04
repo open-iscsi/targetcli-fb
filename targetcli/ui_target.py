@@ -26,7 +26,7 @@ import six
 import stat
 
 from configshell_fb import ExecutionError
-from rtslib_fb import RTSLibBrokenLink, RTSLibError, utils
+from rtslib_fb import RTSLibBrokenLink, RTSLibError
 from rtslib_fb import MappedLUN, NetworkPortal, NodeACL
 from rtslib_fb import LUN, Target, TPG, StorageObjectFactory
 
