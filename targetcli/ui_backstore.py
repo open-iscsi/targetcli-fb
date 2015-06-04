@@ -128,7 +128,7 @@ class UIBackstore(UINode):
                 ui_so = self.so_cls(so, self)
 
     def summary(self):
-            return ("Storage Objects: %d" % len(self._children), None)
+        return ("Storage Objects: %d" % len(self._children), None)
 
     def ui_command_delete(self, name):
         '''

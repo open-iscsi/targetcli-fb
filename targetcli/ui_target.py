@@ -332,7 +332,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
             tpg.enable = True
 
         if tpg.has_feature("auth"):
-                tpg.set_attribute("authentication", 0)
+            tpg.set_attribute("authentication", 0)
 
         self.shell.log.info("Created TPG %s." % tpg.tag)
 
