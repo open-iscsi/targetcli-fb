@@ -20,7 +20,6 @@ under the License.
 import six
 
 from configshell_fb import ConfigNode, ExecutionError
-from rtslib_fb import RTSLibError, RTSRoot
 
 class UINode(ConfigNode):
     '''
@@ -116,7 +115,7 @@ class UINode(ConfigNode):
         syntax = '|'.join(type_enum)
         if value is None:
             if enum:
-                return enum_type
+                return type_enum
             else:
                 return syntax
         elif value in type_enum:

@@ -26,7 +26,7 @@ import six
 import stat
 
 from configshell_fb import ExecutionError
-from rtslib_fb import RTSLibBrokenLink, RTSLibError, utils
+from rtslib_fb import RTSLibBrokenLink, RTSLibError
 from rtslib_fb import MappedLUN, NetworkPortal, NodeACL
 from rtslib_fb import LUN, Target, TPG, StorageObjectFactory
 
@@ -332,7 +332,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
             tpg.enable = True
 
         if tpg.has_feature("auth"):
-                tpg.set_attribute("authentication", 0)
+            tpg.set_attribute("authentication", 0)
 
         self.shell.log.info("Created TPG %s." % tpg.tag)
 
