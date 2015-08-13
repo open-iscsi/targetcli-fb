@@ -403,6 +403,7 @@ class UITPG(UIRTSLibNode):
         'default_erl': ('number', 'Default Error Recovery Level.'),
         'demo_mode_discovery': ('number', 'If set to 1 in demo mode, enable discovery.'),
         'demo_mode_write_protect': ('number', 'If set to 1 in demo mode, prevent writes to LUNs.'),
+        'fabric_prot_type': ('number', 'Fabric DIF protection type.'),
         'generate_node_acls': ('number', 'If set to 1, allow all initiators to login (i.e. demo mode).'),
         'login_timeout': ('number', 'Login timeout value in seconds.'),
         'netif_timeout': ('number', 'NIC failure timeout in seconds.'),
