@@ -467,6 +467,7 @@ class UIStorageObject(UIRTSLibNode):
         'emulate_ua_intlck_ctrl': ('number', 'If set to 1, enable Unit Attention Interlock.'),
         'emulate_write_cache': ('number', 'If set to 1, turn on Write Cache Enable.'),
         'enforce_pr_isids': ('number', 'If set to 1, enforce persistent reservation ISIDs.'),
+        'force_pr_aptpl': ('number', 'If set to 1, force SPC-3 PR Activate Persistence across Target Power Loss operation.'),
         'fabric_max_sectors': ('number', 'Maximum number of sectors the fabric can transfer at once.'),
         'hw_block_size': ('number', 'Hardware block size in bytes.'),
         'hw_max_sectors': ('number', 'Maximum number of sectors the hardware can transfer at once.'),
