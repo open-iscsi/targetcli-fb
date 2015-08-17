@@ -411,7 +411,7 @@ class UIUserBackedBackstore(UIBackstore):
         self.so_cls = UIUserBackedStorageObject
         super(UIUserBackedBackstore, self).__init__('user', parent)
 
-    def ui_command_create(self, name, size, config, level):
+    def ui_command_create(self, name, size, config):
         '''
         Creates a User-backed storage object.
 
@@ -430,16 +430,10 @@ class UIUserBackedBackstore(UIBackstore):
             information for that handler. For example, 'file/disk1.img' would
             pass 'disk.img' to the 'file' handler, indicating the backing file
             to use.
-        'level' configures how many commands will be forwarded to the userspace
-            handler, versus being emulated in the kernel. '0' will result in
-            almost all SCSI opcodes being passed-through. '1' causes only I/O-
-            related opcodes to be passed-through, and the rest emulated.
         '''
 
-        level = self.ui_eval_param(level, 'number', 0)
-
         size = human_to_bytes(size)
-        so = UserBackedStorageObject(name, size=size, config=config, level=level)
+        so = UserBackedStorageObject(name, size=size, config=config)
         ui_so = UIUserBackedStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created user-backed storage object %s size %d."
