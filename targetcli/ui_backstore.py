@@ -209,7 +209,6 @@ class UIPSCSIBackstore(UIBackstore):
 
         so = PSCSIStorageObject(name, dev)
         ui_so = UIPSCSIStorageObject(so, self)
-        self.setup_model_alias(so)
         self.shell.log.info("Created pscsi storage object %s using %s"
                             % (name, dev))
         return self.new_node(ui_so)
@@ -435,7 +434,6 @@ class UIUserBackedBackstore(UIBackstore):
         size = human_to_bytes(size)
         so = UserBackedStorageObject(name, size=size, config=config)
         ui_so = UIUserBackedStorageObject(so, self)
-        self.setup_model_alias(so)
         self.shell.log.info("Created user-backed storage object %s size %d."
                             % (name, size))
         return self.new_node(ui_so)
