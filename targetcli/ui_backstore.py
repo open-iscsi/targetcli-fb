@@ -21,6 +21,7 @@ import glob
 import os
 import re
 import stat
+import dbus
 
 from configshell_fb import ExecutionError
 from rtslib_fb import BlockStorageObject, FileIOStorageObject
@@ -103,14 +104,32 @@ class UIBackstores(UINode):
         UINode.__init__(self, 'backstores', parent)
         self.refresh()
 
+    def _user_backstores(self):
+        '''
+        tcmu-runner (or other daemon providing the same service) exposes a
+        DBus ObjectManager-based iface to find handlers it supports.
+        '''
+        bus = dbus.SystemBus()
+        try:
+            mgr_obj = bus.get_object('org.kernel.TCMUService1', '/org/kernel/TCMUService1')
+            mgr_iface = dbus.Interface(mgr_obj, 'org.freedesktop.DBus.ObjectManager')
+
+            for k,v in mgr_iface.GetManagedObjects().items():
+                tcmu_obj = bus.get_object('org.kernel.TCMUService1', k)
+                tcmu_iface = dbus.Interface(tcmu_obj, dbus_interface='org.kernel.TCMUService1')
+                yield (k[k.rfind("/")+1:], tcmu_iface.ListArgs())
+        except dbus.DBusException as e:
+            return
+
     def refresh(self):
         self._children = set([])
         UIPSCSIBackstore(self)
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
         UIBlockBackstore(self)
-        UIUserBackedBackstore(self)
 
+        for ubs in self._user_backstores():
+            UIUserBackedBackstore(self, ubs[0], ubs[1])
 
 class UIBackstore(UINode):
     '''
@@ -406,11 +425,21 @@ class UIUserBackedBackstore(UIBackstore):
     '''
     User backstore UI.
     '''
-    def __init__(self, parent):
+    def __init__(self, parent, name, args):
         self.so_cls = UIUserBackedStorageObject
-        super(UIUserBackedBackstore, self).__init__('user', parent)
+        super(UIUserBackedBackstore, self).__init__("user:"+name, parent)
+        self.args = args
+        self.handler = name
 
-    def ui_command_create(self, name, size, config):
+    def ui_command_help(self, topic=None):
+        super(UIUserBackedBackstore, self).ui_command_help(topic)
+        if topic == "create":
+            print("BACKSTORE-SPECIFIC ARGS")
+            print("=======================")
+            print("\n".join(("%s: %s" % (x[0], x[1])) for x in self.args))
+            print()
+
+    def ui_command_create(self, name, size, *args):
         '''
         Creates a User-backed storage object.
 
@@ -423,15 +452,17 @@ class UIUserBackedBackstore(UIBackstore):
             - B{m}, B{M}, B{mB}, B{MB} for MB (megabytes)
             - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
             - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
-
-        'config' is a string that is used to configure which userspace handler
-            should be used for this object, and any additional configuration
-            information for that handler. For example, 'file/disk1.img' would
-            pass 'disk.img' to the 'file' handler, indicating the backing file
-            to use.
         '''
 
         size = human_to_bytes(size)
+
+        if len(args) != len(self.args):
+            raise ExecutionError("Expecting %d backstore-specific args (%s), received %d"
+                                 % (len(self.args),
+                                    ", ".join(x[0] for x in self.args),
+                                    len(args)))
+
+        config = self.handler + "/" + "/".join(args)
         so = UserBackedStorageObject(name, size=size, config=config)
         ui_so = UIUserBackedStorageObject(so, self)
         self.shell.log.info("Created user-backed storage object %s size %d."
