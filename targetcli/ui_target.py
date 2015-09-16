@@ -492,7 +492,7 @@ class UITPG(UIRTSLibNode):
 
                         if tpg.authenticate_target:
                             msg.append("mutual auth")
-                        else: 
+                        else:
                             msg.append("1-way auth")
 
         return (", ".join(msg), status)

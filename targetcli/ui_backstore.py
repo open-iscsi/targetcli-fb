@@ -334,7 +334,7 @@ class UIFileIOBackstore(UIBackstore):
             if os.path.isfile(file_or_dev):
                 new_size = os.path.getsize(file_or_dev)
                 if size:
-                    self.shell.log.info("%s exists, using its size (%s bytes) instead" 
+                    self.shell.log.info("%s exists, using its size (%s bytes) instead"
                                         % (file_or_dev, new_size))
                 size = new_size
             elif os.path.exists(file_or_dev):
