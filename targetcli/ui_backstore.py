@@ -110,6 +110,9 @@ class UIBackstores(UINode):
         DBus ObjectManager-based iface to find handlers it supports.
         '''
         bus = dbus.SystemBus()
+        if 'org.kernel.TCMUService1' not in bus.list_names():
+            return
+
         try:
             mgr_obj = bus.get_object('org.kernel.TCMUService1', '/org/kernel/TCMUService1')
             mgr_iface = dbus.Interface(mgr_obj, 'org.freedesktop.DBus.ObjectManager')
@@ -117,7 +120,7 @@ class UIBackstores(UINode):
             for k,v in mgr_iface.GetManagedObjects().items():
                 tcmu_obj = bus.get_object('org.kernel.TCMUService1', k)
                 tcmu_iface = dbus.Interface(tcmu_obj, dbus_interface='org.kernel.TCMUService1')
-                yield (k[k.rfind("/")+1:], tcmu_iface.ListArgs())
+                yield (k[k.rfind("/")+1:], tcmu_iface, v)
         except dbus.DBusException as e:
             return
 
@@ -128,8 +131,8 @@ class UIBackstores(UINode):
         UIFileIOBackstore(self)
         UIBlockBackstore(self)
 
-        for ubs in self._user_backstores():
-            UIUserBackedBackstore(self, ubs[0], ubs[1])
+        for name, iface, prop_dict in self._user_backstores():
+            UIUserBackedBackstore(self, name, iface, prop_dict)
 
 class UIBackstore(UINode):
     '''
@@ -425,21 +428,32 @@ class UIUserBackedBackstore(UIBackstore):
     '''
     User backstore UI.
     '''
-    def __init__(self, parent, name, args):
+    def __init__(self, parent, name, iface, prop_dict):
         self.so_cls = UIUserBackedStorageObject
-        super(UIUserBackedBackstore, self).__init__("user:"+name, parent)
-        self.args = args
         self.handler = name
+        self.iface = iface
+        self.prop_dict = prop_dict
+        super(UIUserBackedBackstore, self).__init__("user:"+name, parent)
+
+    def refresh(self):
+        self._children = set([])
+        for so in RTSRoot().storage_objects:
+            if so.plugin == 'user':
+                idx = so.config.find("/")
+                handler = so.config[:idx]
+                if handler == self.handler:
+                    ui_so = self.so_cls(so, self)
 
     def ui_command_help(self, topic=None):
         super(UIUserBackedBackstore, self).ui_command_help(topic)
         if topic == "create":
-            print("BACKSTORE-SPECIFIC ARGS")
-            print("=======================")
-            print("\n".join(("%s: %s" % (x[0], x[1])) for x in self.args))
+            print("CFGSTRING FORMAT")
+            print("=================")
+            x = self.prop_dict.get("org.kernel.TCMUService1", {})
+            print(x.get("ConfigDesc", "No description."))
             print()
 
-    def ui_command_create(self, name, size, *args):
+    def ui_command_create(self, name, size, cfgstring):
         '''
         Creates a User-backed storage object.
 
@@ -456,13 +470,12 @@ class UIUserBackedBackstore(UIBackstore):
 
         size = human_to_bytes(size)
 
-        if len(args) != len(self.args):
-            raise ExecutionError("Expecting %d backstore-specific args (%s), received %d"
-                                 % (len(self.args),
-                                    ", ".join(x[0] for x in self.args),
-                                    len(args)))
+        config = self.handler + "/" + cfgstring
 
-        config = self.handler + "/" + "/".join(args)
+        ok, errmsg = self.iface.CheckConfig(config)
+        if not ok:
+            raise ExecutionError("cfgstring invalid: %s" % errmsg)
+
         so = UserBackedStorageObject(name, size=size, config=config)
         ui_so = UIUserBackedStorageObject(so, self)
         self.shell.log.info("Created user-backed storage object %s size %d."
@@ -575,6 +588,7 @@ class UIUserBackedStorageObject(UIStorageObject):
         if not so.config:
             config_str = "(no config)"
         else:
-            config_str = so.config
+            idx = so.config.find("/")
+            config_str = so.config[idx+1:]
 
         return ("%s (%s) %s" % (config_str, bytes_to_human(so.size), so.status), True)
