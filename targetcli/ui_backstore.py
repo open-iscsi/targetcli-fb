@@ -110,9 +110,6 @@ class UIBackstores(UINode):
         DBus ObjectManager-based iface to find handlers it supports.
         '''
         bus = dbus.SystemBus()
-        if 'org.kernel.TCMUService1' not in bus.list_names():
-            return
-
         try:
             mgr_obj = bus.get_object('org.kernel.TCMUService1', '/org/kernel/TCMUService1')
             mgr_iface = dbus.Interface(mgr_obj, 'org.freedesktop.DBus.ObjectManager')
