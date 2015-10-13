@@ -1251,12 +1251,9 @@ class UILUN(UIRTSLibNode):
             description = "BROKEN STORAGE LINK"
             is_healthy = False
         else:
-            if storage_object.plugin == "ramdisk":
-                description = "%s/%s" % (storage_object.plugin, storage_object.name,)
-            else:
-                description = "%s/%s (%s)" % (storage_object.plugin,
-                                          storage_object.name,
-                                          storage_object.udev_path)
+            description = "%s/%s" % (storage_object.plugin, storage_object.name,)
+            if storage_object.udev_path:
+                description += " (%s)" % storage_object.udev_path
 
         return (description, is_healthy)
 
