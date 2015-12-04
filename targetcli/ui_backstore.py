@@ -379,7 +379,7 @@ class UIFileIOBackstore(UIBackstore):
         '''
         if current_param != 'file_or_dev':
             return []
-        completions = complete_path(text, stat.S_ISREG)
+        completions = complete_path(text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x))
         if len(completions) == 1 and not completions[0].endswith('/'):
             completions = [completions[0] + ' ']
         return completions
