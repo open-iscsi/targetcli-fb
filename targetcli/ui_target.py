@@ -409,6 +409,7 @@ class UITPG(UIRTSLibNode):
         'netif_timeout': ('number', 'NIC failure timeout in seconds.'),
         'prod_mode_write_protect': ('number', 'If set to 1, prevent writes to LUNs.'),
         't10_pi': ('number', 'If set to 1, enable T10 Protection Information.'),
+        'tpg_enabled_sendtargets': ('number', 'If set to 1, the SendTargets discovery response advertises the TPG only if the TPG is enabled.'),
     }
 
     ui_desc_parameters = {
