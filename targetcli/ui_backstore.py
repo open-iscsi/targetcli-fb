@@ -516,6 +516,7 @@ class UIStorageObject(UIRTSLibNode):
         'queue_depth': ('number', 'Queue depth.'),
         'unmap_granularity': ('number', 'UNMAP granularity.'),
         'unmap_granularity_alignment': ('number', 'UNMAP granularity alignment.'),
+        'unmap_zeroes_data': ('number', 'If set to 1, zeroes are read back after an UNMAP.'),
     }
 
     def __init__(self, storage_object, parent):
