@@ -102,6 +102,11 @@ restarts, and this backstore is best used for testing only.
 .P
 It also supports "nullio" mode, which is not backed by any storage. It
 discards all writes, and returns all-zeroes for reads.
+.SS USERSPACE-BACKED
+Backstores starting with "user:" are not supported in the kernel, but
+rely on a userspace process to handle requests. See
+.BR tcmu-runner (8)
+for more information on creating backstores of this type.
 .SH TARGETS
 .B Targets
 are instances of a
@@ -427,7 +432,7 @@ required for discovery.
 /iscsi/<target_iqn>/tpgX configuration node. ISCSI-specific parameters
 such as
 .IR AuthMethod ,
-.IR MaxBurstLength , 
+.IR MaxBurstLength ,
 .IR IFMarker ,
 .IR DataDigest ,
 and similar.
@@ -448,6 +453,9 @@ the userid and password for full-feature phase for this ACL.
 .B /etc/target/saveconfig.json
 .br
 .B /etc/target/backup/*
+.SH SEE ALSO
+.BR targetctl (8),
+.BR tcmu-runner (8)
 .SH AUTHOR
 Written by Jerome Martin <jxm@risingtidesystems.com>.
 .br
