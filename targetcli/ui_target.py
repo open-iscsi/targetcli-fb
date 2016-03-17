@@ -421,7 +421,7 @@ class UITPG(UIRTSLibNode):
         'DefaultTime2Wait': ('number', 'Minimum time, in seconds, to wait before attempting an explicit/implicit logout or an active task reassignment after an unexpected connection termination or a connection reset.'),
         'ErrorRecoveryLevel': ('number', 'Recovery levels represent a combination of recovery capabilities.'),
         'FirstBurstLength': ('number', 'Maximum amount in bytes of unsolicited data an initiator may send.'),
-        'HeaderDigest': ('yesno', 'If set to CRC32C, the integrity of the PDU header part is verified.'),
+        'HeaderDigest': ('string', 'If set to CRC32C, the integrity of the PDU header part is verified.'),
         'IFMarker': ('yesno', 'Deprecated according to RFC 7143.'),
         'IFMarkInt': ('string', 'Deprecated according to RFC 7143.'),
         'ImmediateData': ('string', 'Immediate data support.'),
