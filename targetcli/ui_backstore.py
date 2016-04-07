@@ -241,7 +241,7 @@ class UIRDMCPBackstore(UIBackstore):
         self.so_cls = UIRamdiskStorageObject
         UIBackstore.__init__(self, 'ramdisk', parent)
 
-    def ui_command_create(self, name, size, nullio=None):
+    def ui_command_create(self, name, size, nullio=None, wwn=None):
         '''
         Creates an RDMCP storage object. I{size} is the size of the ramdisk.
 
@@ -258,8 +258,9 @@ class UIRDMCPBackstore(UIBackstore):
         self.assert_root()
 
         nullio = self.ui_eval_param(nullio, 'bool', False)
+        wwn = self.ui_eval_param(wwn, 'string', None)
 
-        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio)
+        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio, wwn=wwn)
         ui_so = UIRamdiskStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created ramdisk %s with size %s."
@@ -302,7 +303,7 @@ class UIFileIOBackstore(UIBackstore):
             f.close()
 
     def ui_command_create(self, name, file_or_dev, size=None, write_back=None,
-                          sparse=None):
+                          sparse=None, wwn=None):
         '''
         Creates a FileIO storage object. If I{file_or_dev} is a path
         to a regular file to be used as backend, then the I{size}
@@ -330,6 +331,7 @@ class UIFileIOBackstore(UIBackstore):
 
         sparse = self.ui_eval_param(sparse, 'bool', True)
         write_back = self.ui_eval_param(write_back, 'bool', True)
+        wwn = self.ui_eval_param(wwn, 'string', None)
 
         self.shell.log.debug("Using params size=%s write_back=%s sparse=%s"
                              % (size, write_back, sparse))
@@ -366,7 +368,8 @@ class UIFileIOBackstore(UIBackstore):
                 size = human_to_bytes(size)
                 self._create_file(file_or_dev, size, sparse)
 
-        so = FileIOStorageObject(name, file_or_dev, size, write_back=write_back)
+        so = FileIOStorageObject(name, file_or_dev, size,
+                                 write_back=write_back, wwn=wwn)
         ui_so = UIFileioStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created fileio %s with size %s"
@@ -393,7 +396,7 @@ class UIBlockBackstore(UIBackstore):
         self.so_cls = UIBlockStorageObject
         UIBackstore.__init__(self, 'block', parent)
 
-    def ui_command_create(self, name, dev, readonly=None):
+    def ui_command_create(self, name, dev, readonly=None, wwn=None):
         '''
         Creates an Block Storage object. I{dev} is the path to the TYPE_DISK
         block device to use.
@@ -401,8 +404,9 @@ class UIBlockBackstore(UIBackstore):
         self.assert_root()
 
         readonly = self.ui_eval_param(readonly, 'bool', False)
+        wwn = self.ui_eval_param(wwn, 'string', None)
 
-        so = BlockStorageObject(name, dev, readonly=readonly)
+        so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn)
         ui_so = UIBlockStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info("Created block storage object %s using %s."
@@ -450,7 +454,7 @@ class UIUserBackedBackstore(UIBackstore):
             print(x.get("ConfigDesc", "No description."))
             print()
 
-    def ui_command_create(self, name, size, cfgstring):
+    def ui_command_create(self, name, size, cfgstring, wwn=None):
         '''
         Creates a User-backed storage object.
 
@@ -466,6 +470,7 @@ class UIUserBackedBackstore(UIBackstore):
         '''
 
         size = human_to_bytes(size)
+        wwn = self.ui_eval_param(wwn, 'string', None)
 
         config = self.handler + "/" + cfgstring
 
@@ -473,7 +478,7 @@ class UIUserBackedBackstore(UIBackstore):
         if not ok:
             raise ExecutionError("cfgstring invalid: %s" % errmsg)
 
-        so = UserBackedStorageObject(name, size=size, config=config)
+        so = UserBackedStorageObject(name, size=size, config=config, wwn=wwn)
         ui_so = UIUserBackedStorageObject(so, self)
         self.shell.log.info("Created user-backed storage object %s size %d."
                             % (name, size))
