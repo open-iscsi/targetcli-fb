@@ -28,7 +28,7 @@ setup(
     license = 'Apache 2.0',
     maintainer = 'Andy Grover',
     maintainer_email = 'agrover@redhat.com',
-    url = 'http://github.com/agrover/targetcli-fb',
+    url = 'http://github.com/open-iscsi/targetcli-fb',
     packages = ['targetcli'],
     scripts = ['scripts/targetcli'],
     classifiers = [

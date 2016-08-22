@@ -13,8 +13,8 @@ targetcli-fb development
 targetcli-fb is licensed under the Apache 2.0 license. Contributions are welcome.
 
  * Mailing list: [targetcli-fb-devel](https://lists.fedorahosted.org/mailman/listinfo/targetcli-fb-devel)
- * Source repo: [GitHub](https://github.com/agrover/targetcli-fb)
- * Bugs: [GitHub](https://github.com/agrover/targetcli-fb/issues) or [Trac](https://fedorahosted.org/targetcli-fb/)
+ * Source repo: [GitHub](https://github.com/open-iscsi/targetcli-fb)
+ * Bugs: [GitHub](https://github.com/open-iscsi/targetcli-fb/issues) or [Trac](https://fedorahosted.org/targetcli-fb/)
  * Tarballs: [fedorahosted](https://fedorahosted.org/releases/t/a/targetcli-fb/)
  * Playlist of instructional screencast videos: [YouTube](https://www.youtube.com/playlist?list=PLC2C75481A3ABB067)
 
