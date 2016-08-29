@@ -1,7 +1,7 @@
 Source: targetcli-fb
 Section: python
 Priority: optional
-Maintainer: Andy Grover <andy@groveronline.com>
+Maintainer: targetcli-fb developers <targetcli-fb-devel@lists.fedorahosted.org>
 Build-Depends: debhelper(>= 9),
                dh-python,
                python3-all,
