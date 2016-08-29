@@ -1,4 +1,3 @@
-debian/changelog
 dpkg-buildpackage.log
 dpkg-buildpackage.version
 build-stamp
