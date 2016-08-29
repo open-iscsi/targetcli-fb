@@ -19,6 +19,13 @@ Depends: ${misc:Depends},
          python3-rtslib-fb,
          python3-six,
 Conflicts: targetcli, lio-utils
-Description: CLI shell for the RisingTide Systems target (free branch).
+Description: Command shell for managing the Linux LIO kernel target
+ The targetcli-fb package is a command-line interface for configuring
+ the LIO generic SCSI target, present in 3.x Linux kernel versions.
  .
- This package contains the targetcli CLI.
+ The targetcli-fb package is a fork of the "targetcli" code written by
+ RisingTide Systems. The "-fb" differentiates between the original and
+ this version. Please ensure to use either all "fb" versions of the
+ targetcli components -- targetcli, rtslib, and configshell, or stick
+ with all non-fb versions, since they are no longer strictly
+ compatible.
