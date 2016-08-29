@@ -18,7 +18,7 @@ Depends: ${misc:Depends},
          python3-dbus,
          python3-rtslib-fb,
          python3-six,
-Conflicts: targetcli, targetcli-frozen, lio-utils
+Conflicts: targetcli, lio-utils
 Description: CLI shell for the RisingTide Systems target (free branch).
  .
  This package contains the targetcli CLI.
