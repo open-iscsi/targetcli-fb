@@ -1,5 +1,5 @@
 Source: targetcli-fb
-Section: python
+Section: admin
 Priority: optional
 Maintainer: targetcli-fb developers <targetcli-fb-devel@lists.fedorahosted.org>
 Build-Depends: debhelper(>= 9),
