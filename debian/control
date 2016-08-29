@@ -2,14 +2,21 @@ Source: targetcli-fb
 Section: python
 Priority: optional
 Maintainer: Andy Grover <andy@groveronline.com>
-Build-Depends: debhelper(>= 9), python3 , python3-setuptools
+Build-Depends: debhelper(>= 9),
+               dh-python,
+               python3-all,
+               python3-setuptools,
+Build-Depends-Indep: python3-six,
 Standards-Version: 3.9.8
 Homepage: https://github.com/open-iscsi/targetcli-fb
-X-Python3-Version: >= 3.1
 
 Package: targetcli-fb
 Architecture: all
-Depends: python3 (>= 3.1), ${misc:Depends}, python3-configshell-fb, python3-rtslib-fb
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         python3-configshell-fb,
+         python3-rtslib-fb,
+         python3-six,
 Conflicts: targetcli, targetcli-frozen, lio-utils
 Description: CLI shell for the RisingTide Systems target (free branch).
  .
