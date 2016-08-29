@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Andy Grover <andy@groveronline.com>
 Build-Depends: debhelper(>= 9), python3 , python3-setuptools
 Standards-Version: 3.9.8
+Homepage: https://github.com/open-iscsi/targetcli-fb
 X-Python3-Version: >= 3.1
 
 Package: targetcli-fb
