@@ -162,6 +162,9 @@ If the hardware supports it,
 .B iSER
 (iSCSI Extensions for RDMA) may be enabled via the
 .B enable_iser
+command within each portal's node.  Or, if the hardware supports it,
+hardware offload may be enabled via the
+.B enable_offload
 command within each portal's node.
 .SS LUNS
 The kernel target exports SCSI Logical Units, also called

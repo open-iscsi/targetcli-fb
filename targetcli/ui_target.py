@@ -1437,6 +1437,8 @@ class UIPortal(UIRTSLibNode):
     def summary(self):
         if self.rtsnode.iser:
             return('iser', True)
+        elif self.rtsnode.offload:
+            return('offload', True)
         return ('', True)
 
     def ui_command_enable_iser(self, boolean):
@@ -1449,3 +1451,14 @@ class UIPortal(UIRTSLibNode):
         boolean = self.ui_eval_param(boolean, 'bool', False)
         self.rtsnode.iser = boolean
         self.shell.log.info("iSER enable now: %s" % self.rtsnode.iser)
+
+    def ui_command_enable_offload(self, boolean):
+        '''
+        Enables or disables offload for this NetworkPortal.
+
+        If offload is not supported by the kernel, this command will do nothing.
+        '''
+
+        boolean = self.ui_eval_param(boolean, 'bool', False)
+        self.rtsnode.offload = boolean
+        self.shell.log.info("offload enable now: %s" % self.rtsnode.offload)
