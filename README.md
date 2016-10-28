@@ -23,7 +23,8 @@ Packages
 targetcli-fb is packaged for a number of Linux distributions including
 RHEL,
 [Fedora](https://apps.fedoraproject.org/packages/targetcli),
-openSUSE, Arch Linux, and
+openSUSE, Arch Linux,
+[Gentoo](https://packages.gentoo.org/packages/sys-block/targetcli-fb), and
 [Debian](https://tracker.debian.org/pkg/targetcli-fb).
 
 "fb" -- "free branch"
