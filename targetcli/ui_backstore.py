@@ -26,11 +26,29 @@ import dbus
 from configshell_fb import ExecutionError
 from rtslib_fb import BlockStorageObject, FileIOStorageObject
 from rtslib_fb import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
+from rtslib_fb import ALUATargetPortGroup
 from rtslib_fb import RTSLibError
 from rtslib_fb import RTSRoot
 from rtslib_fb.utils import get_block_type
 
 from .ui_node import UINode, UIRTSLibNode
+
+alua_rw_params = ['alua_access_state', 'alua_access_status',
+                  'alua_write_metadata', 'alua_access_type', 'preferred',
+                  'nonop_delay_msecs', 'trans_delay_msecs',
+                  'implicit_trans_secs', 'alua_support_offline',
+                  'alua_support_standby', 'alua_support_transitioning',
+                  'alua_support_active_nonoptimized',
+                  'alua_support_unavailable', 'alua_support_active_optimized']
+alua_ro_params = ['tg_pt_gp_id', 'members', 'alua_support_lba_dependent']
+
+alua_state_names = { 0: 'Active/optimized',
+                     1: 'Active/non-optimized',
+                     2: 'Standby',
+                     3: 'Unavailable',
+                     4: 'LBA Dependent',
+                     14: 'Offline',
+                     15: 'Transitioning'}
 
 def human_to_bytes(hsize, kilo=1024):
     '''
@@ -96,6 +114,108 @@ def complete_path(path, stat_fn):
     return sorted(filtered,
                   key=lambda s: '~'+s if s.endswith('/') else s)
 
+
+class UIALUATargetPortGroup(UIRTSLibNode):
+    '''
+    A generic UI for ALUATargetPortGroup objects.
+    '''
+    def __init__(self, alua_tpg, parent):
+        name = alua_tpg.name
+        super(UIALUATargetPortGroup, self).__init__(name, alua_tpg, parent)
+        self.refresh()
+
+        for param in alua_rw_params:
+            self.define_config_group_param("alua", param, 'string')
+
+        for param in alua_ro_params:
+            self.define_config_group_param("alua", param, 'string', False)
+
+    def ui_getgroup_alua(self, alua_attr):
+        return getattr(self.rtsnode, alua_attr)
+
+    def ui_setgroup_alua(self, alua_attr, value):
+        self.assert_root()
+
+        if value is None:
+            return
+
+        setattr(self.rtsnode, alua_attr, value)
+
+    def summary(self):
+        self.rtsnode.alua_access_state
+        return ("ALUA state: %s" %
+                alua_state_names[self.rtsnode.alua_access_state], True)
+
+class UIALUATargetPortGroups(UINode):
+    '''
+    ALUA Target Port Group UI
+    '''
+    def __init__(self, parent):
+        super(UIALUATargetPortGroups, self).__init__("alua", parent)
+        self.refresh()
+
+    def summary(self):
+        return ("ALUA Groups: %d" % len(self.children), None)
+
+    def refresh(self):
+        self._children = set([])
+
+        so = self.parent.rtsnode
+        for tpg in so.alua_tpgs:
+            UIALUATargetPortGroup(tpg, self)
+
+    def ui_command_create(self, name, tag):
+        '''
+        Create a new ALUA Target Port Group attached to a storage object.
+        '''
+        self.assert_root()
+
+        so = self.parent.rtsnode
+        alua_tpg_object = ALUATargetPortGroup(so, name, int(tag))
+        self.shell.log.info("Created ALUA TPG %s." % alua_tpg_object.name)
+        ui_alua_tpg = UIALUATargetPortGroup(alua_tpg_object, self)
+        return self.new_node(ui_alua_tpg)
+
+    def ui_command_delete(self, name):
+        '''
+        Delete the ALUA Target Por Group and unmap it from a LUN if needed.
+        '''
+        self.assert_root()
+
+        so = self.parent.rtsnode
+        try:
+            alua_tpg_object = ALUATargetPortGroup(so, name)
+        except:
+            raise RTSLibError("Invalid ALUA group name")
+
+        alua_tpg_object.delete()
+        self.refresh()
+
+    def ui_complete_delete(self, parameters, text, current_param):
+        '''
+        Parameter auto-completion method for user command delete.
+        @param parameters: Parameters on the command line.
+        @type parameters: dict
+        @param text: Current text of parameter being typed by the user.
+        @type text: str
+        @param current_param: Name of parameter to complete.
+        @type current_param: str
+        @return: Possible completions
+        @rtype: list of str
+        '''
+        if current_param == 'name':
+            so = self.parent.rtsnode
+
+            tpgs = [tpg.name for tpg in so.alua_tpgs]
+            completions = [tpg for tpg in tpgs if tpg.startswith(text)]
+        else:
+            completions = []
+
+        if len(completions) == 1:
+            return [completions[0] + ' ']
+        else:
+            return completions
+
 class UIBackstores(UINode):
     '''
     The backstores container UI.
@@ -145,6 +265,7 @@ class UIBackstore(UINode):
         for so in RTSRoot().storage_objects:
             if so.plugin == self.name:
                 ui_so = self.so_cls(so, self)
+                UIALUATargetPortGroups(ui_so)
 
     def summary(self):
         return ("Storage Objects: %d" % len(self._children), None)
