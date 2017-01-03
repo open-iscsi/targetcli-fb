@@ -1243,6 +1243,8 @@ class UILUN(UIRTSLibNode):
         super(UILUN, self).__init__(name, lun, parent)
         self.refresh()
 
+        self.define_config_group_param("alua", "alua_tg_pt_gp_name", 'string')
+
     def summary(self):
         lun = self.rtsnode
         is_healthy = True
@@ -1256,8 +1258,20 @@ class UILUN(UIRTSLibNode):
             if storage_object.udev_path:
                 description += " (%s)" % storage_object.udev_path
 
+            description += " (%s)" % lun.alua_tg_pt_gp_name
+
         return (description, is_healthy)
 
+    def ui_getgroup_alua(self, alua_attr):
+        return getattr(self.rtsnode, alua_attr)
+
+    def ui_setgroup_alua(self, alua_attr, value):
+        self.assert_root()
+
+        if value is None:
+            return
+
+        setattr(self.rtsnode, alua_attr, value)
 
 class UIPortals(UINode):
     '''
