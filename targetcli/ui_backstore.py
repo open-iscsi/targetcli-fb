@@ -265,7 +265,6 @@ class UIBackstore(UINode):
         for so in RTSRoot().storage_objects:
             if so.plugin == self.name:
                 ui_so = self.so_cls(so, self)
-                UIALUATargetPortGroups(ui_so)
 
     def summary(self):
         return ("Storage Objects: %d" % len(self._children), None)
@@ -649,6 +648,8 @@ class UIStorageObject(UIRTSLibNode):
         name = storage_object.name
         UIRTSLibNode.__init__(self, name, storage_object, parent)
         self.refresh()
+
+        UIALUATargetPortGroups(self)
 
     def ui_command_version(self):
         '''
