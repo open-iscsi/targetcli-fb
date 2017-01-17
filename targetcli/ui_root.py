@@ -49,6 +49,10 @@ class UIRoot(UINode):
         '''
         self._children = set([])
 
+        # Invalidate any rtslib caches
+        if 'invalidate_caches' in dir(RTSRoot):
+            self.rtsroot.invalidate_caches()
+
         UIBackstores(self)
 
         # only show fabrics present in the system
