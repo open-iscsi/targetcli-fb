@@ -1,0 +1,202 @@
+#!/usr/bin/python
+"""
+Prints current status and session information about the LIO targets.
+
+Copyright (C) 2012  Johannes Dewender
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+from rtslib.root import RTSRoot
+from rtslib.target import NodeACL, TPG, Target, FabricModule
+from os import getuid
+from os.path import basename
+
+indent_step = 4
+
+class Session(object):
+    def __init__(self):
+        self.alias = ""
+        self.id = ""
+        self.type = ""
+        self.state = ""
+        self.connections = []
+
+    def _has_info(self):
+        return len(self.alias + self.id + self.state)
+
+    def indent_print(self, steps):
+        if self._has_info():
+            line = "alias: " + self.alias + "\tsid: " + self.id
+            line += "  type: " +self.type + "  state: " + self.state
+            _indent_print(line, steps)
+            for connection in self.connections:
+                connection.indent_print(steps + 1)
+
+    def get_connection(self):
+        if len(self.connections) > 0:
+            return self.connections[-1]
+        else:
+            return None
+
+    connection = property(get_connection)
+
+    def new_connection(self):
+        self.connections.append(Connection())
+
+
+class Connection(object):
+    def __init__(self):
+        self.cid = "" 
+        self.address = ""
+        self.cstate = ""
+
+    def _has_info(self):
+        return len(self.cid + self.address)
+
+    def indent_print(self, steps):
+        if self._has_info():
+            line = "address: " + str(self.address)
+            line += "\tcid: " + self.cid + "  state: " + self.cstate
+            _indent_print(line, steps)
+
+
+def _indent_print(text, steps):
+    indent = " " * indent_step * steps
+    print indent + text
+
+def _is_root():
+    return getuid() == 0
+
+def list_fabrics(root, steps):
+    for fabric in root.fabric_modules:
+        if fabric.exists:
+            if has_sessions(fabric):
+                _indent_print(basename(fabric.path), steps)
+                list_targets(fabric, steps + 1)
+
+def list_targets(fabric, steps):
+    for target in fabric.targets:
+        if has_sessions(target):
+            _indent_print(basename(target.path), steps)
+            list_tpgs(target, steps + 1)
+
+def list_tpgs(target, steps):
+    for tpg in target.tpgs:
+        if has_sessions(tpg):
+            if tpg.enable:
+                _indent_print(basename(tpg.path), steps)
+                list_acls(tpg, steps + 1)
+            else:
+                _indent_print("(" + basename(tpg.path) + " disabled)", steps)
+
+def list_acls(tpg, steps):
+    for acl in tpg.node_acls:
+        if has_sessions(acl):
+            if _is_root():
+                if acl.authenticate_target:
+                    auth = "authenticated"
+                else:
+                    auth = "NOT AUTHENTICATED"
+                _indent_print(basename(acl.path) + " (" +auth + ")", steps)
+            else:
+                _indent_print(basename(acl.path), steps)
+            list_mapped_luns(acl, steps + 1)
+            print_session(acl, steps + 1)
+
+def list_mapped_luns(acl, steps):
+    for mlun in acl.mapped_luns:
+        number = str(mlun.mapped_lun)
+        dev = mlun.tpg_lun.storage_object.udev_path
+        if mlun.write_protect:
+            mode = " (r)"
+        else:
+            mode = " (rw)"
+        _indent_print(number + " " + dev + mode, steps)
+
+def has_sessions(node):
+    # we don't operate on harddisk or enourmous structures
+    # so this high complexity should be fine
+    if isinstance(node, NodeACL):
+        return len(open(node.path + "/info", "r").readlines()) > 1
+    elif isinstance(node, TPG):
+        for acl in node.node_acls:
+            if has_sessions(acl):
+                return True
+        return False
+    elif isinstance(node, Target):
+        for tpg in node.tpgs:
+            if not tpg.enable:
+                return False
+            elif has_sessions(tpg):
+                return True
+        return False
+    elif isinstance(node, FabricModule):
+        for target in node.targets:
+            if has_sessions(target):
+                return True
+        return False
+    else:
+        return False
+    
+def print_session(acl, steps):
+    session_file = open(acl.path + "/info", "r")
+    session = Session()
+    for line in session_file:
+        if "No active" in line:
+            _indent_print("(no sessions)", steps)
+        elif "InitiatorName:" in line:
+            continue
+        elif "InitiatorAlias:" in line:
+            session.alias = line.split(":")[1].strip()
+        elif "LIO Session ID:" in line:
+            session.id = line.split(":")[1].split()[0]
+            session.type = line.split("SessionType:")[1].split()[0].strip()
+        elif "TARG_SESS_STATE_" in line:
+            session.state = line.split("_STATE_")[1].split()[0]
+        elif "TARG_CONN_STATE_" in line:
+            session.new_connection()
+            session.connection.cid = line.split(":")[1].split()[0]
+            session.connection.cstate = line.split("_STATE_")[1].split()[0]
+        elif "Address" in line:
+            session.connection.address = line.split("Address")[1].split()[0]
+        else:
+            continue
+    session.indent_print(steps)
+
+def list_devices(root, steps):
+    for storage in root.storage_objects:
+        _indent_print(storage.name + "\t" + storage.udev_path, steps)
+
+def list_portals(root, steps):
+    for portal in root.network_portals:
+        line = portal.ip_address + ":" + str(portal.port) + "\t"
+        line += portal.parent_tpg.parent_target.fabric_module.name
+        _indent_print(line, steps)
+
+
+def main():
+    rtsroot = RTSRoot()
+    print "Devices:"
+    list_devices(rtsroot, 1)
+    print "Sessions:"
+    list_fabrics(rtsroot, 1)
+    print "Portals:"
+    list_portals(rtsroot, 1)
+
+
+if __name__ == '__main__':
+    main()
+
+# vim:set shiftwidth=4 smarttab expandtab:
