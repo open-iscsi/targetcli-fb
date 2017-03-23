@@ -72,20 +72,34 @@ class UIRoot(UINode):
         # Only save backups if saving to default location
         if savefile == default_save_file:
             backup_dir = os.path.dirname(savefile) + "/backup"
+            if not os.path.exists(backup_dir):
+                # Ignore error here, we will catch that problem later on
+                # anyway.
+                with ignored(IOError):
+                    os.makedirs(backup_dir)
+
             backup_name = "saveconfig-" + \
                 datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
             backupfile = backup_dir + "/" + backup_name
-            with ignored(IOError):
+            backup_error = None
+            try:
                 shutil.copy(savefile, backupfile)
+            except IOError as ioe:
+                backup_error = ioe.strerror or "Unknown error"
 
-            # Kill excess backups
-            backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
-            files_to_unlink = list(reversed(backups))[kept_backups:]
-            for f in files_to_unlink:
-                os.unlink(f)
+            if backup_error == None:
+                # Kill excess backups
+                backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
+                files_to_unlink = list(reversed(backups))[kept_backups:]
+                for f in files_to_unlink:
+                    with ignored(IOError):
+                        os.unlink(f)
 
-            self.shell.log.info("Last %d configs saved in %s." % \
-                                    (kept_backups, backup_dir))
+                self.shell.log.info("Last %d configs saved in %s." % \
+                                        (kept_backups, backup_dir))
+            else:
+                self.shell.log.warning("Could not create backup file %s: %s." % \
+                                           (backupfile, backup_error))
 
         self.rtsroot.save_to_file(savefile)
 
