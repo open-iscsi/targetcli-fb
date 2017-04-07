@@ -574,7 +574,8 @@ class UIUserBackedBackstore(UIBackstore):
             print(x.get("ConfigDesc", "No description."))
             print()
 
-    def ui_command_create(self, name, size, cfgstring, wwn=None):
+    def ui_command_create(self, name, size, cfgstring, wwn=None,
+                          hw_max_sectors=None):
         '''
         Creates a User-backed storage object.
 
@@ -598,7 +599,8 @@ class UIUserBackedBackstore(UIBackstore):
         if not ok:
             raise ExecutionError("cfgstring invalid: %s" % errmsg)
 
-        so = UserBackedStorageObject(name, size=size, config=config, wwn=wwn)
+        so = UserBackedStorageObject(name, size=size, config=config, wwn=wwn,
+                                     hw_max_sectors=hw_max_sectors)
         ui_so = UIUserBackedStorageObject(so, self)
         self.shell.log.info("Created user-backed storage object %s size %d."
                             % (name, size))
