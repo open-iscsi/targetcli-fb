@@ -599,8 +599,12 @@ class UIUserBackedBackstore(UIBackstore):
         if not ok:
             raise ExecutionError("cfgstring invalid: %s" % errmsg)
 
-        so = UserBackedStorageObject(name, size=size, config=config, wwn=wwn,
-                                     hw_max_sectors=hw_max_sectors)
+        try:
+            so = UserBackedStorageObject(name, size=size, config=config,
+                                         wwn=wwn, hw_max_sectors=hw_max_sectors)
+        except:
+            raise ExecutionError("UserBackedStorageObject creation failed.")
+
         ui_so = UIUserBackedStorageObject(so, self)
         self.shell.log.info("Created user-backed storage object %s size %d."
                             % (name, size))
