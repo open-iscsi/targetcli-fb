@@ -31,6 +31,10 @@ setup(
     url = 'http://github.com/open-iscsi/targetcli-fb',
     packages = ['targetcli'],
     scripts = ['scripts/targetcli'],
+    install_requires = [
+        'dbus-python',
+        'six',
+    ],
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
