@@ -17,11 +17,11 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+from gi.repository import Gio
 import glob
 import os
 import re
 import stat
-import dbus
 
 from configshell_fb import ExecutionError
 from rtslib_fb import BlockStorageObject, FileIOStorageObject
@@ -229,16 +229,26 @@ class UIBackstores(UINode):
         tcmu-runner (or other daemon providing the same service) exposes a
         DBus ObjectManager-based iface to find handlers it supports.
         '''
-        bus = dbus.SystemBus()
+        bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         try:
-            mgr_obj = bus.get_object('org.kernel.TCMUService1', '/org/kernel/TCMUService1')
-            mgr_iface = dbus.Interface(mgr_obj, 'org.freedesktop.DBus.ObjectManager')
+            mgr_iface = Gio.DBusProxy.new_sync(bus,
+                                               Gio.DBusProxyFlags.NONE,
+                                               None,
+                                               'org.kernel.TCMUService1',
+                                               '/org/kernel/TCMUService1',
+                                               'org.freedesktop.DBus.ObjectManager',
+                                               None)
 
-            for k,v in mgr_iface.GetManagedObjects().items():
-                tcmu_obj = bus.get_object('org.kernel.TCMUService1', k)
-                tcmu_iface = dbus.Interface(tcmu_obj, dbus_interface='org.kernel.TCMUService1')
+            for k, v in mgr_iface.GetManagedObjects().items():
+                tcmu_iface = Gio.DBusProxy.new_sync(bus,
+                                                    Gio.DBusProxyFlags.NONE,
+                                                    None,
+                                                    'org.kernel.TCMUService1',
+                                                    k,
+                                                    'org.kernel.TCMUService1',
+                                                    None)
                 yield (k[k.rfind("/")+1:], tcmu_iface, v)
-        except dbus.DBusException as e:
+        except Exception as e:
             return
 
     def refresh(self):
@@ -595,7 +605,7 @@ class UIUserBackedBackstore(UIBackstore):
 
         config = self.handler + "/" + cfgstring
 
-        ok, errmsg = self.iface.CheckConfig(config)
+        ok, errmsg = self.iface.CheckConfig('(s)', config)
         if not ok:
             raise ExecutionError("cfgstring invalid: %s" % errmsg)
 
