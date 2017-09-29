@@ -559,7 +559,7 @@ class UIUserBackedBackstore(UIBackstore):
     def refresh(self):
         self._children = set([])
         for so in RTSRoot().storage_objects:
-            if so.plugin == 'user':
+            if so.plugin == 'user' and so.config:
                 idx = so.config.find("/")
                 handler = so.config[:idx]
                 if handler == self.handler:
