@@ -585,7 +585,7 @@ class UIUserBackedBackstore(UIBackstore):
             print()
 
     def ui_command_create(self, name, size, cfgstring, wwn=None,
-                          hw_max_sectors=None):
+                          hw_max_sectors=None, max_data_area_mb=None):
         '''
         Creates a User-backed storage object.
 
@@ -611,9 +611,22 @@ class UIUserBackedBackstore(UIBackstore):
 
         try:
             so = UserBackedStorageObject(name, size=size, config=config,
-                                         wwn=wwn, hw_max_sectors=hw_max_sectors)
-        except:
-            raise ExecutionError("UserBackedStorageObject creation failed.")
+                                         wwn=wwn, hw_max_sectors=hw_max_sectors,
+                                         max_data_area_mb=max_data_area_mb)
+        except TypeError as e:
+            if "max_data_area_mb" not in str(e):
+                raise ExecutionError("UserBackedStorageObject creation failed.")
+
+            if max_data_area_mb is not None:
+                raise ExecutionError("UserBackedStorageObject creation failed."
+                                     " max_data_area_mb not supported.")
+
+            try:
+                so = UserBackedStorageObject(name, size=size, config=config,
+                                             wwn=wwn,
+                                             hw_max_sectors=hw_max_sectors)
+            except:
+                raise ExecutionError("UserBackedStorageObject creation failed.")
 
         ui_so = UIUserBackedStorageObject(so, self)
         self.shell.log.info("Created user-backed storage object %s size %d."
