@@ -20,6 +20,7 @@ under the License.
 from datetime import datetime
 from glob import glob
 import os
+import re
 import shutil
 import stat
 
@@ -32,7 +33,8 @@ from .ui_node import UINode
 from .ui_target import UIFabricModule
 
 default_save_file = "/etc/target/saveconfig.json"
-kept_backups = 10
+universal_prefs_file = "/etc/target/targetcli.conf"
+default_kept_backups = 10
 
 class UIRoot(UINode):
     '''
@@ -83,6 +85,13 @@ class UIRoot(UINode):
 
             if backup_error == None:
                 # Kill excess backups
+                try:
+                    with open(universal_prefs_file) as prefs:
+                        backups = [line for line in prefs.read().splitlines() if re.match('^kept_backups\s*=', line)]
+                        kept_backups = int(backups[0].split('=')[1].strip())
+                except:
+                    kept_backups = default_kept_backups
+
                 backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
                 files_to_unlink = list(reversed(backups))[kept_backups:]
                 for f in files_to_unlink:
