@@ -20,6 +20,9 @@ under the License.
 from gi.repository import Gio
 import glob
 import os
+import fcntl
+import array
+import struct
 import re
 import stat
 
@@ -526,6 +529,25 @@ class UIBlockBackstore(UIBackstore):
         self.so_cls = UIBlockStorageObject
         UIBackstore.__init__(self, 'block', parent)
 
+    def _ui_block_ro_check(self, dev):
+        BLKROGET=0x0000125E
+        try:
+            f = os.open(dev, os.O_RDONLY)
+        except (OSError, IOError):
+            raise ExecutionError("Could not open %s" % dev)
+        # ioctl returns an int. Provision a buffer for it
+        buf = array.array('c', [chr(0)] * 4)
+        try:
+            fcntl.ioctl(f, BLKROGET, buf)
+        except (OSError, IOError):
+            os.close(f)
+            return False
+
+        os.close(f)
+        if struct.unpack('I', buf)[0] == 0:
+            return False
+        return True
+
     def ui_command_create(self, name, dev, readonly=None, wwn=None):
         '''
         Creates an Block Storage object. I{dev} is the path to the TYPE_DISK
@@ -533,7 +555,13 @@ class UIBlockBackstore(UIBackstore):
         '''
         self.assert_root()
 
-        readonly = self.ui_eval_param(readonly, 'bool', False)
+        ro_string = self.ui_eval_param(readonly, 'string', None)
+        if ro_string == None:
+            # attempt to detect block device readonly state via ioctl
+            readonly = self._ui_block_ro_check(dev)
+        else:
+            readonly = self.ui_eval_param(readonly, 'bool', False)
+
         wwn = self.ui_eval_param(wwn, 'string', None)
 
         so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn)
