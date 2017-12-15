@@ -49,6 +49,7 @@ class TargetCLI(ConfigShell):
                      'auto_add_mapped_luns': True,
                      'auto_cd_after_create': False,
                      'auto_save_on_exit': True,
+                     'max_backup_files': '10',
                      'auto_add_default_portal': True,
                     }
 
