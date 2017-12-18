@@ -23,6 +23,7 @@ import os
 import re
 import shutil
 import stat
+import filecmp
 
 from configshell_fb import ExecutionError
 from rtslib_fb import RTSRoot
@@ -78,31 +79,43 @@ class UIRoot(UINode):
                 datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
             backupfile = backup_dir + "/" + backup_name
             backup_error = None
-            try:
-                shutil.copy(savefile, backupfile)
-            except IOError as ioe:
-                backup_error = ioe.strerror or "Unknown error"
 
-            if backup_error == None:
-                # Kill excess backups
+            if not os.path.exists(backup_dir):
                 try:
-                    with open(universal_prefs_file) as prefs:
-                        backups = [line for line in prefs.read().splitlines() if re.match('^kept_backups\s*=', line)]
-                        kept_backups = int(backups[0].split('=')[1].strip())
-                except:
-                    kept_backups = default_kept_backups
+                    os.makedirs(backup_dir);
+                except OSError as exe:
+                    raise ExecutionError("Cannot create backup directory [%s] %s." % (backup_dir, exc.strerror))
 
-                backups = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
-                files_to_unlink = list(reversed(backups))[kept_backups:]
-                for f in files_to_unlink:
-                    with ignored(IOError):
-                        os.unlink(f)
+            # Only save backups if savefile exits
+            if os.path.exists(savefile):
+                backed_files_list = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
+                # Save backup if 1. backup dir is empty, or 2. savefile is differnt from recent backup copy
+                if not backed_files_list or not filecmp.cmp(backed_files_list[-1], savefile):
+                    try:
+                        shutil.copy(savefile, backupfile)
 
-                self.shell.log.info("Last %d configs saved in %s." % \
-                                        (kept_backups, backup_dir))
-            else:
-                self.shell.log.warning("Could not create backup file %s: %s." % \
-                                           (backupfile, backup_error))
+                    except IOError as ioe:
+                        backup_error = ioe.strerror or "Unknown error"
+
+                    if backup_error == None:
+                        # Kill excess backups
+                        try:
+                            with open(universal_prefs_file) as prefs:
+                                backups = [line for line in prefs.read().splitlines() if re.match('^kept_backups\s*=', line)]
+                                kept_backups = int(backups[0].split('=')[1].strip())
+                        except:
+                            kept_backups = default_kept_backups
+
+                        files_to_unlink = list(reversed(backed_files_list))[kept_backups:]
+                        for f in files_to_unlink:
+                            with ignored(IOError):
+                                os.unlink(f)
+
+                        self.shell.log.info("Last %d configs saved in %s." % \
+                                            (kept_backups, backup_dir))
+                    else:
+                        self.shell.log.warning("Could not create backup file %s: %s." % \
+                                               (backupfile, backup_error))
 
         self.rtsroot.save_to_file(savefile)
 
