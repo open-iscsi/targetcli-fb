@@ -101,18 +101,18 @@ class UIRoot(UINode):
                         # Kill excess backups
                         try:
                             with open(universal_prefs_file) as prefs:
-                                backups = [line for line in prefs.read().splitlines() if re.match('^kept_backups\s*=', line)]
-                                kept_backups = int(backups[0].split('=')[1].strip())
+                                backups = [line for line in prefs.read().splitlines() if re.match('^max_backup_files\s*=', line)]
+                                max_backup_files = int(backups[0].split('=')[1].strip())
                         except:
-                            kept_backups = default_kept_backups
+                            max_backup_files = default_kept_backups
 
-                        files_to_unlink = list(reversed(backed_files_list))[kept_backups:]
+                        files_to_unlink = list(reversed(backed_files_list))[max_backup_files:]
                         for f in files_to_unlink:
                             with ignored(IOError):
                                 os.unlink(f)
 
                         self.shell.log.info("Last %d configs saved in %s." % \
-                                            (kept_backups, backup_dir))
+                                            (max_backup_files, backup_dir))
                     else:
                         self.shell.log.warning("Could not create backup file %s: %s." % \
                                                (backupfile, backup_error))
