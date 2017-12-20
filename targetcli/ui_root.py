@@ -35,7 +35,6 @@ from .ui_target import UIFabricModule
 
 default_save_file = "/etc/target/saveconfig.json"
 universal_prefs_file = "/etc/target/targetcli.conf"
-default_kept_backups = 10
 
 class UIRoot(UINode):
     '''
@@ -99,20 +98,23 @@ class UIRoot(UINode):
 
                     if backup_error == None:
                         # Kill excess backups
+                        max_backup_files = int(self.shell.prefs['max_backup_files'])
+
                         try:
                             with open(universal_prefs_file) as prefs:
-                                backups = [line for line in prefs.read().splitlines() if re.match('^kept_backups\s*=', line)]
-                                kept_backups = int(backups[0].split('=')[1].strip())
+                                backups = [line for line in prefs.read().splitlines() if re.match('^max_backup_files\s*=', line)]
+                                if max_backup_files < int(backups[0].split('=')[1].strip()):
+                                    max_backup_files = int(backups[0].split('=')[1].strip())
                         except:
-                            kept_backups = default_kept_backups
+                            self.shell.log.debug("No universal prefs file '%s'." % universal_prefs_file)
 
-                        files_to_unlink = list(reversed(backed_files_list))[kept_backups:]
+                        files_to_unlink = list(reversed(backed_files_list))[max_backup_files:]
                         for f in files_to_unlink:
                             with ignored(IOError):
                                 os.unlink(f)
 
                         self.shell.log.info("Last %d configs saved in %s." % \
-                                            (kept_backups, backup_dir))
+                                            (max_backup_files, backup_dir))
                     else:
                         self.shell.log.warning("Could not create backup file %s: %s." % \
                                                (backupfile, backup_error))
