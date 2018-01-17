@@ -64,7 +64,7 @@ def usage():
 
 def version():
     print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
-    sys.exit(-1)
+    sys.exit(0)
 
 def main():
     '''
