@@ -536,7 +536,7 @@ class UIBlockBackstore(UIBackstore):
         except (OSError, IOError):
             raise ExecutionError("Could not open %s" % dev)
         # ioctl returns an int. Provision a buffer for it
-        buf = array.array('c', [chr(0)] * 4)
+        buf = array.array('b', [0] * 4)
         try:
             fcntl.ioctl(f, BLKROGET, buf)
         except (OSError, IOError):
