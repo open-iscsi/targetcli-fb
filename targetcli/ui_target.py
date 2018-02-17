@@ -32,6 +32,7 @@ from rtslib_fb import LUN, Target, TPG, StorageObjectFactory
 
 from .ui_backstore import complete_path
 from .ui_node import UINode, UIRTSLibNode
+from .ui_utils import command_enable, command_disable
 
 auth_params = ('userid', 'password', 'mutual_userid', 'mutual_password')
 discovery_params = auth_params + ("enable",)
@@ -510,37 +511,10 @@ class UITPG(UIRTSLibNode):
         setattr(self.rtsnode, "chap_" + auth_attr, value)
 
     def ui_command_enable(self):
-        '''
-        Enables the TPG.
-
-        SEE ALSO
-        ========
-        B{disable status}
-        '''
-        self.assert_root()
-        if self.rtsnode.enable:
-            self.shell.log.info("The TPGT is already enabled.")
-        else:
-            try:
-                self.rtsnode.enable = True
-                self.shell.log.info("The TPGT has been enabled.")
-            except RTSLibError:
-                raise ExecutionError("The TPGT could not be enabled.")
+        command_enable(self)
 
     def ui_command_disable(self):
-        '''
-        Disables the TPG.
-
-        SEE ALSO
-        ========
-        B{enable status}
-        '''
-        self.assert_root()
-        if self.rtsnode.enable:
-            self.rtsnode.enable = False
-            self.shell.log.info("The TPGT has been disabled.")
-        else:
-            self.shell.log.info("The TPGT is already disabled.")
+        command_disable(self)
 
 
 class UITarget(UITPG):
