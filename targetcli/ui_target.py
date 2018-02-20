@@ -1141,7 +1141,7 @@ class UILUNs(UINode):
                 existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
                 if mapped_lun in existing_mluns:
                     mapped_lun = None
-                    for possible_mlun in six.moves.range(LUN.MAX_LUN):
+                    for possible_mlun in six.moves.range(MappedLUN.MAX_LUN):
                         if possible_mlun not in existing_mluns:
                             mapped_lun = possible_mlun
                             break
