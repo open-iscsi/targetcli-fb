@@ -62,6 +62,65 @@ class UIRoot(UINode):
             if fm.wwns == None or any(fm.wwns):
                 UIFabricModule(fm, self)
 
+    def _save_backups(self, savefile):
+        '''
+        Take backup of config-file if needed.
+        '''
+        # Only save backups if saving to default location
+        if savefile != default_save_file:
+            return
+
+        backup_dir = os.path.dirname(savefile) + "/backup/"
+        backup_name = "saveconfig-" + \
+                      datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
+        backupfile = backup_dir + backup_name
+        backup_error = None
+
+        if not os.path.exists(backup_dir):
+            try:
+                os.makedirs(backup_dir);
+            except OSError as exe:
+                raise ExecutionError("Cannot create backup directory [%s] %s."
+                                     % (backup_dir, exc.strerror))
+
+        # Only save backups if savefile exits
+        if not os.path.exists(savefile):
+            return
+
+        backed_files_list = sorted(glob(os.path.dirname(savefile) + \
+                                   "/backup/*.json"))
+
+        # Save backup if backup dir is empty, or savefile is differnt from recent backup copy
+        if not backed_files_list or not filecmp.cmp(backed_files_list[-1], savefile):
+            try:
+                shutil.copy(savefile, backupfile)
+
+            except IOError as ioe:
+                backup_error = ioe.strerror or "Unknown error"
+
+            if backup_error == None:
+                # remove excess backups
+                max_backup_files = int(self.shell.prefs['max_backup_files'])
+
+                try:
+                    with open(universal_prefs_file) as prefs:
+                        backups = [line for line in prefs.read().splitlines() if re.match('^max_backup_files\s*=', line)]
+                        if max_backup_files < int(backups[0].split('=')[1].strip()):
+                            max_backup_files = int(backups[0].split('=')[1].strip())
+                except:
+                    self.shell.log.debug("No universal prefs file '%s'." % universal_prefs_file)
+
+                files_to_unlink = list(reversed(backed_files_list))[max_backup_files:]
+                for f in files_to_unlink:
+                    with ignored(IOError):
+                        os.unlink(f)
+
+                self.shell.log.info("Last %d configs saved in %s."
+                                    % (max_backup_files, backup_dir))
+            else:
+                self.shell.log.warning("Could not create backup file %s: %s."
+                                       % (backupfile, backup_error))
+
     def ui_command_saveconfig(self, savefile=default_save_file):
         '''
         Saves the current configuration to a file so that it can be restored
@@ -69,55 +128,12 @@ class UIRoot(UINode):
         '''
         self.assert_root()
 
+        if not savefile:
+            savefile = default_save_file
+
         savefile = os.path.expanduser(savefile)
 
-        # Only save backups if saving to default location
-        if savefile == default_save_file:
-            backup_dir = os.path.dirname(savefile) + "/backup"
-            backup_name = "saveconfig-" + \
-                datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
-            backupfile = backup_dir + "/" + backup_name
-            backup_error = None
-
-            if not os.path.exists(backup_dir):
-                try:
-                    os.makedirs(backup_dir);
-                except OSError as exe:
-                    raise ExecutionError("Cannot create backup directory [%s] %s." % (backup_dir, exc.strerror))
-
-            # Only save backups if savefile exits
-            if os.path.exists(savefile):
-                backed_files_list = sorted(glob(os.path.dirname(savefile) + "/backup/*.json"))
-                # Save backup if 1. backup dir is empty, or 2. savefile is differnt from recent backup copy
-                if not backed_files_list or not filecmp.cmp(backed_files_list[-1], savefile):
-                    try:
-                        shutil.copy(savefile, backupfile)
-
-                    except IOError as ioe:
-                        backup_error = ioe.strerror or "Unknown error"
-
-                    if backup_error == None:
-                        # Kill excess backups
-                        max_backup_files = int(self.shell.default_prefs['max_backup_files'])
-
-                        try:
-                            with open(universal_prefs_file) as prefs:
-                                backups = [line for line in prefs.read().splitlines() if re.match('^max_backup_files\s*=', line)]
-                                if max_backup_files < int(backups[0].split('=')[1].strip()):
-                                    max_backup_files = int(backups[0].split('=')[1].strip())
-                        except:
-                            self.shell.log.debug("No universal prefs file '%s'." % universal_prefs_file)
-
-                        files_to_unlink = list(reversed(backed_files_list))[max_backup_files:]
-                        for f in files_to_unlink:
-                            with ignored(IOError):
-                                os.unlink(f)
-
-                        self.shell.log.info("Last %d configs saved in %s." % \
-                                            (max_backup_files, backup_dir))
-                    else:
-                        self.shell.log.warning("Could not create backup file %s: %s." % \
-                                               (backupfile, backup_error))
+        self._save_backups(savefile)
 
         self.rtsroot.save_to_file(savefile)
 
