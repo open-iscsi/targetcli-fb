@@ -98,7 +98,7 @@ class UIRoot(UINode):
 
                     if backup_error == None:
                         # Kill excess backups
-                        max_backup_files = int(self.shell.prefs['max_backup_files'])
+                        max_backup_files = int(self.shell.default_prefs['max_backup_files'])
 
                         try:
                             with open(universal_prefs_file) as prefs:
