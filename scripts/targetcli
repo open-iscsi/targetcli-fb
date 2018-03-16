@@ -20,7 +20,7 @@ under the License.
 
 from __future__ import print_function
 
-from os import getuid
+from os import getuid, getenv
 from targetcli import UIRoot
 from rtslib_fb import RTSLibError
 from configshell_fb import ConfigShell, ExecutionError
@@ -75,7 +75,7 @@ def main():
     else:
         is_root = False
 
-    shell = TargetCLI('~/.targetcli')
+    shell = TargetCLI(getenv("TARGETCLI_HOME", '~/.targetcli'))
 
     try:
         root_node = UIRoot(shell, as_root=is_root)
