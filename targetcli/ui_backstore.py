@@ -36,6 +36,8 @@ from rtslib_fb.utils import get_block_type
 
 from .ui_node import UINode, UIRTSLibNode
 
+default_save_file = "/etc/target/saveconfig.json"
+
 alua_rw_params = ['alua_access_state', 'alua_access_status',
                   'alua_write_metadata', 'alua_access_type', 'preferred',
                   'nonop_delay_msecs', 'trans_delay_msecs',
@@ -701,6 +703,26 @@ class UIStorageObject(UIRTSLibNode):
         '''
         self.shell.con.display("Backstore plugin %s %s"
                                % (self.rtsnode.plugin, self.rtsnode.version))
+
+    def ui_command_saveconfig(self, savefile=None):
+        '''
+        Save configuration of this StorageObject.
+        '''
+        so = self.rtsnode
+        rn = self.get_root()
+
+        if not savefile:
+            savefile = default_save_file
+
+        savefile = os.path.expanduser(savefile)
+
+        rn._save_backups(savefile)
+
+        rn.rtsroot.save_to_file(savefile,
+                                '/backstores/' + so.plugin  + '/' + so.name)
+
+        self.shell.log.info("Storage Object '%s:%s' config saved to %s."
+                            % (so.plugin, so.name, savefile))
 
 
 class UIPSCSIStorageObject(UIStorageObject):
