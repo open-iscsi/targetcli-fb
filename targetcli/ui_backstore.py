@@ -35,6 +35,7 @@ from rtslib_fb import RTSRoot
 from rtslib_fb.utils import get_block_type
 
 from .ui_node import UINode, UIRTSLibNode
+from .ui_utils import command_enable
 
 default_save_file = "/etc/target/saveconfig.json"
 
@@ -615,7 +616,7 @@ class UIUserBackedBackstore(UIBackstore):
             print()
 
     def ui_command_create(self, name, size, cfgstring, wwn=None,
-                          hw_max_sectors=None):
+                          hw_max_sectors=None, enable=True):
         '''
         Creates a User-backed storage object.
 
@@ -632,6 +633,7 @@ class UIUserBackedBackstore(UIBackstore):
 
         size = human_to_bytes(size)
         wwn = self.ui_eval_param(wwn, 'string', None)
+        enable = self.ui_eval_param(enable, 'bool', True)
 
         config = self.handler + "/" + cfgstring
 
@@ -641,7 +643,8 @@ class UIUserBackedBackstore(UIBackstore):
 
         try:
             so = UserBackedStorageObject(name, size=size, config=config,
-                                         wwn=wwn, hw_max_sectors=hw_max_sectors)
+                                         wwn=wwn, hw_max_sectors=hw_max_sectors,
+                                         enable=enable)
         except:
             raise ExecutionError("UserBackedStorageObject creation failed.")
 
@@ -783,3 +786,6 @@ class UIUserBackedStorageObject(UIStorageObject):
             config_str = so.config[idx+1:]
 
         return ("%s (%s) %s" % (config_str, bytes_to_human(so.size), so.status), True)
+
+    def ui_command_enable(self):
+        command_enable(self)
