@@ -615,7 +615,7 @@ class UIUserBackedBackstore(UIBackstore):
             print()
 
     def ui_command_create(self, name, size, cfgstring, wwn=None,
-                          hw_max_sectors=None):
+                          hw_max_sectors=None, control=None):
         '''
         Creates a User-backed storage object.
 
@@ -641,7 +641,8 @@ class UIUserBackedBackstore(UIBackstore):
 
         try:
             so = UserBackedStorageObject(name, size=size, config=config,
-                                         wwn=wwn, hw_max_sectors=hw_max_sectors)
+                                         wwn=wwn, hw_max_sectors=hw_max_sectors,
+                                         control=control)
         except:
             raise ExecutionError("UserBackedStorageObject creation failed.")
 
@@ -675,6 +676,7 @@ class UIStorageObject(UIRTSLibNode):
         'fabric_max_sectors': ('number', 'Maximum number of sectors the fabric can transfer at once.'),
         'hw_block_size': ('number', 'Hardware block size in bytes.'),
         'hw_max_sectors': ('number', 'Maximum number of sectors the hardware can transfer at once.'),
+        'control': ('string', 'Comma separated string of control=value tuples that will be passed to kernel control file.'),
         'hw_pi_prot_type': ('number', 'If non-zero, DIF protection is enabled on the underlying hardware.'),
         'hw_queue_depth': ('number', 'Hardware queue depth.'),
         'is_nonrot': ('number', 'If set to 1, the backstore is a non rotational device.'),
