@@ -110,7 +110,7 @@ class UIRoot(UINode):
                 except:
                     self.shell.log.debug("No universal prefs file '%s'." % universal_prefs_file)
 
-                files_to_unlink = list(reversed(backed_files_list))[max_backup_files:]
+                files_to_unlink = list(reversed(backed_files_list))[max_backup_files - 1:]
                 for f in files_to_unlink:
                     with ignored(IOError):
                         os.unlink(f)
