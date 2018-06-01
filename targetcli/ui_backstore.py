@@ -284,7 +284,7 @@ class UIBackstore(UINode):
     def summary(self):
         return ("Storage Objects: %d" % len(self._children), None)
 
-    def ui_command_delete(self, name):
+    def ui_command_delete(self, name, save=None):
         '''
         Recursively deletes the storage object having the specified I{name}. If
         there are LUNs using this storage object, they will be deleted too.
@@ -301,7 +301,8 @@ class UIBackstore(UINode):
         except ValueError:
             raise ExecutionError("No storage object named %s." % name)
 
-        child.rtsnode.delete()
+        save = self.ui_eval_param(save, 'bool', False)
+        child.rtsnode.delete(save=save)
         self.remove_child(child)
         self.shell.log.info("Deleted storage object %s." % name)
 
