@@ -302,6 +302,10 @@ class UIBackstore(UINode):
             raise ExecutionError("No storage object named %s." % name)
 
         save = self.ui_eval_param(save, 'bool', False)
+        if save:
+            rn = self.get_root()
+            rn._save_backups(default_save_file)
+
         child.rtsnode.delete(save=save)
         self.remove_child(child)
         self.shell.log.info("Deleted storage object %s." % name)
