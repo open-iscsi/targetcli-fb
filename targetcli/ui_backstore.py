@@ -133,7 +133,7 @@ class UIALUATargetPortGroup(UIRTSLibNode):
             self.define_config_group_param("alua", param, 'string')
 
         for param in alua_ro_params:
-            self.define_config_group_param("alua", param, 'string', False)
+            self.define_config_group_param("alua", param, 'string', writable=False)
 
     def ui_getgroup_alua(self, alua_attr):
         return getattr(self.rtsnode, alua_attr)
