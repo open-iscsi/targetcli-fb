@@ -656,6 +656,19 @@ class UIUserBackedBackstore(UIBackstore):
                             % (name, size))
         return self.new_node(ui_so)
 
+    def ui_command_changemedium(self, name, size, cfgstring):
+        size = human_to_bytes(size)
+        config = self.handler + "/" + cfgstring
+
+        try:
+            rc, errmsg = self.iface.ChangeMedium('(sts)', name, size, config)
+        except Exception as e:
+            raise ExecutionError("ChangeMedium failed: %s" % e)
+        else:
+            if rc == 0:
+                self.shell.log.info("Medium Changed.")
+            else:
+                raise ExecutionError("ChangeMedium failed: %s" % errmsg)
 
 class UIStorageObject(UIRTSLibNode):
     '''
