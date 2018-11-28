@@ -24,6 +24,7 @@ import re
 import shutil
 import stat
 import filecmp
+import gzip
 
 from configshell_fb import ExecutionError
 from rtslib_fb import RTSRoot
@@ -62,6 +63,38 @@ class UIRoot(UINode):
             if fm.wwns == None or any(fm.wwns):
                 UIFabricModule(fm, self)
 
+    def _compare_files(self, backupfile, savefile):
+        '''
+        Compare backfile and saveconfig file
+        '''
+        if (os.path.splitext(backupfile)[1] == '.gz'):
+            try:
+                with gzip.open(backupfile, 'rb') as fbkp:
+                    fdata_bkp = fbkp.read()
+            except IOError as e:
+                self.shell.log.warning("Could not gzip open backupfile %s: %s"
+                                       % (backupfile, e.strerror))
+
+        else:
+            try:
+                with open(backupfile, 'rb') as fbkp:
+                    fdata_bkp = fbkp.read()
+            except IOError as e:
+                self.shell.log.warning("Could not open backupfile %s: %s"
+                                       % (backupfile, e.strerror))
+
+        try:
+            with open(savefile, 'rb') as f:
+                fdata = f.read()
+        except IOError as e:
+            self.shell.log.warning("Could not open saveconfig file %s: %s"
+                                   % (savefile, e.strerror))
+
+        if fdata_bkp == fdata:
+            return True
+        else:
+            return False
+
     def _save_backups(self, savefile):
         '''
         Take backup of config-file if needed.
@@ -72,7 +105,7 @@ class UIRoot(UINode):
 
         backup_dir = os.path.dirname(savefile) + "/backup/"
         backup_name = "saveconfig-" + \
-                      datetime.now().strftime("%Y%m%d-%H:%M:%S") + ".json"
+                      datetime.now().strftime("%Y%m%d-%H:%M:%S") + "-json.gz"
         backupfile = backup_dir + backup_name
         backup_error = None
 
@@ -88,13 +121,14 @@ class UIRoot(UINode):
             return
 
         backed_files_list = sorted(glob(os.path.dirname(savefile) + \
-                                   "/backup/*.json"))
+                                   "/backup/saveconfig-*json*"))
 
         # Save backup if backup dir is empty, or savefile is differnt from recent backup copy
-        if not backed_files_list or not filecmp.cmp(backed_files_list[-1], savefile):
+        if not backed_files_list or not self._compare_files(backed_files_list[-1], savefile):
             try:
-                shutil.copy(savefile, backupfile)
-
+                with open(savefile, 'rb') as f_in, gzip.open(backupfile, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                    f_out.flush()
             except IOError as ioe:
                 backup_error = ioe.strerror or "Unknown error"
 
