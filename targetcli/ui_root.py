@@ -111,7 +111,7 @@ class UIRoot(UINode):
 
         if not os.path.exists(backup_dir):
             try:
-                os.makedirs(backup_dir);
+                os.makedirs(backup_dir)
             except OSError as exe:
                 raise ExecutionError("Cannot create backup directory [%s] %s."
                                      % (backup_dir, exe.strerror))
