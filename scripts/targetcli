@@ -24,10 +24,19 @@ from os import getuid, getenv
 from targetcli import UIRoot
 from rtslib_fb import RTSLibError
 from configshell_fb import ConfigShell, ExecutionError
-import sys
 from targetcli import __version__ as targetcli_version
 
+import sys
+import socket
+import struct
+import readline
+import six
+
 err = sys.stderr
+socket_path = '/var/run/targetclid.sock'
+hints = ['/', 'backstores/', 'iscsi/', 'loopback/', 'vhost/', 'xen-pvscsi/',
+         'cd', 'pwd', 'ls', 'set', 'get', 'help', 'refresh', 'status',
+         'clearconfig', 'restoreconfig', 'saveconfig', 'exit']
 
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
@@ -54,17 +63,89 @@ class TargetCLI(ConfigShell):
                     }
 
 def usage():
-    print("Usage: %s [--version|--help|CMD]" % sys.argv[0], file=err)
+    print("Usage: %s [--version|--help|CMD|--tcp]" % sys.argv[0], file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     print("  CMD\t\t\tRun targetcli shell command and exit", file=err)
     print("  <nothing>\t\tEnter configuration shell", file=err)
+    print("  --tcp CMD\t\tPass targetcli command to targetclid", file=err)
+    print("  --tcp <nothing>\tEnter multi-line command mode for targetclid", file=err)
     print("See man page for more information.", file=err)
     sys.exit(-1)
 
 def version():
     print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
     sys.exit(0)
+
+def usage_version(cmd):
+    if cmd in ("help", "--help", "-h"):
+        usage()
+
+    if cmd in ("version", "--version", "-v"):
+        version()
+
+def completer(text, state):
+    options = [x for x in hints if x.startswith(text)]
+    try:
+        return options[state]
+    except IndexError:
+        return None
+
+def call_daemon(shell, req):
+    try:
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    except socket.error as err:
+        shell.con.display(shell.con.render_text(err, 'red'))
+        sys.exit(1)
+
+    try:
+        sock.connect(socket_path)
+    except socket.error as err:
+        shell.con.display(shell.con.render_text(err, 'red'))
+        sys.exit(1)
+
+    try:
+        # send request
+        sock.sendall(req)
+    except socket.error as err:
+        shell.con.display(shell.con.render_text(err, 'red'))
+        sys.exit(1)
+
+    var = sock.recv(4) # get length of data
+    sending = struct.unpack('i', var)
+    amount_expected = sending[0]
+    amount_received = 0
+
+    # get the actual data in chunks
+    while amount_received < amount_expected:
+        data = sock.recv(1024)
+        amount_received += len(data)
+        print(data, end ="")
+
+    sock.send(b'-END@OF@DATA-')
+    sock.close()
+    sys.exit(0)
+
+def get_arguments():
+    readline.set_completer(completer)
+    readline.set_completer_delims('')
+
+    if 'libedit' in readline.__doc__:
+        readline.parse_and_bind("bind ^I rl_complete")
+    else:
+        readline.parse_and_bind("tab: complete")
+
+    if len(sys.argv[1:]) > 1:
+        command = " ".join(sys.argv[2:])
+    else:
+        inputs = []
+        while True:
+            command = six.moves.input()
+            if command.lower() == "exit":
+                break
+            inputs.append(command)
+        command = '%'.join(inputs)  # delimit multiple commands with '%'
+    return command
 
 def main():
     '''
@@ -77,6 +158,17 @@ def main():
 
     shell = TargetCLI(getenv("TARGETCLI_HOME", '~/.targetcli'))
 
+    if len(sys.argv) > 1:
+        usage_version(sys.argv[1])
+        if sys.argv[1] in ("tcp", "--tcp", "-t"):
+            if len(sys.argv) > 2:
+                usage_version(sys.argv[2])
+            args = get_arguments()
+            if not args:
+                sys.exit(1)
+            usage_version(args);
+            call_daemon(shell, args)
+
     try:
         root_node = UIRoot(shell, as_root=is_root)
         root_node.refresh()
@@ -87,12 +179,6 @@ def main():
         sys.exit(-1)
 
     if len(sys.argv) > 1:
-        if sys.argv[1] in ("--help", "-h"):
-            usage()
-
-        if sys.argv[1] in ("--version", "-v"):
-            version()
-
         try:
             shell.run_cmdline(" ".join(sys.argv[1:]))
         except Exception as e:

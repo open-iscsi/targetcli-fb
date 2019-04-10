@@ -1,0 +1,10 @@
+[Unit]
+Description=Targetcli daemon
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/targetclid
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
