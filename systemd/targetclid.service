@@ -1,5 +1,7 @@
 [Unit]
 Description=Targetcli daemon
+After=network.target targetclid.socket
+Requires=targetclid.socket
 
 [Service]
 Type=simple
