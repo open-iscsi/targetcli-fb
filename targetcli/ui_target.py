@@ -384,7 +384,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         @rtype: list of str
         '''
         if current_param == 'tag':
-            tags = [child.name[4:] for child in self.children]
+            tags = [child.name[3:] for child in self.children]
             completions = [tag for tag in tags if tag.startswith(text)]
         else:
             completions = []
