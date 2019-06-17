@@ -49,6 +49,9 @@ class UINode(ConfigNode):
         self.define_config_group_param(
             'global', 'max_backup_files', 'string',
             'Max no. of configurations to be backed up in /etc/target/backup/ directory.')
+        self.define_config_group_param(
+            'global', 'auto_use_daemon', 'bool',
+            'If true, commands will be sent to targetclid.')
 
     def assert_root(self):
         '''

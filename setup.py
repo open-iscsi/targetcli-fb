@@ -30,7 +30,10 @@ setup(
     maintainer_email = 'agrover@redhat.com',
     url = 'http://github.com/open-iscsi/targetcli-fb',
     packages = ['targetcli'],
-    scripts = ['scripts/targetcli'],
+    scripts = [
+               'scripts/targetcli',
+               'daemon/targetclid'
+              ],
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
