@@ -31,8 +31,11 @@ import socket
 import struct
 import readline
 import six
+import fcntl
 
 err = sys.stderr
+# lockfile for serializing multiple targetcli requests
+lock_file = '/var/run/targetcli.lock'
 socket_path = '/var/run/targetclid.sock'
 hints = ['/', 'backstores/', 'iscsi/', 'loopback/', 'vhost/', 'xen-pvscsi/',
          'cd', 'pwd', 'ls', 'set', 'get', 'help', 'refresh', 'status',
@@ -84,6 +87,33 @@ def usage_version(cmd):
 
     if cmd in ("version", "--version", "-v"):
         version()
+
+def try_op_lock(shell, lkfd):
+    '''
+    acquire a blocking lock on lockfile, to serialize multiple requests
+    '''
+    try:
+        fcntl.flock(lkfd, fcntl.LOCK_EX)  # wait here until ongoing request is finished
+    except Exception, e:
+        shell.con.display(
+            shell.con.render_text(
+                "taking lock on lockfile failed: %s" %str(e),
+                'red'))
+        sys.exit(1)
+
+def release_op_lock(shell, lkfd):
+    '''
+    release blocking lock on lockfile, which can allow other requests process
+    '''
+    try:
+        fcntl.flock(lkfd, fcntl.LOCK_UN)  # allow other requests now
+    except Exception, e:
+        shell.con.display(
+            shell.con.render_text(
+                "unlock on lockfile failed: %s" %str(e),
+                'red'))
+        sys.exit(1)
+    lkfd.close()
 
 def completer(text, state):
     options = [x for x in hints if x.startswith(text)]
@@ -168,6 +198,16 @@ def main():
     if getuid() == 0:
         is_root = True
 
+    try:
+        lkfd = open(lock_file, 'w+');
+    except IOError as e:
+        shell.con.display(
+                shell.con.render_text("opening lockfile failed: %s" %str(e),
+                    'red'))
+        sys.exit(1)
+
+    try_op_lock(shell, lkfd)
+
     use_daemon = False
     if shell.prefs['auto_use_daemon']:
         use_daemon = True
@@ -213,6 +253,8 @@ def main():
     if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")
         root_node.ui_command_saveconfig()
+
+    release_op_lock(shell, lkfd)
 
 
 if __name__ == "__main__":

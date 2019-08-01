@@ -44,8 +44,6 @@ class TargetCLI:
         self.socket_path = '/var/run/targetclid.sock'
         # pid file for defending on multiple daemon runs
         self.pid_file = '/var/run/targetclid.pid'
-        # lockfile for serializing multiple client requests
-        self.lock_file = '/var/run/targetclid.lock'
 
         self.NoSignal = True
 
@@ -85,16 +83,6 @@ class TargetCLI:
             self.pfd.close()
             sys.exit(1)
 
-        try:
-            self.lkfd = open(self.lock_file, 'w+');
-        except IOError as e:
-            self.display(
-                self.render(
-                    "opening lockfile failed: %s" %str(e),
-                    'red'))
-            self.pfd.close()
-            sys.exit(1)
-
         # Keep track, for later use
         self.con_stdout_ = self.con._stdout
         self.con_stderr_ = self.con._stderr
@@ -104,9 +92,6 @@ class TargetCLI:
         '''
         destructor
         '''
-        if not self.lkfd.closed:
-            self.lkfd.close()
-
         if not self.pfd.closed:
             self.pfd.close()
 
@@ -149,40 +134,10 @@ class TargetCLI:
         self.pfd.close()
 
 
-    def try_op_lock(self):
-        '''
-        acquire a blocking lock on lockfile, to serialize multiple client requests
-        '''
-        try:
-            fcntl.flock(self.lkfd, fcntl.LOCK_EX)  # wait here until ongoing request is finished
-        except Exception, e:
-            self.display(
-                self.render(
-                    "taking lock on lockfile failed: %s" %str(e),
-                    'red'))
-            sys.exit(1)
-
-
-    def release_op_lock(self):
-        '''
-        release blocking lock on lockfile, which can allow other requests process
-        '''
-        try:
-            fcntl.flock(self.lkfd, fcntl.LOCK_UN)  # allow other requests now
-        except Exception, e:
-            self.display(
-                self.render(
-                    "unlock on lockfile failed: %s" %str(e),
-                    'red'))
-            sys.exit(1)
-
-
     def client_thread(self, connection):
         '''
         Handle commands from client
         '''
-        self.try_op_lock()
-
         still_listen = True
         # Receive the data in small chunks and retransmit it
         while still_listen:
@@ -211,8 +166,6 @@ class TargetCLI:
                 var = struct.pack('i', len(output))
                 connection.sendall(var)    # length of string
                 connection.sendall(output) # actual string
-
-        self.release_op_lock()
 
 
 def usage():
