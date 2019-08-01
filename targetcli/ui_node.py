@@ -98,7 +98,7 @@ class UINode(ConfigNode):
 
         SEE ALSO
         ========
-        B{ls}
+        ls
         '''
         description, is_healthy = self.summary()
         self.shell.log.info("Status for %s: %s" % (self.path, description))

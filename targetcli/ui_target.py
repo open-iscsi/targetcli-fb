@@ -167,18 +167,18 @@ class UIFabricModule(UIRTSLibNode):
 
     def ui_command_create(self, wwn=None):
         '''
-        Creates a new target. The I{wwn} format depends on the transport(s)
-        supported by the fabric module. If the I{wwn} is ommited, then a
+        Creates a new target. The "wwn" format depends on the transport(s)
+        supported by the fabric module. If "wwn" is omitted, then a
         target will be created using either a randomly generated WWN of the
         proper type, or the first unused WWN in the list of possible WWNs if
         one is available. If WWNs are constrained to a list (i.e. for hardware
         targets addresses) and all WWNs are in use, the target creation will
-        fail. Use the B{info} command to get more information abour WWN type
+        fail. Use the `info` command to get more information abour WWN type
         and possible values.
 
         SEE ALSO
         ========
-        B{info}
+        info
         '''
         self.assert_root()
 
@@ -223,12 +223,12 @@ class UIFabricModule(UIRTSLibNode):
 
     def ui_command_delete(self, wwn):
         '''
-        Recursively deletes the target with the specified I{wwn}, and all
+        Recursively deletes the target with the specified wwn, and all
         objects hanging under it.
 
         SEE ALSO
         ========
-        B{create}
+        create
         '''
         self.assert_root()
         target = Target(self.rtsnode, wwn, mode='lookup')
@@ -262,7 +262,7 @@ class UIFabricModule(UIRTSLibNode):
     def ui_command_info(self):
         '''
         Displays information about the fabric module, notably the supported
-        transports(s) and accepted B{wwn} format(s), as long as supported
+        transports(s) and accepted wwn format(s), along with supported
         features.
         '''
         fabric = self.rtsnode
@@ -308,13 +308,13 @@ class UIMultiTPGTarget(UIRTSLibNode):
     def ui_command_create(self, tag=None):
         '''
         Creates a new Target Portal Group within the target. The
-        I{tag} must be a positive integer value, optionally prefaced
+        tag must be a positive integer value, optionally prefaced
         by 'tpg'. If omitted, the next available Target Portal Group
         Tag (TPGT) will be used.
 
         SEE ALSO
         ========
-        B{delete}
+        delete
         '''
         self.assert_root()
 
@@ -351,12 +351,12 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
     def ui_command_delete(self, tag):
         '''
-        Deletes the Target Portal Group with TPGT I{tag} from the target. The
-        I{tag} must be a positive integer matching an existing TPGT.
+        Deletes the Target Portal Group with TPGT "tag" from the target. The
+        tag must be a positive integer matching an existing TPGT.
 
         SEE ALSO
         ========
-        B{create}
+        create
         '''
         self.assert_root()
         if tag.startswith("tpg"):
@@ -515,7 +515,7 @@ class UITPG(UIRTSLibNode):
 
         SEE ALSO
         ========
-        B{disable status}
+        disable status
         '''
         self.assert_root()
         if self.rtsnode.enable:
@@ -533,7 +533,7 @@ class UITPG(UIRTSLibNode):
 
         SEE ALSO
         ========
-        B{enable status}
+        enable status
         '''
         self.assert_root()
         if self.rtsnode.enable:
@@ -582,18 +582,19 @@ class UINodeACLs(UINode):
 
     def ui_command_create(self, wwn, add_mapped_luns=None):
         '''
-        Creates a Node ACL for the initiator node with the specified I{wwn}.
-        The node's I{wwn} must match the expected WWN Type of the target's
+        Creates a Node ACL for the initiator node with the specified wwn.
+        The node's wwn must match the expected WWN Type of the target's
         fabric module.
 
-        If I{add_mapped_luns} is omitted, the global parameter
-        B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
-        accepted. If B{true}, then after creating the ACL, mapped LUNs will be
-        automatically created for all existing LUNs.
+        "add_mapped_luns" can be "true" of "false". If true, then
+        after creating the ACL, mapped LUNs will be automatically
+        created for all existing LUNs. If the parameter is omitted,
+        the global parameter "auto_add_mapped_luns" is used.
 
         SEE ALSO
         ========
-        B{delete}
+        delete
+
         '''
         self.assert_root()
 
@@ -614,11 +615,11 @@ class UINodeACLs(UINode):
 
     def ui_command_delete(self, wwn):
         '''
-        Deletes the Node ACL with the specified I{wwn}.
+        Deletes the Node ACL with the specified wwn.
 
         SEE ALSO
         ========
-        B{create}
+        create
         '''
         self.assert_root()
         node_acl = NodeACL(self.tpg, wwn, mode='lookup')
@@ -870,14 +871,14 @@ class UINodeACL(UIRTSLibNode):
     def ui_command_create(self, mapped_lun, tpg_lun_or_backstore, write_protect=None):
         '''
         Creates a mapping to one of the TPG LUNs for the initiator referenced
-        by the ACL. The provided I{tpg_lun_or_backstore} will appear to that
-        initiator as LUN I{mapped_lun}. If the I{write_protect} flag is set to
-        B{1}, the initiator will not have write access to the Mapped LUN.
+        by the ACL. The provided "tpg_lun_or_backstore" will appear to that
+        initiator as LUN "mapped_lun". If the "write_protect" flag is set to
+        1, the initiator will not have write access to the mapped LUN.
 
-        A storage object may also be given for the I{tpg_lun_or_backstore} parameter,
+        A storage object may also be given for the "tpg_lun_or_backstore" parameter,
         in which case the TPG LUN will be created for that backstore before
         mapping the LUN to the initiator. If a TPG LUN for the backstore already
-        exists, the Mapped LUN will map to that TPG LUN.
+        exists, the mapped LUN will map to that TPG LUN.
 
         Finally, a path to an existing block device or file can be given. If so,
         a storage object of the appropriate type is created with default parameters,
@@ -885,7 +886,7 @@ class UINodeACL(UIRTSLibNode):
 
         SEE ALSO
         ========
-        B{delete}
+        delete
         '''
         self.assert_root()
         try:
@@ -963,11 +964,11 @@ class UINodeACL(UIRTSLibNode):
 
     def ui_command_delete(self, mapped_lun):
         '''
-        Deletes the specified I{mapped_lun}.
+        Deletes the specified mapped LUN.
 
         SEE ALSO
         ========
-        B{create}
+        create
         '''
         self.assert_root()
         for na in self.rtsnodes:
@@ -1086,25 +1087,25 @@ class UILUNs(UINode):
                           add_mapped_luns=None):
         '''
         Creates a new LUN in the Target Portal Group, attached to a storage
-        object. If the I{lun} parameter is omitted, the first available LUN in
+        object. If the "lun" parameter is omitted, the first available LUN in
         the TPG will be used. If present, it must be a number greater than 0.
-        Alternatively, the syntax I{lunX} where I{X} is a positive number is
+        Alternatively, the syntax "lunX" where "X" is a positive number is
         also accepted.
 
-        The I{storage_object} may be the path of an existing storage object,
-        i.e. B{/backstore/pscsi0/mydisk} to reference the B{mydisk} storage
-        object of the virtual HBA B{pscsi0}. It also may be the path to an
+        The "storage_object" may be the path of an existing storage object,
+        i.e. "/backstore/pscsi0/mydisk" to reference the "mydisk" storage
+        object of the virtual HBA "pscsi0". It also may be the path to an
         existing block device or image file, in which case a storage object
         will be created for it first, with default parameters.
 
-        If I{add_mapped_luns} is omitted, the global parameter
-        B{auto_add_mapped_luns} will be used, else B{true} or B{false} are
-        accepted. If B{true}, then after creating the LUN, mapped LUNs will be
-        automatically created for all existing node ACLs, mapping the new LUN.
+        "add_mapped_luns" can be "true" of "false". If true, then
+        after creating the ACL, mapped LUNs will be automatically
+        created for all existing LUNs. If the parameter is omitted,
+        the global parameter "auto_add_mapped_luns" is used.
 
         SEE ALSO
         ========
-        B{delete}
+        delete
         '''
         self.assert_root()
 
@@ -1188,15 +1189,15 @@ class UILUNs(UINode):
 
     def ui_command_delete(self, lun):
         '''
-        Deletes the supplied LUN from the Target Portal Group. The I{lun} must
+        Deletes the supplied LUN from the Target Portal Group. "lun" must
         be a positive number matching an existing LUN.
 
-        Alternatively, the syntax I{lunX} where I{X} is a positive number is
+        Alternatively, the syntax "lunX" where "X" is a positive number is
         also accepted.
 
         SEE ALSO
         ========
-        B{create}
+        create
         '''
         self.assert_root()
         if lun.lower().startswith("lun"):
@@ -1303,9 +1304,9 @@ class UIPortals(UINode):
 
     def ui_command_create(self, ip_address=None, ip_port=None):
         '''
-        Creates a Network Portal with specified I{ip_address} and
-        I{ip_port}.  If I{ip_port} is omitted, the default port for
-        the target fabric will be used. If I{ip_address} is omitted,
+        Creates a Network Portal with the specified IP address and
+        port.  If the port is omitted, the default port for
+        the target fabric will be used. If the IP address is omitted,
         INADDR_ANY (0.0.0.0) will be used.
 
         Choosing IN6ADDR_ANY (::0) will listen on all IPv6 interfaces
@@ -1317,7 +1318,7 @@ class UIPortals(UINode):
 
         SEE ALSO
         ========
-        B{delete}
+        delete
         '''
         self.assert_root()
 
@@ -1379,11 +1380,11 @@ class UIPortals(UINode):
 
     def ui_command_delete(self, ip_address, ip_port):
         '''
-        Deletes the Network Portal with specified I{ip_address} and I{ip_port}.
+        Deletes the Network Portal with the specified IP address and port.
 
         SEE ALSO
         ========
-        B{create}
+        create
         '''
         self.assert_root()
         portal = NetworkPortal(self.tpg, self._canonicalize_ip(ip_address),

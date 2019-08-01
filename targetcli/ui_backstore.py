@@ -59,14 +59,14 @@ def human_to_bytes(hsize, kilo=1024):
     '''
     This function converts human-readable amounts of bytes to bytes.
     It understands the following units :
-        - I{B} or no unit present for Bytes
-        - I{k}, I{K}, I{kB}, I{KB} for kB (kilobytes)
-        - I{m}, I{M}, I{mB}, I{MB} for MB (megabytes)
-        - I{g}, I{G}, I{gB}, I{GB} for GB (gigabytes)
-        - I{t}, I{T}, I{tB}, I{TB} for TB (terabytes)
+        - B or no unit present for Bytes
+        - k, K, kB, KB for kB (kilobytes)
+        - m, M, mB, MB for MB (megabytes)
+        - g, G, gB, GB for GB (gigabytes)
+        - t, T, tB, TB for TB (terabytes)
 
-    Note: The definition of I{kilo} defaults to 1kB = 1024Bytes.
-    Strictly speaking, those should not be called I{kB} but I{kiB}.
+    Note: The definition of kilo defaults to 1kB = 1024Bytes.
+    Strictly speaking, those should not be called "kB" but "kiB".
     You can override that with the optional kilo parameter.
 
     @param hsize: The human-readable version of the Bytes amount to convert
@@ -286,13 +286,13 @@ class UIBackstore(UINode):
 
     def ui_command_delete(self, name, save=None):
         '''
-        Recursively deletes the storage object having the specified I{name}. If
+        Recursively deletes the storage object having the specified name. If
         there are LUNs using this storage object, they will be deleted too.
 
         EXAMPLE
         =======
-        B{delete mystorage}
-        -------------------
+        delete mystorage
+        ----------------
         Deletes the storage object named mystorage, and all associated LUNs.
         '''
         self.assert_root()
@@ -354,7 +354,7 @@ class UIPSCSIBackstore(UIBackstore):
     def ui_command_create(self, name, dev):
         '''
         Creates a PSCSI storage object, with supplied name and SCSI device. The
-        SCSI device I{dev} can either be a path name to the device, in which
+        SCSI device "dev" can either be a path name to the device, in which
         case it is recommended to use the /dev/disk/by-id hierarchy to have
         consistent naming should your physical SCSI system be modified, or an
         SCSI device ID in the H:C:T:L format, which is not recommended as SCSI
@@ -383,17 +383,17 @@ class UIRDMCPBackstore(UIBackstore):
 
     def ui_command_create(self, name, size, nullio=None, wwn=None):
         '''
-        Creates an RDMCP storage object. I{size} is the size of the ramdisk.
+        Creates an RDMCP storage object. "size" is the size of the ramdisk.
 
         SIZE SYNTAX
         ===========
         - If size is an int, it represents a number of bytes.
         - If size is a string, the following units can be used:
-            - B{B} or no unit present for bytes
-            - B{k}, B{K}, B{kB}, B{KB} for kB (kilobytes)
-            - B{m}, B{M}, B{mB}, B{MB} for MB (megabytes)
-            - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
-            - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
+            - B or no unit present for bytes
+            - k, K, kB, KB for kB (kilobytes)
+            - m, M, mB, MB for MB (megabytes)
+            - g, G, gB, GB for GB (gigabytes)
+            - t, T, tB, TB for TB (terabytes)
         '''
         self.assert_root()
 
@@ -445,14 +445,14 @@ class UIFileIOBackstore(UIBackstore):
     def ui_command_create(self, name, file_or_dev, size=None, write_back=None,
                           sparse=None, wwn=None):
         '''
-        Creates a FileIO storage object. If I{file_or_dev} is a path
-        to a regular file to be used as backend, then the I{size}
-        parameter is mandatory. Else, if I{file_or_dev} is a path to a
-        block device, the size parameter B{must} be ommited. If
-        present, I{size} is the size of the file to be used, I{file}
-        the path to the file or I{dev} the path to a block device. The
-        I{write_back} parameter is a boolean controlling write
-        caching. It is enabled by default. The I{sparse} parameter is
+        Creates a FileIO storage object. If "file_or_dev" is a path
+        to a regular file to be used as backend, then the "size"
+        parameter is mandatory. Else, if "file_or_dev" is a path to a
+        block device, the size parameter must be omitted. If
+        present, "size" is the size of the file to be used, "file"
+        the path to the file or "dev" the path to a block device. The
+        "write_back" parameter is a boolean controlling write
+        caching. It is enabled by default. The "sparse" parameter is
         only applicable when creating a new backing file. It is a
         boolean stating if the created file should be created as a
         sparse file (the default), or fully initialized.
@@ -461,11 +461,11 @@ class UIFileIOBackstore(UIBackstore):
         ===========
         - If size is an int, it represents a number of bytes.
         - If size is a string, the following units can be used:
-            - B{B} or no unit present for bytes
-            - B{k}, B{K}, B{kB}, B{KB} for kB (kilobytes)
-            - B{m}, B{M}, B{mB}, B{MB} for MB (megabytes)
-            - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
-            - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
+            - B or no unit present for bytes
+            - k, K, kB, KB for kB (kilobytes)
+            - m, M, mB, MB for MB (megabytes)
+            - g, G, gB, GB for GB (gigabytes)
+            - t, T, tB, TB for TB (terabytes)
         '''
         self.assert_root()
 
@@ -557,7 +557,7 @@ class UIBlockBackstore(UIBackstore):
 
     def ui_command_create(self, name, dev, readonly=None, wwn=None):
         '''
-        Creates an Block Storage object. I{dev} is the path to the TYPE_DISK
+        Creates an Block Storage object. "dev" is the path to the TYPE_DISK
         block device to use.
         '''
         self.assert_root()
@@ -628,11 +628,11 @@ class UIUserBackedBackstore(UIBackstore):
         ===========
         - If size is an int, it represents a number of bytes.
         - If size is a string, the following units can be used:
-            - B{B} or no unit present for bytes
-            - B{k}, B{K}, B{kB}, B{KB} for kB (kilobytes)
-            - B{m}, B{M}, B{mB}, B{MB} for MB (megabytes)
-            - B{g}, B{G}, B{gB}, B{GB} for GB (gigabytes)
-            - B{t}, B{T}, B{tB}, B{TB} for TB (terabytes)
+            - B or no unit present for bytes
+            - k, K, kB, KB for kB (kilobytes)
+            - m, M, mB, MB for MB (megabytes)
+            - g, G, gB, GB for GB (gigabytes)
+            - t, T, tB, TB for TB (terabytes)
         '''
 
         size = human_to_bytes(size)
