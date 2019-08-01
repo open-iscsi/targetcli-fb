@@ -124,7 +124,7 @@ class TargetCLI:
         lock = struct.pack('hhllhh', fcntl.F_UNLCK, 0, 0, 0, 0, 0)
         try:
             fcntl.fcntl(self.pfd, fcntl.F_SETLK, lock)
-        except Exception, e:
+        except Exception as e:
             self.display(
                 self.render(
                     "fcntl(UNLCK) on pidfile failed: %s" %str(e),
