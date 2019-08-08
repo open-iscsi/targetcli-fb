@@ -94,7 +94,7 @@ def try_op_lock(shell, lkfd):
     '''
     try:
         fcntl.flock(lkfd, fcntl.LOCK_EX)  # wait here until ongoing request is finished
-    except Exception, e:
+    except Exception as e:
         shell.con.display(
             shell.con.render_text(
                 "taking lock on lockfile failed: %s" %str(e),
@@ -107,7 +107,7 @@ def release_op_lock(shell, lkfd):
     '''
     try:
         fcntl.flock(lkfd, fcntl.LOCK_UN)  # allow other requests now
-    except Exception, e:
+    except Exception as e:
         shell.con.display(
             shell.con.render_text(
                 "unlock on lockfile failed: %s" %str(e),
