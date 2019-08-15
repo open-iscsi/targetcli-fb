@@ -34,7 +34,8 @@ from .ui_backstore import complete_path
 from .ui_node import UINode, UIRTSLibNode
 
 auth_params = ('userid', 'password', 'mutual_userid', 'mutual_password')
-discovery_params = auth_params + ("enable",)
+int_params = ('enable',)
+discovery_params = auth_params + int_params
 
 class UIFabricModule(UIRTSLibNode):
     '''
@@ -47,8 +48,12 @@ class UIFabricModule(UIRTSLibNode):
         self.refresh()
         if self.rtsnode.has_feature('discovery_auth'):
             for param in discovery_params:
-                self.define_config_group_param('discovery_auth',
-                                               param, 'string')
+                if param in int_params:
+                    self.define_config_group_param('discovery_auth',
+                                                   param, 'number')
+                else:
+                    self.define_config_group_param('discovery_auth',
+                                                   param, 'string')
         self.refresh()
 
     # Support late params
