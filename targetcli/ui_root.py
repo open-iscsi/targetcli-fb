@@ -173,7 +173,8 @@ class UIRoot(UINode):
 
         self.shell.log.info("Configuration saved to %s" % savefile)
 
-    def ui_command_restoreconfig(self, savefile=default_save_file, clear_existing=False):
+    def ui_command_restoreconfig(self, savefile=default_save_file, clear_existing=False,
+                                 target=None, storage_object=None):
         '''
         Restores configuration from a file.
         '''
@@ -185,7 +186,10 @@ class UIRoot(UINode):
             self.shell.log.info("Restore file %s not found" % savefile)
             return
 
-        errors = self.rtsroot.restore_from_file(savefile, clear_existing)
+        target = self.ui_eval_param(target, 'string', None)
+        storage_object = self.ui_eval_param(storage_object, 'string', None)
+        errors = self.rtsroot.restore_from_file(savefile, clear_existing,
+                                                target, storage_object)
 
         self.refresh()
 
