@@ -245,7 +245,8 @@ def main():
 
     if not to.NoSignal:
         to.display(to.render("Signal received, quiting gracefully!", 'green'))
-        sys.exit(1)
+        sys.exit(0)
+    sys.exit(1)
 
 
 if __name__ == "__main__":
