@@ -208,21 +208,21 @@ def main():
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     except socket.error as err:
-        to.display(to.render(err, 'red'))
+        to.display(to.render(err.strerror, 'red'))
         sys.exit(1)
 
     # Bind the socket path
     try:
         sock.bind(to.socket_path)
     except socket.error as err:
-        to.display(to.render(err, 'red'))
+        to.display(to.render(err.strerror, 'red'))
         sys.exit(1)
 
     # Listen for incoming connections
     try:
         sock.listen(1)
     except socket.error as err:
-        to.display(to.render(err, 'red'))
+        to.display(to.render(err.strerror, 'red'))
         sys.exit(1)
 
     while to.NoSignal:
@@ -230,7 +230,7 @@ def main():
             # Wait for a connection
             connection, client_address = sock.accept()
         except socket.error as err:
-            to.display(to.render(err, 'red'))
+            to.display(to.render(err.strerror, 'red'))
             break;
 
         thread = Thread(target=to.client_thread, args=(connection,))
