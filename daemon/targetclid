@@ -92,7 +92,7 @@ class TargetCLI:
         '''
         destructor
         '''
-        self.pdf.close()
+        self.pfd.close()
 
 
     def signal_handler(self, signum, frame):
