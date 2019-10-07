@@ -31,6 +31,7 @@ import socket
 import struct
 import fcntl
 import signal
+import errno
 
 
 err = sys.stderr
@@ -243,7 +244,8 @@ def main():
             # Wait for a connection
             connection, client_address = sock.accept()
         except socket.error as err:
-            to.display(to.render(err.strerror, 'red'))
+            if err.errno != errno.EBADF or to.NoSignal:
+                to.display(to.render(err.strerror, 'red'))
             break
 
         thread = Thread(target=to.client_thread, args=(connection,))
