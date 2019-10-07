@@ -161,10 +161,10 @@ class TargetCLI:
 
                 with open('/tmp/data.txt', 'r') as f:
                     output = f.read()
-
-                    var = struct.pack('i', len(output))
-                    connection.sendall(var)    # length of string
-                    connection.sendall(output.encode()) # actual string
+                    if len(output):
+                        var = struct.pack('i', len(output))
+                        connection.sendall(var)    # length of string
+                        connection.sendall(output.encode()) # actual string
 
 
 def usage():
