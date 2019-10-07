@@ -92,8 +92,7 @@ class TargetCLI:
         '''
         destructor
         '''
-        if not self.pfd.closed:
-            self.pfd.close()
+        self.pdf.close()
 
 
     def signal_handler(self, signum, frame):
@@ -142,14 +141,14 @@ class TargetCLI:
         # Receive the data in small chunks and retransmit it
         while still_listen:
             data = connection.recv(65535)
-            if "-END@OF@DATA-" in data:
+            if b'-END@OF@DATA-' in data:
                 connection.close()
                 still_listen = False
             else:
                 self.con._stdout = self.con._stderr = f = open("/tmp/data.txt", "w")
                 try:
                     # extract multiple commands delimited with '%'
-                    list_data = data.split('%')
+                    list_data = data.decode().split('%')
                     for cmd in list_data:
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
@@ -165,7 +164,7 @@ class TargetCLI:
 
                     var = struct.pack('i', len(output))
                     connection.sendall(var)    # length of string
-                    connection.sendall(output) # actual string
+                    connection.sendall(output.encode()) # actual string
 
 
 def usage():
