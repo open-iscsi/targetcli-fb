@@ -59,7 +59,7 @@ class TargetCLI:
         signal.signal(signal.SIGHUP, self.signal_handler)
 
         try:
-            self.pfd = open(self.pid_file, 'w+');
+            self.pfd = open(self.pid_file, 'w+')
         except IOError as e:
             self.display(
                 self.render(
@@ -232,7 +232,7 @@ def main():
             connection, client_address = sock.accept()
         except socket.error as err:
             to.display(to.render(err.strerror, 'red'))
-            break;
+            break
 
         thread = Thread(target=to.client_thread, args=(connection,))
         thread.start()
