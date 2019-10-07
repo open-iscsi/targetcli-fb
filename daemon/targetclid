@@ -46,6 +46,7 @@ class TargetCLI:
         self.pid_file = '/var/run/targetclid.pid'
 
         self.NoSignal = True
+        self.sock = None
 
         # shell console methods
         self.shell = ConfigShell(getenv("TARGETCLI_HOME", '~/.targetcli'))
@@ -100,6 +101,8 @@ class TargetCLI:
         signal handler
         '''
         self.NoSignal = False
+        if self.sock:
+            self.sock.close()
 
 
     def try_pidfile_lock(self):
@@ -225,6 +228,7 @@ def main():
         to.display(to.render(err.strerror, 'red'))
         sys.exit(1)
 
+    to.sock = sock
     while to.NoSignal:
         try:
             # Wait for a connection
