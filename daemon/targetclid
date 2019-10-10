@@ -202,35 +202,47 @@ def main():
 
     to = TargetCLI()
 
-    # Make sure file doesn't exist already
-    try:
-        unlink(to.socket_path)
-    except:
-        pass
+    if getenv('LISTEN_PID'):
+        # the systemd-activation path, using next available FD
+        fn = sys.stderr.fileno() + 1
+        try:
+            sock = socket.fromfd(fn, socket.AF_UNIX, socket.SOCK_STREAM)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
 
-    # Create a TCP/IP socket
-    try:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    except socket.error as err:
-        to.display(to.render(err.strerror, 'red'))
-        sys.exit(1)
+        # save socket so a signal can clea it up
+        to.sock = sock
+    else:
+        # Make sure file doesn't exist already
+        try:
+            unlink(to.socket_path)
+        except:
+            pass
 
-    # save socket so a signal can clean it up
-    to.sock = sock
+        # Create a TCP/IP socket
+        try:
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
 
-    # Bind the socket path
-    try:
-        sock.bind(to.socket_path)
-    except socket.error as err:
-        to.display(to.render(err.strerror, 'red'))
-        sys.exit(1)
+        # save socket so a signal can clea it up
+        to.sock = sock
 
-    # Listen for incoming connections
-    try:
-        sock.listen(1)
-    except socket.error as err:
-        to.display(to.render(err.strerror, 'red'))
-        sys.exit(1)
+        # Bind the socket path
+        try:
+            sock.bind(to.socket_path)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
+
+        # Listen for incoming connections
+        try:
+            sock.listen(1)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
 
     while to.NoSignal:
         try:
