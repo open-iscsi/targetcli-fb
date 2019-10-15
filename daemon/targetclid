@@ -31,6 +31,7 @@ import socket
 import struct
 import fcntl
 import signal
+import errno
 
 
 err = sys.stderr
@@ -46,6 +47,7 @@ class TargetCLI:
         self.pid_file = '/var/run/targetclid.pid'
 
         self.NoSignal = True
+        self.sock = None
 
         # shell console methods
         self.shell = ConfigShell(getenv("TARGETCLI_HOME", '~/.targetcli'))
@@ -59,7 +61,7 @@ class TargetCLI:
         signal.signal(signal.SIGHUP, self.signal_handler)
 
         try:
-            self.pfd = open(self.pid_file, 'w+');
+            self.pfd = open(self.pid_file, 'w+')
         except IOError as e:
             self.display(
                 self.render(
@@ -92,7 +94,7 @@ class TargetCLI:
         '''
         destructor
         '''
-        if not self.pfd.closed:
+        if hasattr(self, 'pfd'):
             self.pfd.close()
 
 
@@ -101,6 +103,8 @@ class TargetCLI:
         signal handler
         '''
         self.NoSignal = False
+        if self.sock:
+            self.sock.close()
 
 
     def try_pidfile_lock(self):
@@ -142,14 +146,14 @@ class TargetCLI:
         # Receive the data in small chunks and retransmit it
         while still_listen:
             data = connection.recv(65535)
-            if "-END@OF@DATA-" in data:
+            if b'-END@OF@DATA-' in data:
                 connection.close()
                 still_listen = False
             else:
                 self.con._stdout = self.con._stderr = f = open("/tmp/data.txt", "w")
                 try:
                     # extract multiple commands delimited with '%'
-                    list_data = data.split('%')
+                    list_data = data.decode().split('%')
                     for cmd in list_data:
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
@@ -162,10 +166,10 @@ class TargetCLI:
 
                 with open('/tmp/data.txt', 'r') as f:
                     output = f.read()
-
-                var = struct.pack('i', len(output))
-                connection.sendall(var)    # length of string
-                connection.sendall(output) # actual string
+                    var = struct.pack('i', len(output))
+                    connection.sendall(var) # length of string
+                    if len(output):
+                        connection.sendall(output.encode()) # actual string
 
 
 def usage():
@@ -199,40 +203,56 @@ def main():
 
     to = TargetCLI()
 
-    # Make sure file doesn't exist already
-    try:
-        unlink(to.socket_path)
-    except:
-        pass
+    if getenv('LISTEN_PID'):
+        # the systemd-activation path, using next available FD
+        fn = sys.stderr.fileno() + 1
+        try:
+            sock = socket.fromfd(fn, socket.AF_UNIX, socket.SOCK_STREAM)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
 
-    # Create a TCP/IP socket
-    try:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    except socket.error as err:
-        to.display(to.render(err, 'red'))
-        sys.exit(1)
+        # save socket so a signal can clea it up
+        to.sock = sock
+    else:
+        # Make sure file doesn't exist already
+        try:
+            unlink(to.socket_path)
+        except:
+            pass
 
-    # Bind the socket path
-    try:
-        sock.bind(to.socket_path)
-    except socket.error as err:
-        to.display(to.render(err, 'red'))
-        sys.exit(1)
+        # Create a TCP/IP socket
+        try:
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
 
-    # Listen for incoming connections
-    try:
-        sock.listen(1)
-    except socket.error as err:
-        to.display(to.render(err, 'red'))
-        sys.exit(1)
+        # save socket so a signal can clea it up
+        to.sock = sock
+
+        # Bind the socket path
+        try:
+            sock.bind(to.socket_path)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
+
+        # Listen for incoming connections
+        try:
+            sock.listen(1)
+        except socket.error as err:
+            to.display(to.render(err.strerror, 'red'))
+            sys.exit(1)
 
     while to.NoSignal:
         try:
             # Wait for a connection
             connection, client_address = sock.accept()
         except socket.error as err:
-            to.display(to.render(err, 'red'))
-            break;
+            if err.errno != errno.EBADF or to.NoSignal:
+                to.display(to.render(err.strerror, 'red'))
+            break
 
         thread = Thread(target=to.client_thread, args=(connection,))
         thread.start()
@@ -245,7 +265,8 @@ def main():
 
     if not to.NoSignal:
         to.display(to.render("Signal received, quiting gracefully!", 'green'))
-        sys.exit(1)
+        sys.exit(0)
+    sys.exit(1)
 
 
 if __name__ == "__main__":

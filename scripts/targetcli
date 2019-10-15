@@ -151,7 +151,7 @@ def call_daemon(shell, req):
     while amount_received < amount_expected:
         data = sock.recv(1024)
         amount_received += len(data)
-        print(data, end ="")
+        print(data.decode(), end ="")
 
     sock.send(b'-END@OF@DATA-')
     sock.close()
@@ -218,7 +218,8 @@ def main():
             use_daemon = True
 
     if use_daemon:
-        call_daemon(shell, get_arguments())
+        call_daemon(shell, get_arguments().encode())
+        # does not return
 
     try:
         root_node = UIRoot(shell, as_root=is_root)

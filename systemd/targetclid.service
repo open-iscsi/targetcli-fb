@@ -1,7 +1,7 @@
 [Unit]
 Description=Targetcli daemon
-After=network.target targetclid.socket
-Requires=targetclid.socket
+Documentation=man:targetcli(8)
+After=network.target
 
 [Service]
 Type=simple
@@ -10,3 +10,4 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+Also=targetclid.socket

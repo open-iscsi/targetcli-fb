@@ -1,6 +1,6 @@
 [Unit]
 Description=targetclid socket
-PartOf=targetclid.service
+Documentation=man:targetcli(8)
 
 [Socket]
 ListenStream=/var/run/targetclid.sock
