@@ -133,6 +133,9 @@ def call_daemon(shell, req):
         sock.connect(socket_path)
     except socket.error as err:
         shell.con.display(shell.con.render_text(err, 'red'))
+        shell.con.display(
+            shell.con.render_text("Currently auto_use_daemon is true, "
+                "hence please make sure targetclid daemon is running ...", 'red'))
         sys.exit(1)
 
     try:
