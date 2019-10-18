@@ -163,7 +163,7 @@ def call_daemon(shell, req):
     sock.close()
     sys.exit(0)
 
-def get_arguments():
+def get_arguments(shell):
     readline.set_completer(completer)
     readline.set_completer_delims('')
 
@@ -180,7 +180,13 @@ def get_arguments():
         command = " ".join(sys.argv[argstart:])
     else:
         inputs = []
+        shell.con.display("targetcli shell version %s\n"
+                        "Entering targetcli batch mode for daemonized approach.\n"
+                        "Enter multiple commands separated by newline and "
+                        "type 'exit' to run them all in one go.\n"
+                        % targetcli_version)
         while True:
+            shell.con.raw_write("/> ")
             command = six.moves.input()
             if command.lower() == "exit":
                 break
@@ -227,7 +233,7 @@ def main():
             disable_daemon=True
 
     if use_daemon and not disable_daemon:
-        call_daemon(shell, get_arguments().encode())
+        call_daemon(shell, get_arguments(shell).encode())
         # does not return
 
     try:
