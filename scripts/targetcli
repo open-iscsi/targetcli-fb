@@ -67,13 +67,14 @@ class TargetCLI(ConfigShell):
                     }
 
 def usage():
-    print("Usage: %s [--version|--help|CMD|--tcp]" % sys.argv[0], file=err)
+    print("Usage: %s [--version|--help|CMD|--tcp|--disable-daemon]" % sys.argv[0], file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     print("  CMD\t\t\tRun targetcli shell command and exit", file=err)
     print("  <nothing>\t\tEnter configuration shell", file=err)
     print("  --tcp CMD\t\tPass targetcli command to targetclid", file=err)
     print("  --tcp <nothing>\tEnter multi-line command mode for targetclid", file=err)
+    print("  --disable-daemon\tTurn-off the global auto use daemon flag", file=err)
     print("See man page for more information.", file=err)
     sys.exit(-1)
 
@@ -135,7 +136,9 @@ def call_daemon(shell, req):
         shell.con.display(shell.con.render_text(err, 'red'))
         shell.con.display(
             shell.con.render_text("Currently auto_use_daemon is true, "
-                "hence please make sure targetclid daemon is running ...", 'red'))
+                "hence please make sure targetclid daemon is running ...\n"
+                "(or)\nIncase if you wish to turn auto_use_daemon to false "
+                "then run '#targetcli --disable-daemon'", 'red'))
         sys.exit(1)
 
     try:
@@ -215,12 +218,15 @@ def main():
     if shell.prefs['auto_use_daemon']:
         use_daemon = True
 
+    disable_daemon=False
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
         if sys.argv[1] in ("tcp", "--tcp", "-t"):
             use_daemon = True
+        elif sys.argv[1] in ("disable-daemon", "--disable-daemon"):
+            disable_daemon=True
 
-    if use_daemon:
+    if use_daemon and not disable_daemon:
         call_daemon(shell, get_arguments().encode())
         # does not return
 
@@ -235,7 +241,10 @@ def main():
 
     if len(sys.argv) > 1:
         try:
-            shell.run_cmdline(" ".join(sys.argv[1:]))
+            if disable_daemon:
+                shell.run_cmdline('set global auto_use_daemon=false')
+            else:
+                shell.run_cmdline(" ".join(sys.argv[1:]))
         except Exception as e:
             print(str(e), file=sys.stderr)
             sys.exit(1)
