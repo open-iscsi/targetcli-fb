@@ -142,6 +142,9 @@ class TargetCLI:
         '''
         Handle commands from client
         '''
+        # load the prefs
+        self.shell.prefs.load()
+
         still_listen = True
         # Receive the data in small chunks and retransmit it
         while still_listen:
