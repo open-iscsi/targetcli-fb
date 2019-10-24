@@ -1,0 +1,86 @@
+.TH targetclid 8
+.SH NAME
+.B targetclid
+\- daemon component for targetcli
+.SH DESCRIPTION
+.B targetclid
+is the daemon component of targetcli, which will help retain state of various
+configfs object in memory, hence any new request/command can directly use the
+in memory objects instead of reconstructing them by parsing through the entire
+configfs files again and again for each and every single command. This will
+greatly improve the overall execution time taken by targetcli commands at scale.
+
+.SH USAGE
+.B targetclid [cmd]
+.br
+.B "--help"
+for additional usage information.
+.br
+.B "--version"
+for version information.
+.SH QUICKSTART & EXAMPLES
+.TP
+To start using the daemon, one need to enable targetclid socket,
+.br
+$ systemctl enable targetclid.socket
+.TP
+If you would like to use the daemonized approach as default method then,
+.br
+$ targetcli set global auto_use_daemon=true
+.br
+$ targetcli ls
+.TP
+You can use batch mode for sending multiple commands in one go,
+.br
+$ targetcli <hit-enter>
+.br
+targetcli shell version 2.1.50
+.br
+Entering targetcli batch mode for daemonized approach.
+.br
+Enter multiple commands separated by newline and type 'exit' to run them all in one go.
+.br
+/> ls
+.br
+/> pwd
+.br
+/> get global loglevel_file
+.br
+/> exit
+.br
+.TP
+You can set preference to stop using daemonized mode even when the daemon is not running,
+.br
+$ targetcli --disable-daemon
+.TP
+If you want to selectively run commands through daemon while default mode is cli (auto_use_daemon=false), you can use,
+.br
+$ targetcli --tcp ls
+.br
+For batch mode,
+.br
+$ targetcli --tcp <hit-enter>
+.P
+.SH FILES
+.B /etc/target/saveconfig.json
+.br
+.B /etc/target/backup/*
+.br
+.B /var/run/targetclid.sock
+.br
+.B /var/run/targetclid.pid
+.SH ENVIRONMENT
+.SS TARGETCLI_HOME
+If set, this variable points to a directory that should be used instead of ~/.targetcli
+.SH SEE ALSO
+.BR targetcli (8),
+.BR targetctl (8),
+.BR tcmu-runner (8)
+.SH AUTHOR
+Written by Prasanna Kumar Kalever <prasanna.kalever@redhat.com>
+.br
+Man page written by Prasanna Kumar Kalever <prasanna.kalever@redhat.com>
+.SH REPORTING BUGS
+Report bugs via <targetcli-fb-devel@lists.fedorahosted.org>
+.br
+or <https://github.com/open-iscsi/targetcli-fb/issues>
