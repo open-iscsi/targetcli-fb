@@ -10,6 +10,11 @@ administrator to assign local storage resources backed by either
 files, volumes, local SCSI devices, or ramdisk, and export them to
 remote systems via network fabrics, such as iSCSI or FCoE.
 .P
+There is a daemon component for targetcli, which will greatly improve
+the overall execution time taken by targetcli commands at scale. For
+more details about switching to daemonized mode refer to targetclid(8)
+man page.
+.P
 The configuration layout is tree-based, similar to a filesystem, and
 is navigated in a similar manner.
 .SH USAGE
@@ -458,8 +463,9 @@ the userid and password for full-feature phase for this ACL.
 .B /etc/target/backup/*
 .SH ENVIRONMENT
 .SS TARGETCLI_HOME
-If set, this variable points to a directory that should be used instead of ~/.targetctl
+If set, this variable points to a directory that should be used instead of ~/.targetcli
 .SH SEE ALSO
+.BR targetclid (8),
 .BR targetctl (8),
 .BR tcmu-runner (8)
 .SH AUTHOR
