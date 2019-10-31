@@ -1,6 +1,6 @@
 [Unit]
 Description=Targetcli daemon
-Documentation=man:targetcli(8)
+Documentation=man:targetclid(8)
 After=network.target
 
 [Service]
