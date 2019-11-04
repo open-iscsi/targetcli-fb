@@ -240,15 +240,15 @@ class UIRoot(UINode):
         PARAMETERS
         ==========
 
-        I{action}
-        ---------
-        The I{action} is one of:
-            - B{list} gives a short session list
-            - B{detail} gives a detailed list
-
-        I{sid}
+        action
         ------
-        You can specify an I{sid} to only list this one,
+        The action is one of:
+            - `list`` gives a short session list
+            - `detail` gives a detailed list
+
+        sid
+        ---
+        You can specify an "sid" to only list this one,
         with or without details.
 
         SEE ALSO
@@ -321,4 +321,3 @@ class UIRoot(UINode):
                 indent_print("(no open sessions)", base_steps)
             else:
                 raise ExecutionError("no session found with sid %i" % int(sid))
-
