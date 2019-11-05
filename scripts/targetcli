@@ -67,13 +67,11 @@ class TargetCLI(ConfigShell):
                     }
 
 def usage():
-    print("Usage: %s [--version|--help|CMD|--tcp|--disable-daemon]" % sys.argv[0], file=err)
+    print("Usage: %s [--version|--help|CMD|--disable-daemon]" % sys.argv[0], file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     print("  CMD\t\t\tRun targetcli shell command and exit", file=err)
     print("  <nothing>\t\tEnter configuration shell", file=err)
-    print("  --tcp CMD\t\tPass targetcli command to targetclid", file=err)
-    print("  --tcp <nothing>\tEnter multi-line command mode for targetclid", file=err)
     print("  --disable-daemon\tTurn-off the global auto use daemon flag", file=err)
     print("See man page for more information.", file=err)
     sys.exit(-1)
@@ -172,12 +170,8 @@ def get_arguments(shell):
     else:
         readline.parse_and_bind("tab: complete")
 
-    argstart = 1
-    if len(sys.argv) > 1 and sys.argv[1] in ("tcp", "--tcp", "-t"):
-        argstart = 2
-
-    if len(sys.argv[argstart - 1:]) > 1:
-        command = " ".join(sys.argv[argstart:])
+    if len(sys.argv) > 1:
+        command = " ".join(sys.argv[1:])
     else:
         inputs = []
         shell.con.display("targetcli shell version %s\n"
@@ -227,9 +221,7 @@ def main():
     disable_daemon=False
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
-        if sys.argv[1] in ("tcp", "--tcp", "-t"):
-            use_daemon = True
-        elif sys.argv[1] in ("disable-daemon", "--disable-daemon"):
+        if sys.argv[1] in ("disable-daemon", "--disable-daemon"):
             disable_daemon=True
 
     if use_daemon and not disable_daemon:
