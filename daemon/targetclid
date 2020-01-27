@@ -32,6 +32,7 @@ import struct
 import fcntl
 import signal
 import errno
+import io
 
 
 err = sys.stderr
@@ -153,7 +154,7 @@ class TargetCLI:
                 connection.close()
                 still_listen = False
             else:
-                self.con._stdout = self.con._stderr = f = open("/tmp/data.txt", "w")
+                self.con._stdout = self.con._stderr = f = io.StringIO()
                 try:
                     # extract multiple commands delimited with '%'
                     list_data = data.decode().split('%')
@@ -165,14 +166,14 @@ class TargetCLI:
                 # Restore
                 self.con._stdout = self.con_stdout_
                 self.con._stderr = self.con_stderr_
-                f.close()
 
-                with open('/tmp/data.txt', 'r') as f:
-                    output = f.read()
-                    var = struct.pack('i', len(output))
-                    connection.sendall(var) # length of string
-                    if len(output):
-                        connection.sendall(output.encode()) # actual string
+                output = f.getvalue()
+                var = struct.pack('i', len(output))
+                connection.sendall(var) # length of string
+                if len(output):
+                    connection.sendall(output.encode()) # actual string
+
+                f.close()
 
 
 def usage():
