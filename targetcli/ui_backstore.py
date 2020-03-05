@@ -306,8 +306,20 @@ class UIBackstore(UINode):
             rn = self.get_root()
             rn._save_backups(default_save_file)
 
+        iscsi_config_node = self.get_root().get_child('iscsi')
+        tpg_config_nodes = set()
+        for lun in child.rtsnode.attached_luns:
+            tpg_config_nodes.add(iscsi_config_node
+                                 .get_child(lun.parent_tpg.parent_target.wwn)
+                                 .get_child('tpg' + str(lun.parent_tpg.tag)))
+
         child.rtsnode.delete(save=save)
         self.remove_child(child)
+
+        for tpg_config_node in tpg_config_nodes:
+            # Refresh TPG data to prevent 'This LUN does not exist in configFS'
+            tpg_config_node.refresh()
+
         self.shell.log.info("Deleted storage object %s." % name)
 
     def ui_complete_delete(self, parameters, text, current_param):
