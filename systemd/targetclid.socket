@@ -4,6 +4,7 @@ Documentation=man:targetclid(8)
 
 [Socket]
 ListenStream=/var/run/targetclid.sock
+SocketMode=0600
 
 [Install]
 WantedBy=sockets.target
