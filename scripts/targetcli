@@ -154,8 +154,9 @@ def call_daemon(shell, req):
     # get the actual data in chunks
     while amount_received < amount_expected:
         data = sock.recv(1024)
+        data = data.decode()
         amount_received += len(data)
-        print(data.decode(), end ="")
+        print(data, end ="")
 
     sock.send(b'-END@OF@DATA-')
     sock.close()

@@ -26,18 +26,15 @@ from configshell_fb import ConfigShell
 from os import getuid, getenv, unlink
 from threading import Thread
 
+import os
 import sys
 import socket
 import struct
 import fcntl
 import signal
 import errno
+import tempfile
 
-
-if sys.version_info < (3, 0):
-    from io import BytesIO as StringIO
-else:
-    from io import StringIO
 
 err = sys.stderr
 
@@ -158,25 +155,28 @@ class TargetCLI:
                 connection.close()
                 still_listen = False
             else:
-                self.con._stdout = self.con._stderr = f = StringIO()
+                self.con._stdout = self.con._stderr = f = tempfile.NamedTemporaryFile(mode='w', delete=False)
                 try:
                     # extract multiple commands delimited with '%'
                     list_data = data.decode().split('%')
                     for cmd in list_data:
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
-                    print(str(e).encode(), file=f) # push error to stream
+                    print(str(e), file=f) # push error to stream
 
                 # Restore
                 self.con._stdout = self.con_stdout_
                 self.con._stderr = self.con_stderr_
-                output = f.getvalue().encode()
-                var = struct.pack('i', len(output))
-                connection.sendall(var) # length of string
-                if len(output):
-                    connection.sendall(output) # actual string
-
                 f.close()
+
+                with open(f.name, 'r') as f:
+                    output = f.read()
+                    var = struct.pack('i', len(output))
+                    connection.sendall(var) # length of string
+                    if len(output):
+                        connection.sendall(output.encode()) # actual string
+
+                os.unlink(f.name)
 
 
 def usage():
