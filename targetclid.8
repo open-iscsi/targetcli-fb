@@ -30,11 +30,38 @@ $ targetcli set global auto_use_daemon=true
 .br
 $ targetcli ls
 .TP
-You can use batch mode for sending multiple commands in one go,
+You can use interactive mode,
 .br
 $ targetcli <hit-enter>
 .br
-targetcli shell version 2.1.50
+targetcli shell version 2.1.51
+.br
+Entering targetcli interactive mode for daemonized approach.
+.br
+Type 'exit' to quit.
+.br
+/> pwd
+.br
+/
+.br
+/> cd /iscsi
+.br
+/> pwd
+.br
+/iscsi
+.br
+/> exit
+.br
+.TP
+You can also use batch mode for sending multiple commands in one go,
+.br
+$ targetcli set global daemon_use_batch_mode=true
+.br
+Parameter daemon_use_batch_mode is now 'true'.
+.br
+$ targetcli <hit-enter>
+.br
+targetcli shell version 2.1.51
 .br
 Entering targetcli batch mode for daemonized approach.
 .br

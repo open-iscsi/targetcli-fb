@@ -64,6 +64,7 @@ class TargetCLI(ConfigShell):
                      'max_backup_files': '10',
                      'auto_add_default_portal': True,
                      'auto_use_daemon': False,
+                     'daemon_use_batch_mode': False,
                     }
 
 def usage():
@@ -160,9 +161,8 @@ def call_daemon(shell, req):
 
     sock.send(b'-END@OF@DATA-')
     sock.close()
-    sys.exit(0)
 
-def get_arguments(shell):
+def switch_to_daemon(shell, interactive):
     readline.set_completer(completer)
     readline.set_completer_delims('')
 
@@ -173,27 +173,42 @@ def get_arguments(shell):
 
     if len(sys.argv) > 1:
         command = " ".join(sys.argv[1:])
-    else:
-        inputs = []
+        call_daemon(shell, command.encode())
+        sys.exit(0)
+
+    if interactive:
         shell.con.display("targetcli shell version %s\n"
-                        "Entering targetcli batch mode for daemonized approach.\n"
-                        "Enter multiple commands separated by newline and "
-                        "type 'exit' to run them all in one go.\n"
-                        % targetcli_version)
-        while True:
-            shell.con.raw_write("/> ")
-            command = six.moves.input()
-            if command.lower() == "exit":
-                break
+                          "Entering targetcli interactive mode for daemonized approach.\n"
+                          "Type 'exit' to quit.\n"
+                          % targetcli_version)
+    else:
+        shell.con.display("targetcli shell version %s\n"
+                          "Entering targetcli batch mode for daemonized approach.\n"
+                          "Enter multiple commands separated by newline and "
+                          "type 'exit' to run them all in one go.\n"
+                          % targetcli_version)
+
+    inputs = []
+    real_exit=False
+    while True:
+        shell.con.raw_write("/> ")
+        command = six.moves.input()
+        if command.lower() == "exit":
+            real_exit=True
+        elif not command:
+            continue
+        if not interactive:
             inputs.append(command)
-        command = '%'.join(inputs)  # delimit multiple commands with '%'
+            if real_exit:
+                command = '%'.join(inputs)  # delimit multiple commands with '%'
+                call_daemon(shell, command.encode())
+                break
+        else:
+            if real_exit:
+                break
+            call_daemon(shell, command.encode())
 
-    if not command:
-        sys.exit(1)
-
-    usage_version(command);
-
-    return command
+    sys.exit(0)
 
 def main():
     '''
@@ -225,8 +240,12 @@ def main():
         if sys.argv[1] in ("disable-daemon", "--disable-daemon"):
             disable_daemon=True
 
+    interactive_mode = True
+    if shell.prefs['daemon_use_batch_mode']:
+        interactive_mode = False
+
     if use_daemon and not disable_daemon:
-        call_daemon(shell, get_arguments(shell).encode())
+        switch_to_daemon(shell, interactive_mode)
         # does not return
 
     try:
