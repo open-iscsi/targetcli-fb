@@ -224,8 +224,7 @@ def switch_to_daemon(shell, interactive):
     inputs = []
     real_exit=False
     while True:
-        shell.con.raw_write("%s> " %prompt_path)
-        command = six.moves.input()
+        command = six.moves.input("%s> " %prompt_path)
         if command.lower() == "exit":
             real_exit=True
         elif not command:
