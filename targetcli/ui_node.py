@@ -52,6 +52,9 @@ class UINode(ConfigNode):
         self.define_config_group_param(
             'global', 'auto_use_daemon', 'bool',
             'If true, commands will be sent to targetclid.')
+        self.define_config_group_param(
+            'global', 'daemon_use_batch_mode', 'bool',
+            'If true, use batch mode for daemonized approach.')
 
     def assert_root(self):
         '''
