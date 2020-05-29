@@ -125,12 +125,17 @@ class UIRoot(UINode):
 
         # Save backup if backup dir is empty, or savefile is differnt from recent backup copy
         if not backed_files_list or not self._compare_files(backed_files_list[-1], savefile):
+            mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+            umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
+            umask_original = os.umask(umask)
             try:
                 with open(savefile, 'rb') as f_in, gzip.open(backupfile, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
                     f_out.flush()
             except IOError as ioe:
                 backup_error = ioe.strerror or "Unknown error"
+            finally:
+                os.umask(umask_original)
 
             if backup_error == None:
                 # remove excess backups
