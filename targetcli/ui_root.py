@@ -95,6 +95,26 @@ class UIRoot(UINode):
         else:
             return False
 
+    def _create_dir(self, dirname):
+        '''
+        create directory with permissions 0o600 set
+        if directory already exists, set right perms
+        '''
+        mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+        if not os.path.exists(dirname):
+            umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
+            umask_original = os.umask(umask)
+            try:
+                os.makedirs(dirname, mode)
+            except OSError as exe:
+                raise ExecutionError("Cannot create directory [%s] %s."
+                                     % (dirname, exe.strerror))
+            finally:
+                os.umask(umask_original)
+        else:
+            if (os.stat(dirname).st_mode & 0o777) != mode:
+                os.chmod(dirname, mode)
+
     def _save_backups(self, savefile):
         '''
         Take backup of config-file if needed.
@@ -109,21 +129,7 @@ class UIRoot(UINode):
         backupfile = backup_dir + backup_name
         backup_error = None
 
-        mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
-        umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
-
-        if not os.path.exists(backup_dir):
-            umask_original = os.umask(umask)
-            try:
-                os.makedirs(backup_dir, mode)
-            except OSError as exe:
-                raise ExecutionError("Cannot create backup directory [%s] %s."
-                                     % (backup_dir, exe.strerror))
-            finally:
-                os.umask(umask_original)
-        else:
-            if (os.stat(backup_dir).st_mode & 0o777) != mode:
-                os.chmod(backup_dir, mode)
+        self._create_dir(backup_dir)
 
         # Only save backups if savefile exits
         if not os.path.exists(savefile):
@@ -134,6 +140,8 @@ class UIRoot(UINode):
 
         # Save backup if backup dir is empty, or savefile is differnt from recent backup copy
         if not backed_files_list or not self._compare_files(backed_files_list[-1], savefile):
+            mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+            umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
             umask_original = os.umask(umask)
             try:
                 with open(savefile, 'rb') as f_in, gzip.open(backupfile, 'wb') as f_out:
@@ -179,6 +187,8 @@ class UIRoot(UINode):
 
         savefile = os.path.expanduser(savefile)
 
+        save_dir = os.path.dirname(savefile)
+        self._create_dir(save_dir)
         self._save_backups(savefile)
 
         self.rtsroot.save_to_file(savefile)
