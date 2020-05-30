@@ -34,7 +34,7 @@ setup(
                'scripts/targetcli',
                'daemon/targetclid'
               ],
-    data_files = [('/lib/systemd/system', ['systemd/targetclid.socket', 'systemd/targetclid.service'])],
+    data_files = [('lib/systemd/system', ['systemd/targetclid.socket', 'systemd/targetclid.service'])],
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
