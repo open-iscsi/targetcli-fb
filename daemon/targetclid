@@ -28,6 +28,7 @@ from threading import Thread
 
 import os
 import sys
+import stat
 import socket
 import struct
 import fcntl
@@ -238,12 +239,17 @@ def main():
         # save socket so a signal can clea it up
         to.sock = sock
 
+        mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+        umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
+        umask_original = os.umask(umask)
         # Bind the socket path
         try:
             sock.bind(to.socket_path)
         except socket.error as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
+        finally:
+            os.umask(umask_original)
 
         # Listen for incoming connections
         try:
