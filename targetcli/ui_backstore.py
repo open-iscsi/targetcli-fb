@@ -423,17 +423,17 @@ class UIFileIOBackstore(UIBackstore):
             raise ExecutionError("Could not open %s" % filename)
         try:
             if sparse:
-                try:
-                    os.posix_fallocate(f.fileno(), 0, size)
-                except AttributeError:
-                    # Prior to version 3.3, Python does not provide fallocate
-                    os.ftruncate(f.fileno(), size)
+                os.ftruncate(f.fileno(), size)
             else:
                 self.shell.log.info("Writing %d bytes" % size)
-                while size > 0:
-                    write_size = min(size, 1024)
-                    f.write("\0" * write_size)
-                    size -= write_size
+                try:
+                    # Prior to version 3.3, Python does not provide fallocate
+                    os.posix_fallocate(f.fileno(), 0, size)
+                except AttributeError:
+                    while size > 0:
+                        write_size = min(size, 1024)
+                        f.write("\0" * write_size)
+                        size -= write_size
         except (OSError, IOError):
             os.remove(filename)
             raise ExecutionError("Could not expand file to %d bytes" % size)
