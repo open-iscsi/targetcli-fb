@@ -34,8 +34,9 @@ from .ui_backstore import complete_path, UIBackstores
 from .ui_node import UINode
 from .ui_target import UIFabricModule
 
-default_save_file = "/etc/target/saveconfig.json"
-universal_prefs_file = "/etc/target/targetcli.conf"
+default_target_dir = "/etc/target"
+default_save_file = os.path.join(default_target_dir, "saveconfig.json")
+universal_prefs_file = os.path.join(default_target_dir, "targetcli.conf")
 
 class UIRoot(UINode):
     '''
@@ -112,8 +113,9 @@ class UIRoot(UINode):
             finally:
                 os.umask(umask_original)
         else:
-            if (os.stat(dirname).st_mode & 0o777) != mode:
-                os.chmod(dirname, mode)
+            if dirname == default_target_dir:
+                if (os.stat(dirname).st_mode & 0o777) != mode:
+                    os.chmod(dirname, mode)
 
     def _save_backups(self, savefile):
         '''
