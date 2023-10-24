@@ -1146,16 +1146,11 @@ class UILUNs(UINode):
                     mapped_lun = 0
                 existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
                 if mapped_lun in existing_mluns:
-                    mapped_lun = None
-                    for possible_mlun in six.moves.range(MappedLUN.MAX_LUN):
-                        if possible_mlun not in existing_mluns:
-                            mapped_lun = possible_mlun
-                            break
+                    possible_mlun = 0
+                    while possible_mlun in existing_mluns:
+                        possible_mlun += 1
+                    mapped_lun = possible_mlun
 
-                if mapped_lun == None:
-                    self.shell.log.warning(
-                        "Cannot map new lun %s into ACL %s"
-                        % (lun_object.lun, acl.node_wwn))
                 else:
                     mlun = MappedLUN(acl, mapped_lun, lun_object, write_protect=False)
                     self.shell.log.info("Created LUN %d->%d mapping in node ACL %s"
