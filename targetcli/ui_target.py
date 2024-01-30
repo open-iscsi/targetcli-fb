@@ -1151,10 +1151,9 @@ class UILUNs(UINode):
                         possible_mlun += 1
                     mapped_lun = possible_mlun
 
-                else:
-                    mlun = MappedLUN(acl, mapped_lun, lun_object, write_protect=False)
-                    self.shell.log.info("Created LUN %d->%d mapping in node ACL %s"
-                                        % (mlun.tpg_lun.lun, mlun.mapped_lun, acl.node_wwn))
+                mlun = MappedLUN(acl, mapped_lun, lun_object, write_protect=False)
+                self.shell.log.info("Created LUN %d->%d mapping in node ACL %s"
+                                    % (mlun.tpg_lun.lun, mlun.mapped_lun, acl.node_wwn))
             self.parent.refresh()
 
         return self.new_node(ui_lun)
