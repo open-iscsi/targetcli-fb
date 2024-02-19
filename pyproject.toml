@@ -21,12 +21,13 @@ classifiers = [
 
 dependencies = [
     "rtslib-fb",
-    "configshell-fb"
+    "configshell-fb",
+    "PyGObject",
 ]
 
 [project.scripts]
-targetcli = "scripts.targetcli"
-daemon = "daemon.targetclid"
+targetcli = "targetcli.targetcli:main"
+targetclid = "targetcli.targetclid:main"
 
 [project.urls]
 "Homepage" = "http://github.com/open-iscsi/targetcli-fb"
