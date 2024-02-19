@@ -36,13 +36,13 @@ targetclid = "targetcli.targetclid:main"
 requires = ["setuptools>=53", "setuptools_scm>=6.0.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["."]
-
 [tool.setuptools_scm]
 
-[tool.setuptools.package-data]
-targetcli = ["THANKS"]
+[tool.setuptools]
+license-files = ["COPYING"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 target-version = "py37"
