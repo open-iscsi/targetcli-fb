@@ -40,7 +40,6 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 
 [tool.setuptools_scm]
-version_file = "targetcli/version.py"
 
 [tool.setuptools.package-data]
 targetcli = ["THANKS"]

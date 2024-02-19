@@ -15,5 +15,9 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+
+import importlib.metadata
+
+__version__ = importlib.metadata.version('targetcli-fb')
+
 from .ui_root import UIRoot
-from .version import __version__
