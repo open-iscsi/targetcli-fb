@@ -1,0 +1,82 @@
+[project]
+name = "targetcli-fb"
+description = "A command shell for managing the Linux LIO kernel target"
+readme = "README.md"
+dynamic = ["version"]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.7"
+authors = [
+  {name = "Andy Grover", email = "agrover@redhat.com"}
+]
+maintainers = [
+  {name = "Maurizio Lombardi", email = "mlombard@redhat.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+dependencies = [
+    "rtslib-fb",
+    "configshell-fb"
+]
+
+[project.scripts]
+targetcli = "scripts.targetcli"
+daemon = "daemon.targetclid"
+
+[project.urls]
+"Homepage" = "http://github.com/open-iscsi/targetcli-fb"
+
+[build-system]
+requires = ["setuptools>=53", "setuptools_scm>=6.0.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools_scm]
+version_file = "targetcli/version.py"
+
+[tool.setuptools.package-data]
+targetcli = ["THANKS"]
+
+[tool.ruff]
+target-version = "py37"
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "I",
+    "N",
+    "UP",
+    "S",
+    "FBT",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "DTZ",
+    "ICN",
+    "PIE",
+    "Q003",
+    "RSE",
+    "RET",
+    "SLF",
+    "SIM",
+    "ARG",
+    "PL",
+    "PERF",
+    "RUF"
+]
+ignore = [
+    "E501",  # line length
+    "RUF012",
+    "RET505",
+    "PLR09",
+    "PLR5501",
+]
