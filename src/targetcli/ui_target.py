@@ -485,20 +485,19 @@ class UITPG(UIRTSLibNode):
                     if int(tpg.get_attribute("generate_node_acls")):
                         # if auth=0, g_n_a=1 is recommended
                         status = True
+                elif not int(tpg.get_attribute("generate_node_acls")):
+                    msg.append("auth per-acl")
                 else:
-                    if not int(tpg.get_attribute("generate_node_acls")):
-                        msg.append("auth per-acl")
+                    msg.append("tpg-auth")
+
+                    status = True
+                    if not (tpg.chap_password and tpg.chap_userid):
+                        status = False
+
+                    if tpg.authenticate_target:
+                        msg.append("mutual auth")
                     else:
-                        msg.append("tpg-auth")
-
-                        status = True
-                        if not (tpg.chap_password and tpg.chap_userid):
-                            status = False
-
-                        if tpg.authenticate_target:
-                            msg.append("mutual auth")
-                        else:
-                            msg.append("1-way auth")
+                        msg.append("1-way auth")
 
         return (", ".join(msg), status)
 
@@ -656,7 +655,7 @@ class UINodeACLs(UINode):
 
     def find_tagged(self, name):
         for na in self.tpg.node_acls:
-            if na.node_wwn == name or na.tag == name:
+            if name in (na.node_wwn, na.tag):
                 yield na
 
     def all_names(self):
@@ -1309,10 +1308,11 @@ class UIPortals(UINode):
         self.assert_root()
 
         # FIXME: Add a specfile parameter to determine default port
-        ip_port = self.ui_eval_param(ip_port, 'number', 3260)
+        default_port = 3260
+        ip_port = self.ui_eval_param(ip_port, 'number', default_port)
         ip_address = self.ui_eval_param(ip_address, 'string', "0.0.0.0")
 
-        if ip_port == 3260:
+        if ip_port == default_port:
             self.shell.log.info("Using default IP port %d" % ip_port)
         if ip_address == "0.0.0.0":
             self.shell.log.info("Binding to INADDR_ANY (0.0.0.0)")

@@ -490,21 +490,19 @@ class UIFileIOBackstore(UIBackstore):
                 self.shell.log.info("Block device, size parameter ignored")
                 size = None
             self.shell.log.info("Note: block backstore preferred for best results")
+        elif os.path.isfile(file_or_dev):
+            new_size = os.path.getsize(file_or_dev)
+            if size:
+                self.shell.log.info(f"{file_or_dev} exists, using its size ({new_size} bytes) instead")
+            size = new_size
+        elif os.path.exists(file_or_dev):
+            raise ExecutionError(f"Path {file_or_dev} exists but is not a file")
         else:
-            # use given file size only if backing file does not exist
-            if os.path.isfile(file_or_dev):
-                new_size = os.path.getsize(file_or_dev)
-                if size:
-                    self.shell.log.info(f"{file_or_dev} exists, using its size ({new_size} bytes) instead")
-                size = new_size
-            elif os.path.exists(file_or_dev):
-                raise ExecutionError(f"Path {file_or_dev} exists but is not a file")
-            else:
-                # create file and extend to given file size
-                if not size:
-                    raise ExecutionError("Attempting to create file for new fileio backstore, need a size")
-                size = human_to_bytes(size)
-                self._create_file(file_or_dev, size, sparse)
+            # create file and extend to given file size
+            if not size:
+                raise ExecutionError("Attempting to create file for new fileio backstore, need a size")
+            size = human_to_bytes(size)
+            self._create_file(file_or_dev, size, sparse)
 
         so = FileIOStorageObject(name, file_or_dev, size,
                                  write_back=write_back, wwn=wwn)

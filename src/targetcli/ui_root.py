@@ -104,9 +104,8 @@ class UIRoot(UINode):
                 raise ExecutionError(f"Cannot create directory [{dirname}] {exe.strerror}.")
             finally:
                 os.umask(umask_original)
-        else:
-            if dirname == default_target_dir and (os.stat(dirname).st_mode & 0o777) != mode:
-                os.chmod(dirname, mode)
+        elif dirname == default_target_dir and (os.stat(dirname).st_mode & 0o777) != mode:
+            os.chmod(dirname, mode)
 
     def _save_backups(self, savefile):
         '''
@@ -322,8 +321,7 @@ class UIRoot(UINode):
         if len(printed_sessions):
             for session in printed_sessions:
                 print_session(session)
+        elif sid is None:
+            indent_print("(no open sessions)", base_steps)
         else:
-            if sid is None:
-                indent_print("(no open sessions)", base_steps)
-            else:
-                raise ExecutionError("no session found with sid %i" % int(sid))
+            raise ExecutionError("no session found with sid %i" % int(sid))
