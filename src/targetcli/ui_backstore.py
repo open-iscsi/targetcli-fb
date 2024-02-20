@@ -110,6 +110,7 @@ def bytes_to_human(size):
         if size < kilo:
             return f"{size:3.1f}{x}"
         size /= kilo
+    return None
 
 def complete_path(path, stat_fn):
     filtered = []
