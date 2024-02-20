@@ -44,36 +44,57 @@ license-files = ["COPYING"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.ruff]
+line-length = 120
+
 [tool.ruff.lint]
 select = [
-    "F",
-    "E",
-    "I",
-    "N",
-    "UP",
-    "S",
-    "FBT",
-    "B",
-    "A",
-    "COM",
-    "C4",
-    "DTZ",
-    "ICN",
-    "PIE",
-    "Q003",
-    "RSE",
-    "RET",
-    "SLF",
-    "SIM",
-    "ARG",
-    "PL",
-    "PERF",
-    "RUF"
+    "F",    # Pyflakes
+    "E",    # pycodestyle error
+    "W",    # pycodestyle warning
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "YTT",  # flake8-2020
+    "S",    # flake8-bandit
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "COM",  # flake8-commas
+    "C4",   # flake8-comprehensions
+    "EXE",  # flake8-executable
+    "FA",   # flake8-future-annotations
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "PIE",  # flake8-pie
+    "Q003", # flake8-quotes avoidable-escaped-quote
+    "Q004", # flake8-quotes unnecessary-escaped-quote
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "INT",  # flake8-gettext
+    "ARG",  # flake8-unused-argument
+    #"PTH", # flake8-use-pathlib TODO
+    "PL",   # Pylint
+    "FLY",  # flynt
+    "PERF", # Perflint
+    #"FURB", # refurb
+    "RUF",  # Ruff
 ]
 ignore = [
-    "E501",  # line length
-    "RUF012",
-    "RET505",
-    "PLR09",
-    "PLR5501",
+    "E722",  # TODO do not use bare 'except'
+    "S104",  # Possible binding to all interfaces (0.0.0.0)
+    "RUF012",  # TODO Mutable class attributes should be annotated with `typing.ClassVar`
+    "SIM115",  # TODO Use context handler for opening files
+    "B904",  # raise-without-from-inside-except
+    "RET505",  # Unnecessary `else` after `return` statement
+    "ARG002",  # TODO Unused method argument: `parameters`
+    "PLR09",  # Too many branches/statements/arguments
 ]
+[tool.ruff.lint.flake8-quotes]
+# Single quotes are currently prevalent in the codebase. Not being checked.
+inline-quotes = "single"
+
+[tool.ruff.lint.per-file-ignores]
+# Preserving long lines for readabilit
+"src/targetcli/ui_target.py" = ["E501"]
