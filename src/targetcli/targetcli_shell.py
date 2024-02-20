@@ -178,7 +178,7 @@ def call_daemon(shell, req, interactive):
     if get_pwd:
         output_split = output.splitlines()
         lines = len(output_split)
-        for i in range(0, lines):
+        for i in range(lines):
             if i == lines-1:
                 path = str(output_split[i])
             else:
