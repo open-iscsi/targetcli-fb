@@ -19,7 +19,6 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from __future__ import print_function
 from targetcli import UIRoot
 from targetcli import __version__ as targetcli_version
 from configshell_fb import ConfigShell
@@ -65,7 +64,7 @@ class TargetCLI:
 
         try:
             self.pfd = open(self.pid_file, 'w+')
-        except IOError as e:
+        except OSError as e:
             self.display(
                 self.render(
                     "opening pidfile failed: %s" %str(e),
@@ -170,7 +169,7 @@ class TargetCLI:
                 self.con._stderr = self.con_stderr_
                 f.close()
 
-                with open(f.name, 'r') as f:
+                with open(f.name) as f:
                     output = f.read()
                     var = struct.pack('i', len(output))
                     connection.sendall(var) # length of string
@@ -188,7 +187,7 @@ def usage():
 
 
 def version():
-    print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
+    print(f"{sys.argv[0]} version {targetcli_version}", file=err)
     sys.exit(0)
 
 
@@ -216,7 +215,7 @@ def main():
         fn = sys.stderr.fileno() + 1
         try:
             sock = socket.fromfd(fn, socket.AF_UNIX, socket.SOCK_STREAM)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
 
@@ -232,7 +231,7 @@ def main():
         # Create a TCP/IP socket
         try:
             sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
 
@@ -245,7 +244,7 @@ def main():
         # Bind the socket path
         try:
             sock.bind(to.socket_path)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
         finally:
@@ -254,7 +253,7 @@ def main():
         # Listen for incoming connections
         try:
             sock.listen(1)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
 
@@ -262,7 +261,7 @@ def main():
         try:
             # Wait for a connection
             connection, client_address = sock.accept()
-        except socket.error as err:
+        except OSError as err:
             if err.errno != errno.EBADF or to.NoSignal:
                 to.display(to.render(err.strerror, 'red'))
             break

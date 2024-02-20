@@ -18,7 +18,6 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from __future__ import print_function
 
 from os import getuid, getenv
 from targetcli import UIRoot
@@ -30,7 +29,6 @@ import sys
 import socket
 import struct
 import readline
-import six
 import fcntl
 
 err = sys.stderr
@@ -68,7 +66,7 @@ class TargetCLI(ConfigShell):
                     }
 
 def usage():
-    print("Usage: %s [--version|--help|CMD|--disable-daemon]" % sys.argv[0], file=err)
+    print(f"Usage: {sys.argv[0]} [--version|--help|CMD|--disable-daemon]", file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     print("  CMD\t\t\tRun targetcli shell command and exit", file=err)
@@ -78,7 +76,7 @@ def usage():
     sys.exit(-1)
 
 def version():
-    print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
+    print(f"{sys.argv[0]} version {targetcli_version}", file=err)
     sys.exit(0)
 
 def usage_version(cmd):
@@ -97,7 +95,7 @@ def try_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                "taking lock on lockfile failed: %s" %str(e),
+                f"taking lock on lockfile failed: {str(e)}",
                 'red'))
         sys.exit(1)
 
@@ -110,7 +108,7 @@ def release_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                "unlock on lockfile failed: %s" %str(e),
+                f"unlock on lockfile failed: {str(e)}",
                 'red'))
         sys.exit(1)
     lkfd.close()
@@ -125,13 +123,13 @@ def completer(text, state):
 def call_daemon(shell, req, interactive):
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    except socket.error as err:
+    except OSError as err:
         shell.con.display(shell.con.render_text(err, 'red'))
         sys.exit(1)
 
     try:
         sock.connect(socket_path)
-    except socket.error as err:
+    except OSError as err:
         shell.con.display(shell.con.render_text(err, 'red'))
         shell.con.display(
             shell.con.render_text("Currently auto_use_daemon is true, "
@@ -157,7 +155,7 @@ def call_daemon(shell, req, interactive):
     try:
         # send request
         sock.sendall(req.encode())
-    except socket.error as err:
+    except OSError as err:
         shell.con.display(shell.con.render_text(err, 'red'))
         sys.exit(1)
 
@@ -224,7 +222,7 @@ def switch_to_daemon(shell, interactive):
     inputs = []
     real_exit=False
     while True:
-        command = six.moves.input("%s> " %prompt_path)
+        command = input(f"{prompt_path}> ")
         if command.lower() == "exit":
             real_exit=True
         elif not command:
@@ -259,9 +257,9 @@ def main():
 
     try:
         lkfd = open(lock_file, 'w+');
-    except IOError as e:
+    except OSError as e:
         shell.con.display(
-                shell.con.render_text("opening lockfile failed: %s" %str(e),
+                shell.con.render_text(f"opening lockfile failed: {str(e)}",
                     'red'))
         sys.exit(1)
 

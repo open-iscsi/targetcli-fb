@@ -17,7 +17,6 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-import six
 
 from configshell_fb import ConfigNode, ExecutionError
 
@@ -104,7 +103,7 @@ class UINode(ConfigNode):
         ls
         '''
         description, is_healthy = self.summary()
-        self.shell.log.info("Status for %s: %s" % (self.path, description))
+        self.shell.log.info(f"Status for {self.path}: {description}")
 
     def ui_setgroup_global(self, parameter, value):
         ConfigNode.ui_setgroup_global(self, parameter, value)
@@ -130,8 +129,7 @@ class UINode(ConfigNode):
         elif value in type_enum:
             return value
         else:
-            raise ValueError("Syntax error, '%s' is not %s."
-                             % (value, syntax))
+            raise ValueError(f"Syntax error, '{value}' is not {syntax}.")
 
 
 class UIRTSLibNode(UINode):
@@ -214,6 +212,6 @@ class UIRTSLibNode(UINode):
         for item in ('attributes', 'parameters'):
             if item in info:
                 del info[item]
-        for name, value in sorted(six.iteritems(info)):
+        for name, value in sorted(info.items()):
             if not isinstance (value, (dict, list)):
-                self.shell.log.info("%s: %s" % (name, value))
+                self.shell.log.info(f"{name}: {value}")

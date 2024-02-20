@@ -78,7 +78,7 @@ def human_to_bytes(hsize, kilo=1024):
     size = hsize.replace('i', '')
     size = size.lower()
     if not re.match("^[0-9]+[k|m|g|t]?[b]?$", size):
-        raise RTSLibError("Cannot interpret size, wrong format: %s" % hsize)
+        raise RTSLibError(f"Cannot interpret size, wrong format: {hsize}")
 
     size = size.rstrip('ib')
 
@@ -103,7 +103,7 @@ def bytes_to_human(size):
 
     for x in ['KiB', 'MiB', 'GiB', 'TiB', 'PiB']:
         if size < kilo:
-            return "%3.1f%s" % (size, x)
+            return f"{size:3.1f}{x}"
         size /= kilo
 
 def complete_path(path, stat_fn):
@@ -126,7 +126,7 @@ class UIALUATargetPortGroup(UIRTSLibNode):
     '''
     def __init__(self, alua_tpg, parent):
         name = alua_tpg.name
-        super(UIALUATargetPortGroup, self).__init__(name, alua_tpg, parent)
+        super().__init__(name, alua_tpg, parent)
         self.refresh()
 
         for param in alua_rw_params:
@@ -148,22 +148,21 @@ class UIALUATargetPortGroup(UIRTSLibNode):
 
     def summary(self):
         self.rtsnode.alua_access_state
-        return ("ALUA state: %s" %
-                alua_state_names[self.rtsnode.alua_access_state], True)
+        return (f"ALUA state: {alua_state_names[self.rtsnode.alua_access_state]}", True)
 
 class UIALUATargetPortGroups(UINode):
     '''
     ALUA Target Port Group UI
     '''
     def __init__(self, parent):
-        super(UIALUATargetPortGroups, self).__init__("alua", parent)
+        super().__init__("alua", parent)
         self.refresh()
 
     def summary(self):
-        return ("ALUA Groups: %d" % len(self.children), None)
+        return (f"ALUA Groups: {len(self.children)}", None)
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
 
         so = self.parent.rtsnode
         for tpg in so.alua_tpgs:
@@ -177,7 +176,7 @@ class UIALUATargetPortGroups(UINode):
 
         so = self.parent.rtsnode
         alua_tpg_object = ALUATargetPortGroup(so, name, int(tag))
-        self.shell.log.info("Created ALUA TPG %s." % alua_tpg_object.name)
+        self.shell.log.info(f"Created ALUA TPG {alua_tpg_object.name}.")
         ui_alua_tpg = UIALUATargetPortGroup(alua_tpg_object, self)
         return self.new_node(ui_alua_tpg)
 
@@ -257,7 +256,7 @@ class UIBackstores(UINode):
             return
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         UIPSCSIBackstore(self)
         UIRDMCPBackstore(self)
         UIFileIOBackstore(self)
@@ -276,13 +275,13 @@ class UIBackstore(UINode):
         self.refresh()
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for so in RTSRoot().storage_objects:
             if so.plugin == self.name:
                 ui_so = self.so_cls(so, self)
 
     def summary(self):
-        return ("Storage Objects: %d" % len(self._children), None)
+        return (f"Storage Objects: {len(self._children)}", None)
 
     def ui_command_delete(self, name, save=None):
         '''
@@ -299,7 +298,7 @@ class UIBackstore(UINode):
         try:
             child = self.get_child(name)
         except ValueError:
-            raise ExecutionError("No storage object named %s." % name)
+            raise ExecutionError(f"No storage object named {name}.")
 
         save = self.ui_eval_param(save, 'bool', False)
         if save:
@@ -308,7 +307,7 @@ class UIBackstore(UINode):
 
         child.rtsnode.delete(save=save)
         self.remove_child(child)
-        self.shell.log.info("Deleted storage object %s." % name)
+        self.shell.log.info(f"Deleted storage object {name}.")
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
@@ -368,8 +367,7 @@ class UIPSCSIBackstore(UIBackstore):
 
         so = PSCSIStorageObject(name, dev)
         ui_so = UIPSCSIStorageObject(so, self)
-        self.shell.log.info("Created pscsi storage object %s using %s"
-                            % (name, dev))
+        self.shell.log.info(f"Created pscsi storage object {name} using {dev}")
         return self.new_node(ui_so)
 
 
@@ -403,8 +401,7 @@ class UIRDMCPBackstore(UIBackstore):
         so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio, wwn=wwn)
         ui_so = UIRamdiskStorageObject(so, self)
         self.setup_model_alias(so)
-        self.shell.log.info("Created ramdisk %s with size %s."
-                            % (name, size))
+        self.shell.log.info(f"Created ramdisk {name} with size {size}.")
         return self.new_node(ui_so)
 
 
@@ -419,8 +416,8 @@ class UIFileIOBackstore(UIBackstore):
     def _create_file(self, filename, size, sparse=True):
         try:
             f = open(filename, "w+")
-        except (OSError, IOError):
-            raise ExecutionError("Could not open %s" % filename)
+        except OSError:
+            raise ExecutionError(f"Could not open {filename}")
         try:
             if sparse:
                 os.ftruncate(f.fileno(), size)
@@ -434,7 +431,7 @@ class UIFileIOBackstore(UIBackstore):
                         write_size = min(size, 1024)
                         f.write("\0" * write_size)
                         size -= write_size
-        except (OSError, IOError):
+        except OSError:
             os.remove(filename)
             raise ExecutionError("Could not expand file to %d bytes" % size)
         except OverflowError:
@@ -473,8 +470,7 @@ class UIFileIOBackstore(UIBackstore):
         write_back = self.ui_eval_param(write_back, 'bool', True)
         wwn = self.ui_eval_param(wwn, 'string', None)
 
-        self.shell.log.debug("Using params size=%s write_back=%s sparse=%s"
-                             % (size, write_back, sparse))
+        self.shell.log.debug(f"Using params size={size} write_back={write_back} sparse={sparse}")
 
         file_or_dev = os.path.expanduser(file_or_dev)
         # can't use is_dev_in_use() on files so just check against other
@@ -482,8 +478,7 @@ class UIFileIOBackstore(UIBackstore):
         if os.path.exists(file_or_dev):
             for so in RTSRoot().storage_objects:
                 if so.udev_path and os.path.samefile(file_or_dev, so.udev_path):
-                    raise ExecutionError("storage object for %s already exists: %s" % \
-                                             (file_or_dev, so.name))
+                    raise ExecutionError(f"storage object for {file_or_dev} already exists: {so.name}")
 
         if get_block_type(file_or_dev) is not None:
             if size:
@@ -495,11 +490,10 @@ class UIFileIOBackstore(UIBackstore):
             if os.path.isfile(file_or_dev):
                 new_size = os.path.getsize(file_or_dev)
                 if size:
-                    self.shell.log.info("%s exists, using its size (%s bytes) instead"
-                                        % (file_or_dev, new_size))
+                    self.shell.log.info(f"{file_or_dev} exists, using its size ({new_size} bytes) instead")
                 size = new_size
             elif os.path.exists(file_or_dev):
-                raise ExecutionError("Path %s exists but is not a file" % file_or_dev)
+                raise ExecutionError(f"Path {file_or_dev} exists but is not a file")
             else:
                 # create file and extend to given file size
                 if not size:
@@ -512,8 +506,7 @@ class UIFileIOBackstore(UIBackstore):
                                  write_back=write_back, wwn=wwn)
         ui_so = UIFileioStorageObject(so, self)
         self.setup_model_alias(so)
-        self.shell.log.info("Created fileio %s with size %s"
-                            % (name, so.size))
+        self.shell.log.info(f"Created fileio {name} with size {so.size}")
         return self.new_node(ui_so)
 
     def ui_complete_create(self, parameters, text, current_param):
@@ -540,13 +533,13 @@ class UIBlockBackstore(UIBackstore):
         BLKROGET=0x0000125E
         try:
             f = os.open(dev, os.O_RDONLY)
-        except (OSError, IOError):
-            raise ExecutionError("Could not open %s" % dev)
+        except OSError:
+            raise ExecutionError(f"Could not open {dev}")
         # ioctl returns an int. Provision a buffer for it
         buf = array.array('b', [0] * 4)
         try:
             fcntl.ioctl(f, BLKROGET, buf)
-        except (OSError, IOError):
+        except OSError:
             os.close(f)
             return False
 
@@ -574,8 +567,7 @@ class UIBlockBackstore(UIBackstore):
         so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn)
         ui_so = UIBlockStorageObject(so, self)
         self.setup_model_alias(so)
-        self.shell.log.info("Created block storage object %s using %s."
-                            % (name, dev))
+        self.shell.log.info(f"Created block storage object {name} using {dev}.")
         return self.new_node(ui_so)
 
     def ui_complete_create(self, parameters, text, current_param):
@@ -599,10 +591,10 @@ class UIUserBackedBackstore(UIBackstore):
         self.handler = name
         self.iface = iface
         self.prop_dict = prop_dict
-        super(UIUserBackedBackstore, self).__init__("user:"+name, parent)
+        super().__init__("user:"+name, parent)
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for so in RTSRoot().storage_objects:
             if so.plugin == 'user' and so.config:
                 idx = so.config.find("/")
@@ -611,7 +603,7 @@ class UIUserBackedBackstore(UIBackstore):
                     ui_so = self.so_cls(so, self)
 
     def ui_command_help(self, topic=None):
-        super(UIUserBackedBackstore, self).ui_command_help(topic)
+        super().ui_command_help(topic)
         if topic == "create":
             print("CFGSTRING FORMAT")
             print("=================")
@@ -642,7 +634,7 @@ class UIUserBackedBackstore(UIBackstore):
 
         ok, errmsg = self.iface.CheckConfig('(s)', config)
         if not ok:
-            raise ExecutionError("cfgstring invalid: %s" % errmsg)
+            raise ExecutionError(f"cfgstring invalid: {errmsg}")
 
         try:
             so = UserBackedStorageObject(name, size=size, config=config,
@@ -663,12 +655,12 @@ class UIUserBackedBackstore(UIBackstore):
         try:
             rc, errmsg = self.iface.ChangeMedium('(sts)', name, size, config)
         except Exception as e:
-            raise ExecutionError("ChangeMedium failed: %s" % e)
+            raise ExecutionError(f"ChangeMedium failed: {e}")
         else:
             if rc == 0:
                 self.shell.log.info("Medium Changed.")
             else:
-                raise ExecutionError("ChangeMedium failed: %s" % errmsg)
+                raise ExecutionError(f"ChangeMedium failed: {errmsg}")
 
 class UIStorageObject(UIRTSLibNode):
     '''
@@ -722,8 +714,7 @@ class UIStorageObject(UIRTSLibNode):
         '''
         Displays the version of the current backstore's plugin.
         '''
-        self.shell.con.display("Backstore plugin %s %s"
-                               % (self.rtsnode.plugin, self.rtsnode.version))
+        self.shell.con.display(f"Backstore plugin {self.rtsnode.plugin} {self.rtsnode.version}")
 
     def ui_command_saveconfig(self, savefile=None):
         '''
@@ -742,14 +733,13 @@ class UIStorageObject(UIRTSLibNode):
         rn.rtsroot.save_to_file(savefile,
                                 '/backstores/' + so.plugin  + '/' + so.name)
 
-        self.shell.log.info("Storage Object '%s:%s' config saved to %s."
-                            % (so.plugin, so.name, savefile))
+        self.shell.log.info(f"Storage Object '{so.plugin}:{so.name}' config saved to {savefile}.")
 
 
 class UIPSCSIStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
-        return ("%s %s" % (so.udev_path, so.status), True)
+        return (f"{so.udev_path} {so.status}", True)
 
 
 class UIRamdiskStorageObject(UIStorageObject):
@@ -760,7 +750,7 @@ class UIRamdiskStorageObject(UIStorageObject):
         if so.nullio:
             nullio_str = "nullio "
 
-        return ("%s(%s) %s" % (nullio_str, bytes_to_human(so.size), so.status), True)
+        return (f"{nullio_str}({bytes_to_human(so.size)}) {so.status}", True)
 
 
 class UIFileioStorageObject(UIStorageObject):
@@ -772,8 +762,7 @@ class UIFileioStorageObject(UIStorageObject):
         else:
             wb_str = "write-thru"
 
-        return ("%s (%s) %s %s" % (so.udev_path, bytes_to_human(so.size),
-                                   wb_str, so.status), True)
+        return (f"{so.udev_path} ({bytes_to_human(so.size)}) {wb_str} {so.status}", True)
 
 
 class UIBlockStorageObject(UIStorageObject):
@@ -789,8 +778,7 @@ class UIBlockStorageObject(UIStorageObject):
         if so.readonly:
             ro_str = "ro "
 
-        return ("%s (%s) %s%s %s" % (so.udev_path, bytes_to_human(so.size),
-                                   ro_str, wb_str, so.status), True)
+        return f"{so.udev_path} ({bytes_to_human(so.size)}) {ro_str}{wb_str} {so.status}", True
 
 
 class UIUserBackedStorageObject(UIStorageObject):
@@ -803,4 +791,4 @@ class UIUserBackedStorageObject(UIStorageObject):
             idx = so.config.find("/")
             config_str = so.config[idx+1:]
 
-        return ("%s (%s) %s" % (config_str, bytes_to_human(so.size), so.status), True)
+        return (f"{config_str} ({bytes_to_human(so.size)}) {so.status}", True)

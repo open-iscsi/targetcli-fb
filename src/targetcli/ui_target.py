@@ -22,7 +22,6 @@ try:
 except ImportError:
     ethtool = None
 import os
-import six
 import stat
 
 from configshell_fb import ExecutionError
@@ -42,7 +41,7 @@ class UIFabricModule(UIRTSLibNode):
     A fabric module UI.
     '''
     def __init__(self, fabric_module, parent):
-        super(UIFabricModule, self).__init__(fabric_module.name,
+        super().__init__(fabric_module.name,
                                              fabric_module, parent,
                                              late_params=True)
         self.refresh()
@@ -67,7 +66,7 @@ class UIFabricModule(UIRTSLibNode):
     # them from us.
     # Currently fabricmodules don't have these anyways, this is all a CYA thing.
     def list_config_groups(self):
-        groups = super(UIFabricModule, self).list_config_groups()
+        groups = super().list_config_groups()
         if len(self.rtsnode.list_parameters()):
             groups.append('parameter')
         if len(self.rtsnode.list_attributes()):
@@ -77,7 +76,7 @@ class UIFabricModule(UIRTSLibNode):
     # Support late params (see above)
     def list_group_params(self, group, writable=None):
         if group not in ("parameter", "attribute"):
-            return super(UIFabricModule, self).list_group_params(group,
+            return super().list_group_params(group,
                                                                  writable)
 
         params_func = getattr(self.rtsnode, "list_%ss" % group)
@@ -97,13 +96,12 @@ class UIFabricModule(UIRTSLibNode):
     # Support late params (see above)
     def get_group_param(self, group, param):
         if group not in ("parameter", "attribute"):
-            return super(UIFabricModule, self).get_group_param(group, param)
+            return super().get_group_param(group, param)
 
         if param not in self.list_group_params(group):
-            raise ValueError("Not such parameter %s in configuration group %s"
-                             % (param, group))
+            raise ValueError(f"Not such parameter {param} in configuration group {group}")
 
-        description = "The %s %s." % (param, group)
+        description = f"The {param} {group}."
         writable = param in self.list_group_params(group, writable=True)
 
         return dict(name=param, group=group, type="string",
@@ -141,10 +139,9 @@ class UIFabricModule(UIRTSLibNode):
             setattr(self.rtsnode, "discovery_" + auth_attr, value)
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for target in self.rtsnode.targets:
-            self.shell.log.debug("Found target %s under fabric module %s."
-                                 % (target.wwn, target.fabric_module))
+            self.shell.log.debug(f"Found target {target.wwn} under fabric module {target.fabric_module}.")
             if target.has_feature('tpgts'):
                 UIMultiTPGTarget(target, self)
             else:
@@ -284,8 +281,7 @@ class UIFabricModule(UIRTSLibNode):
         '''
         Displays the target fabric module version.
         '''
-        version = "Target fabric module %s: %s" \
-                % (self.rtsnode.name, self.rtsnode.version)
+        version = f"Target fabric module {self.rtsnode.name}: {self.rtsnode.version}"
         self.shell.con.display(version.strip())
 
 
@@ -294,11 +290,11 @@ class UIMultiTPGTarget(UIRTSLibNode):
     A generic target UI that has multiple TPGs.
     '''
     def __init__(self, target, parent):
-        super(UIMultiTPGTarget, self).__init__(target.wwn, target, parent)
+        super().__init__(target.wwn, target, parent)
         self.refresh()
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for tpg in self.rtsnode.tpgs:
             UITPG(tpg, self)
 
@@ -446,7 +442,7 @@ class UITPG(UIRTSLibNode):
     '''
     def __init__(self, tpg, parent):
         name = "tpg%d" % tpg.tag
-        super(UITPG, self).__init__(name, tpg, parent)
+        super().__init__(name, tpg, parent)
         self.refresh()
 
         UILUNs(tpg, self)
@@ -553,7 +549,7 @@ class UITarget(UITPG):
     A generic target UI merged with its only TPG.
     '''
     def __init__(self, target, parent):
-        super(UITarget, self).__init__(TPG(target, 1), parent)
+        super().__init__(TPG(target, 1), parent)
         self._name = target.wwn
         self.target = target
         if self.parent.name != "sbp":
@@ -565,7 +561,7 @@ class UITarget(UITPG):
         except:
             return ("INVALID WWN", False)
 
-        return super(UITarget, self).summary()
+        return super().summary()
 
 
 class UINodeACLs(UINode):
@@ -573,12 +569,12 @@ class UINodeACLs(UINode):
     A generic UI for node ACLs.
     '''
     def __init__(self, tpg, parent):
-        super(UINodeACLs, self).__init__("acls", parent)
+        super().__init__("acls", parent)
         self.tpg = tpg
         self.refresh()
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for name in self.all_names():
             UINodeACL(name, self)
 
@@ -663,7 +659,7 @@ class UINodeACLs(UINode):
                 yield na
 
     def all_names(self):
-        names = set([])
+        names = set()
 
         for na in self.tpg.node_acls:
             if na.tag:
@@ -802,7 +798,7 @@ class UINodeACL(UIRTSLibNode):
         # Don't want to duplicate work in UIRTSLibNode, so call it but
         # del self.rtsnode to make sure we always use self.rtsnodes.
         self.rtsnodes = list(parent.find_tagged(name))
-        super(UINodeACL, self).__init__(name, self.rtsnodes[0], parent)
+        super().__init__(name, self.rtsnodes[0], parent)
         del self.rtsnode
 
         if self.parent.parent.rtsnode.has_feature('auth'):
@@ -839,7 +835,7 @@ class UINodeACL(UIRTSLibNode):
             setattr(na, "chap_" + auth_attr, value)
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for mlun in self.rtsnodes[0].mapped_luns:
             UIMappedLUN(mlun, self)
 
@@ -1034,9 +1030,9 @@ class UINodeACL(UIRTSLibNode):
         for item in ('attributes', 'parameters', "node_wwn"):
             if item in info:
                 del info[item]
-        for name, value in sorted(six.iteritems(info)):
+        for name, value in sorted(info.items()):
             if not isinstance (value, (dict, list)):
-                self.shell.log.info("%s: %s" % (name, value))
+                self.shell.log.info(f"{name}: {value}")
         self.shell.log.info("wwns:")
         for na in self.parent.find_tagged(self.name):
             self.shell.log.info(na.node_wwn)
@@ -1048,7 +1044,7 @@ class UIMappedLUN(UIRTSLibNode):
     '''
     def __init__(self, mapped_lun, parent):
         name = "mapped_lun%d" % mapped_lun.mapped_lun
-        super(UIMappedLUN, self).__init__(name, mapped_lun, parent)
+        super().__init__(name, mapped_lun, parent)
         self.refresh()
 
     def summary(self):
@@ -1076,12 +1072,12 @@ class UILUNs(UINode):
     A generic UI for TPG LUNs.
     '''
     def __init__(self, tpg, parent):
-        super(UILUNs, self).__init__("luns", parent)
+        super().__init__("luns", parent)
         self.tpg = tpg
         self.refresh()
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for lun in self.tpg.luns:
             UILUN(lun, self)
 
@@ -1129,8 +1125,7 @@ class UILUNs(UINode):
             self.get_node("/backstores").refresh()
 
         if so in (l.storage_object for l in self.parent.rtsnode.luns):
-            raise ExecutionError("lun for storage object %s/%s already exists" \
-                                     % (so.plugin, so.name))
+            raise ExecutionError(f"lun for storage object {so.plugin}/{so.name} already exists")
 
         if lun and lun.lower().startswith('lun'):
             lun = lun[3:]
@@ -1240,7 +1235,7 @@ class UILUN(UIRTSLibNode):
     '''
     def __init__(self, lun, parent):
         name = "lun%d" % lun.lun
-        super(UILUN, self).__init__(name, lun, parent)
+        super().__init__(name, lun, parent)
         self.refresh()
 
         self.define_config_group_param("alua", "alua_tg_pt_gp_name", 'string')
@@ -1254,7 +1249,7 @@ class UILUN(UIRTSLibNode):
             description = "BROKEN STORAGE LINK"
             is_healthy = False
         else:
-            description = "%s/%s" % (storage_object.plugin, storage_object.name,)
+            description = f"{storage_object.plugin}/{storage_object.name}"
             if storage_object.udev_path:
                 description += " (%s)" % storage_object.udev_path
 
@@ -1278,12 +1273,12 @@ class UIPortals(UINode):
     A generic UI for TPG network portals.
     '''
     def __init__(self, tpg, parent):
-        super(UIPortals, self).__init__("portals", parent)
+        super().__init__("portals", parent)
         self.tpg = tpg
         self.refresh()
 
     def refresh(self):
-        self._children = set([])
+        self._children = set()
         for portal in self.tpg.network_portals:
             UIPortal(portal, self)
 
@@ -1389,8 +1384,7 @@ class UIPortals(UINode):
         portal = NetworkPortal(self.tpg, self._canonicalize_ip(ip_address),
                                ip_port, mode='lookup')
         portal.delete()
-        self.shell.log.info("Deleted network portal %s:%s"
-                            % (ip_address, ip_port))
+        self.shell.log.info(f"Deleted network portal {ip_address}:{ip_port}")
         self.refresh()
 
     def ui_complete_delete(self, parameters, text, current_param):
@@ -1409,7 +1403,7 @@ class UIPortals(UINode):
         # TODO: Check if a dict comprehension is acceptable here with supported
         #  XXX: python versions.
         portals = {}
-        all_ports = set([])
+        all_ports = set()
         for portal in self.tpg.network_portals:
             all_ports.add(str(portal.port))
             portal_ip = portal.ip_address.strip('[]')
@@ -1444,8 +1438,8 @@ class UIPortal(UIRTSLibNode):
     A generic UI for a network portal.
     '''
     def __init__(self, portal, parent):
-        name = "%s:%s" % (portal.ip_address, portal.port)
-        super(UIPortal, self).__init__(name, portal, parent)
+        name = f"{portal.ip_address}:{portal.port}"
+        super().__init__(name, portal, parent)
         self.refresh()
 
     def summary(self):

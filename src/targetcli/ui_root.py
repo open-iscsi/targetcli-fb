@@ -51,7 +51,7 @@ class UIRoot(UINode):
         '''
         Refreshes the tree of target fabric modules.
         '''
-        self._children = set([])
+        self._children = set()
 
         # Invalidate any rtslib caches
         if 'invalidate_caches' in dir(RTSRoot):
@@ -72,24 +72,21 @@ class UIRoot(UINode):
             try:
                 with gzip.open(backupfile, 'rb') as fbkp:
                     fdata_bkp = fbkp.read()
-            except IOError as e:
-                self.shell.log.warning("Could not gzip open backupfile %s: %s"
-                                       % (backupfile, e.strerror))
+            except OSError as e:
+                self.shell.log.warning(f"Could not gzip open backupfile {backupfile}: {e.strerror}")
 
         else:
             try:
                 with open(backupfile, 'rb') as fbkp:
                     fdata_bkp = fbkp.read()
-            except IOError as e:
-                self.shell.log.warning("Could not open backupfile %s: %s"
-                                       % (backupfile, e.strerror))
+            except OSError as e:
+                self.shell.log.warning(f"Could not open backupfile {backupfile}: {e.strerror}")
 
         try:
             with open(savefile, 'rb') as f:
                 fdata = f.read()
-        except IOError as e:
-            self.shell.log.warning("Could not open saveconfig file %s: %s"
-                                   % (savefile, e.strerror))
+        except OSError as e:
+            self.shell.log.warning(f"Could not open saveconfig file {savefile}: {e.strerror}")
 
         if fdata_bkp == fdata:
             return True
@@ -108,8 +105,7 @@ class UIRoot(UINode):
             try:
                 os.makedirs(dirname, mode)
             except OSError as exe:
-                raise ExecutionError("Cannot create directory [%s] %s."
-                                     % (dirname, exe.strerror))
+                raise ExecutionError(f"Cannot create directory [{dirname}] {exe.strerror}.")
             finally:
                 os.umask(umask_original)
         else:
@@ -149,7 +145,7 @@ class UIRoot(UINode):
                 with open(savefile, 'rb') as f_in, gzip.open(backupfile, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
                     f_out.flush()
-            except IOError as ioe:
+            except OSError as ioe:
                 backup_error = ioe.strerror or "Unknown error"
             finally:
                 os.umask(umask_original)
@@ -160,11 +156,12 @@ class UIRoot(UINode):
 
                 try:
                     with open(universal_prefs_file) as prefs:
-                        backups = [line for line in prefs.read().splitlines() if re.match('^max_backup_files\s*=', line)]
+                        backups = [line for line in prefs.read().splitlines() if re.match(
+                            r'^max_backup_files\s*=', line)]
                         if max_backup_files < int(backups[0].split('=')[1].strip()):
                             max_backup_files = int(backups[0].split('=')[1].strip())
                 except:
-                    self.shell.log.debug("No universal prefs file '%s'." % universal_prefs_file)
+                    self.shell.log.debug(f"No universal prefs file '{universal_prefs_file}'.")
 
                 files_to_unlink = list(reversed(backed_files_list))[max_backup_files - 1:]
                 for f in files_to_unlink:
@@ -174,8 +171,7 @@ class UIRoot(UINode):
                 self.shell.log.info("Last %d configs saved in %s."
                                     % (max_backup_files, backup_dir))
             else:
-                self.shell.log.warning("Could not create backup file %s: %s."
-                                       % (backupfile, backup_error))
+                self.shell.log.warning(f"Could not create backup file {backupfile}: {backup_error}.")
 
     def ui_command_saveconfig(self, savefile=default_save_file):
         '''
@@ -195,7 +191,7 @@ class UIRoot(UINode):
 
         self.rtsroot.save_to_file(savefile)
 
-        self.shell.log.info("Configuration saved to %s" % savefile)
+        self.shell.log.info(f"Configuration saved to {savefile}")
 
     def ui_command_restoreconfig(self, savefile=default_save_file, clear_existing=False,
                                  target=None, storage_object=None):
@@ -207,7 +203,7 @@ class UIRoot(UINode):
         savefile = os.path.expanduser(savefile)
 
         if not os.path.isfile(savefile):
-            self.shell.log.info("Restore file %s not found" % savefile)
+            self.shell.log.info(f"Restore file {savefile} not found")
             return
 
         target = self.ui_eval_param(target, 'string', None)
@@ -221,7 +217,7 @@ class UIRoot(UINode):
             raise ExecutionError("Configuration restored, %d recoverable errors:\n%s" % \
                                      (len(errors), "\n".join(errors)))
 
-        self.shell.log.info("Configuration restored from %s" % savefile)
+        self.shell.log.info(f"Configuration restored from {savefile}")
 
     def ui_complete_saveconfig(self, parameters, text, current_param):
         '''
@@ -255,7 +251,7 @@ class UIRoot(UINode):
         Displays the targetcli and support libraries versions.
         '''
         from targetcli import __version__ as targetcli_version
-        self.shell.log.info("targetcli version %s" % targetcli_version)
+        self.shell.log.info(f"targetcli version {targetcli_version}")
 
     def ui_command_sessions(self, action="list", sid=None):
         '''
@@ -285,13 +281,12 @@ class UIRoot(UINode):
         action_list = ("list", "detail")
 
         if action not in action_list:
-            raise ExecutionError("action must be one of: %s" %
-                                                    ", ".join(action_list))
+            raise ExecutionError(f"action must be one of: {', '.join(action_list)}")
         if sid is not None:
             try:
                 int(sid)
             except ValueError:
-                raise ExecutionError("sid must be a number, '%s' given" % sid)
+                raise ExecutionError(f"sid must be a number, '{sid}' given")
 
         def indent_print(text, steps):
             console = self.shell.con
@@ -313,7 +308,7 @@ class UIRoot(UINode):
                 else:
                     auth = ""
 
-                indent_print("name: %s%s" % (acl.node_wwn, auth),
+                indent_print(f"name: {acl.node_wwn}{auth}",
                                  base_steps + 1)
 
                 for mlun in acl.mapped_luns:
