@@ -153,18 +153,18 @@ class UIRTSLibNode(UINode):
         parameters_ro = self.rtsnode.list_parameters(writable=False)
         for parameter in parameters:
             writable = parameter not in parameters_ro
-            type, desc = getattr(self.__class__, 'ui_desc_parameters', {}).get(parameter, ('string', ''))
+            param_type, desc = getattr(self.__class__, 'ui_desc_parameters', {}).get(parameter, ('string', ''))
             self.define_config_group_param(
-                'parameter', parameter, type, desc, writable)
+                'parameter', parameter, param_type, desc, writable)
 
         # If the rtsnode has attributes, enable them
         attributes = self.rtsnode.list_attributes()
         attributes_ro = self.rtsnode.list_attributes(writable=False)
         for attribute in attributes:
             writable = attribute not in attributes_ro
-            type, desc = getattr(self.__class__, 'ui_desc_attributes', {}).get(attribute, ('string', ''))
+            param_type, desc = getattr(self.__class__, 'ui_desc_attributes', {}).get(attribute, ('string', ''))
             self.define_config_group_param(
-                'attribute', attribute, type, desc, writable)
+                'attribute', attribute, param_type, desc, writable)
 
     def ui_getgroup_attribute(self, attribute):
         '''
