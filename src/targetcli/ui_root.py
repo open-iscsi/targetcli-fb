@@ -87,10 +87,7 @@ class UIRoot(UINode):
         except OSError as e:
             self.shell.log.warning(f"Could not open saveconfig file {savefile}: {e.strerror}")
 
-        if fdata_bkp == fdata:
-            return True
-        else:
-            return False
+        return fdata_bkp == fdata
 
     def _create_dir(self, dirname):
         '''
@@ -108,9 +105,8 @@ class UIRoot(UINode):
             finally:
                 os.umask(umask_original)
         else:
-            if dirname == default_target_dir:
-                if (os.stat(dirname).st_mode & 0o777) != mode:
-                    os.chmod(dirname, mode)
+            if dirname == default_target_dir and (os.stat(dirname).st_mode & 0o777) != mode:
+                os.chmod(dirname, mode)
 
     def _save_backups(self, savefile):
         '''
@@ -300,10 +296,7 @@ class UIRoot(UINode):
 
             if action == 'detail':
                 if self.as_root:
-                    if acl.authenticate_target:
-                        auth = " (authenticated)"
-                    else:
-                        auth = " (NOT AUTHENTICATED)"
+                    auth = " (authenticated)" if acl.authenticate_target else " (NOT AUTHENTICATED)"
                 else:
                     auth = ""
 
@@ -313,10 +306,7 @@ class UIRoot(UINode):
                 for mlun in acl.mapped_luns:
                     plugin = mlun.tpg_lun.storage_object.plugin
                     name = mlun.tpg_lun.storage_object.name
-                    if mlun.write_protect:
-                        mode = "r"
-                    else:
-                        mode = "rw"
+                    mode = "r" if mlun.write_protect else "rw"
                     indent_print("mapped-lun: %d backstore: %s/%s mode: %s" %
                                  (mlun.mapped_lun, plugin, name, mode),
                                  base_steps + 1)

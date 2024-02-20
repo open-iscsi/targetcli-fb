@@ -161,10 +161,7 @@ class UIFabricModule(UIRTSLibNode):
 
         fm = self.rtsnode
         if fm.has_feature('discovery_auth') and fm.discovery_enable_auth:
-            if not (fm.discovery_password and fm.discovery_userid):
-                status = False
-            else:
-                status = True
+            status = bool(fm.discovery_password and fm.discovery_userid)
 
             if fm.discovery_authenticate_target:
                 msg.append("mutual disc auth")
@@ -661,9 +658,7 @@ class UINodeACLs(UINode):
 
     def find_tagged(self, name):
         for na in self.tpg.node_acls:
-            if na.node_wwn == name:
-                yield na
-            elif na.tag == name:
+            if na.node_wwn == name or na.tag == name:
                 yield na
 
     def all_names(self):
@@ -766,10 +761,7 @@ class UINodeACLs(UINode):
         @return: Possible completions
         @rtype: list of str
         '''
-        if current_param == 'wwn_or_tag':
-            completions = [n for n in self.all_names() if n.startswith(text)]
-        else:
-            completions = []
+        completions = [n for n in self.all_names() if n.startswith(text)] if current_param == 'wwn_or_tag' else []
 
         if len(completions) == 1:
             return [completions[0] + ' ']
@@ -1064,10 +1056,7 @@ class UIMappedLUN(UIRTSLibNode):
             description = "BROKEN LUN LINK"
             is_healthy = False
         else:
-            if mapped_lun.write_protect:
-                access_mode = 'ro'
-            else:
-                access_mode = 'rw'
+            access_mode = 'ro' if mapped_lun.write_protect else 'rw'
             description = "lun%d %s/%s (%s)" \
             % (tpg_lun.lun, tpg_lun.storage_object.plugin,
                tpg_lun.storage_object.name, access_mode)
@@ -1143,10 +1132,7 @@ class UILUNs(UINode):
 
         if add_mapped_luns:
             for acl in self.tpg.node_acls:
-                if lun:
-                    mapped_lun = lun
-                else:
-                    mapped_lun = 0
+                mapped_lun = lun if lun else 0
                 existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
                 if mapped_lun in existing_mluns:
                     possible_mlun = 0

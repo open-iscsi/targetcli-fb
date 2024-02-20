@@ -561,11 +561,7 @@ class UIBlockBackstore(UIBackstore):
         self.assert_root()
 
         ro_string = self.ui_eval_param(readonly, 'string', None)
-        if ro_string is None:
-            # attempt to detect block device readonly state via ioctl
-            readonly = self._ui_block_ro_check(dev)
-        else:
-            readonly = self.ui_eval_param(readonly, 'bool', False)
+        readonly = self._ui_block_ro_check(dev) if ro_string is None else self.ui_eval_param(readonly, "bool", False)
 
         wwn = self.ui_eval_param(wwn, 'string', None)
 
@@ -764,10 +760,7 @@ class UIFileioStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
 
-        if so.write_back:
-            wb_str = "write-back"
-        else:
-            wb_str = "write-thru"
+        wb_str = "write-back" if so.write_back else "write-thru"
 
         return (f"{so.udev_path} ({bytes_to_human(so.size)}) {wb_str} {so.status}", True)
 
@@ -776,10 +769,7 @@ class UIBlockStorageObject(UIStorageObject):
     def summary(self):
         so = self.rtsnode
 
-        if so.write_back:
-            wb_str = "write-back"
-        else:
-            wb_str = "write-thru"
+        wb_str = "write-back" if so.write_back else "write-thru"
 
         ro_str = ""
         if so.readonly:

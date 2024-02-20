@@ -19,6 +19,7 @@ under the License.
 '''
 
 
+import contextlib
 import fcntl
 import readline
 import socket
@@ -325,7 +326,5 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         main()
-    except KeyboardInterrupt:
-        pass

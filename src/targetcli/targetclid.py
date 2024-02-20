@@ -19,6 +19,7 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
+import contextlib
 import errno
 import fcntl
 import os
@@ -223,10 +224,8 @@ def main():
         to.sock = sock
     else:
         # Make sure file doesn't exist already
-        try:
+        with contextlib.suppress(FileNotFoundError):
             unlink(to.socket_path)
-        except FileNotFoundError:
-            pass
 
         # Create a TCP/IP socket
         try:
