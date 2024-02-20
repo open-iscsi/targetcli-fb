@@ -96,7 +96,7 @@ def try_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                f"taking lock on lockfile failed: {str(e)}",
+                f"taking lock on lockfile failed: {e!s}",
                 'red'))
         sys.exit(1)
 
@@ -109,7 +109,7 @@ def release_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                f"unlock on lockfile failed: {str(e)}",
+                f"unlock on lockfile failed: {e!s}",
                 'red'))
         sys.exit(1)
     lkfd.close()
@@ -260,7 +260,7 @@ def main():
         lkfd = open(lock_file, 'w+')
     except OSError as e:
         shell.con.display(
-                shell.con.render_text(f"opening lockfile failed: {str(e)}",
+                shell.con.render_text(f"opening lockfile failed: {e!s}",
                     'red'))
         sys.exit(1)
 
