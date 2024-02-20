@@ -112,8 +112,8 @@ class UIFabricModule(UIRTSLibNode):
         description = f"The {param} {group}."
         writable = param in self.list_group_params(group, writable=True)
 
-        return dict(name=param, group=group, type="string",
-                    description=description, writable=writable)
+        return {'name': param, 'group': group, 'type': "string",
+                'description': description, 'writable': writable}
 
     def ui_getgroup_discovery_auth(self, auth_attr):
         '''
