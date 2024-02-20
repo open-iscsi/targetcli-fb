@@ -225,7 +225,7 @@ def main():
         # Make sure file doesn't exist already
         try:
             unlink(to.socket_path)
-        except:
+        except FileNotFoundError:
             pass
 
         # Create a TCP/IP socket
