@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.scripts]
-targetcli = "targetcli.targetcli:main"
+targetcli = "targetcli.targetcli_shell:main"
 targetclid = "targetcli.targetclid:main"
 
 [project.urls]
