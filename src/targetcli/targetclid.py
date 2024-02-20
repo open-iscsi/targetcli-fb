@@ -271,7 +271,7 @@ def main():
         thread.start()
         try:
             thread.join()
-        except:
+        except Exception as error:
             to.display(to.render(str(error), 'red'))
 
     to.release_pidfile_lock()
