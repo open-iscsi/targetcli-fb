@@ -535,7 +535,7 @@ class UIBlockBackstore(UIBackstore):
         UIBackstore.__init__(self, 'block', parent)
 
     def _ui_block_ro_check(self, dev):
-        BLKROGET=0x0000125E
+        BLKROGET=0x0000125E  # noqa: N806
         try:
             f = os.open(dev, os.O_RDONLY)
         except OSError:
