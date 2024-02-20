@@ -25,9 +25,17 @@ import os
 import stat
 
 from configshell_fb import ExecutionError
-from rtslib_fb import RTSLibBrokenLink, RTSLibError
-from rtslib_fb import MappedLUN, NetworkPortal, NodeACL
-from rtslib_fb import LUN, Target, TPG, StorageObjectFactory
+from rtslib_fb import (
+    LUN,
+    TPG,
+    MappedLUN,
+    NetworkPortal,
+    NodeACL,
+    RTSLibBrokenLink,
+    RTSLibError,
+    StorageObjectFactory,
+    Target,
+)
 
 from .ui_backstore import complete_path
 from .ui_node import UINode, UIRTSLibNode

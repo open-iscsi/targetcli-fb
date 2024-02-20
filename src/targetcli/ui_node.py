@@ -20,6 +20,7 @@ under the License.
 
 from configshell_fb import ConfigNode, ExecutionError
 
+
 class UINode(ConfigNode):
     '''
     Our targetcli basic UI node.

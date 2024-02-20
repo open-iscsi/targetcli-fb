@@ -17,19 +17,19 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from datetime import datetime
-from glob import glob
+import gzip
 import os
 import re
 import shutil
 import stat
-import gzip
+from datetime import datetime
+from glob import glob
 
 from configshell_fb import ExecutionError
 from rtslib_fb import RTSRoot
 from rtslib_fb.utils import ignored
 
-from .ui_backstore import complete_path, UIBackstores
+from .ui_backstore import UIBackstores, complete_path
 from .ui_node import UINode
 from .ui_target import UIFabricModule
 

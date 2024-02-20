@@ -17,21 +17,26 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from gi.repository import Gio
+import array
+import fcntl
 import glob
 import os
-import fcntl
-import array
-import struct
 import re
 import stat
+import struct
 
 from configshell_fb import ExecutionError
-from rtslib_fb import BlockStorageObject, FileIOStorageObject
-from rtslib_fb import PSCSIStorageObject, RDMCPStorageObject, UserBackedStorageObject
-from rtslib_fb import ALUATargetPortGroup
-from rtslib_fb import RTSLibError
-from rtslib_fb import RTSRoot
+from gi.repository import Gio
+from rtslib_fb import (
+    ALUATargetPortGroup,
+    BlockStorageObject,
+    FileIOStorageObject,
+    PSCSIStorageObject,
+    RDMCPStorageObject,
+    RTSLibError,
+    RTSRoot,
+    UserBackedStorageObject,
+)
 from rtslib_fb.utils import get_block_type
 
 from .ui_node import UINode, UIRTSLibNode

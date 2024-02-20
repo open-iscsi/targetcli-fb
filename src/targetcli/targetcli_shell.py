@@ -19,7 +19,6 @@ under the License.
 '''
 
 
-import contextlib
 import fcntl
 import readline
 import socket
@@ -97,7 +96,7 @@ def try_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                f"taking lock on lockfile failed: {e!s}",
+                f"taking lock on lockfile failed: {str(e)}",
                 'red'))
         sys.exit(1)
 
@@ -110,7 +109,7 @@ def release_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                f"unlock on lockfile failed: {e!s}",
+                f"unlock on lockfile failed: {str(e)}",
                 'red'))
         sys.exit(1)
     lkfd.close()
@@ -178,7 +177,7 @@ def call_daemon(shell, req, interactive):
     if get_pwd:
         output_split = output.splitlines()
         lines = len(output_split)
-        for i in range(lines):
+        for i in range(0, lines):
             if i == lines-1:
                 path = str(output_split[i])
             else:
@@ -261,7 +260,7 @@ def main():
         lkfd = open(lock_file, 'w+')
     except OSError as e:
         shell.con.display(
-                shell.con.render_text(f"opening lockfile failed: {e!s}",
+                shell.con.render_text(f"opening lockfile failed: {str(e)}",
                     'red'))
         sys.exit(1)
 
@@ -312,11 +311,11 @@ def main():
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
-    try:
-        while not shell._exit:
+    while not shell._exit:
+        try:
             shell.run_interactive()
-    except (RTSLibError, ExecutionError) as msg:
-        shell.log.error(str(msg))
+        except (RTSLibError, ExecutionError) as msg:
+            shell.log.error(str(msg))
 
     if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")
@@ -326,5 +325,7 @@ def main():
 
 
 if __name__ == "__main__":
-    with contextlib.suppress(KeyboardInterrupt):
+    try:
         main()
+    except KeyboardInterrupt:
+        pass
