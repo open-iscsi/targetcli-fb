@@ -19,17 +19,19 @@ under the License.
 '''
 
 
-from os import getuid, getenv
-from targetcli import UIRoot
-from rtslib_fb import RTSLibError
-from configshell_fb import ConfigShell, ExecutionError
-from targetcli import __version__ as targetcli_version
-
-import sys
+import contextlib
+import fcntl
+import readline
 import socket
 import struct
-import readline
-import fcntl
+import sys
+from os import getenv, getuid
+
+from configshell_fb import ConfigShell, ExecutionError
+from rtslib_fb import RTSLibError
+
+from targetcli import __version__ as targetcli_version
+from targetcli.ui_root import UIRoot
 
 err = sys.stderr
 # lockfile for serializing multiple targetcli requests
@@ -95,7 +97,7 @@ def try_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                f"taking lock on lockfile failed: {str(e)}",
+                f"taking lock on lockfile failed: {e!s}",
                 'red'))
         sys.exit(1)
 
@@ -108,7 +110,7 @@ def release_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                f"unlock on lockfile failed: {str(e)}",
+                f"unlock on lockfile failed: {e!s}",
                 'red'))
         sys.exit(1)
     lkfd.close()
@@ -176,7 +178,7 @@ def call_daemon(shell, req, interactive):
     if get_pwd:
         output_split = output.splitlines()
         lines = len(output_split)
-        for i in range(0, lines):
+        for i in range(lines):
             if i == lines-1:
                 path = str(output_split[i])
             else:
@@ -256,10 +258,10 @@ def main():
         is_root = True
 
     try:
-        lkfd = open(lock_file, 'w+');
+        lkfd = open(lock_file, 'w+')
     except OSError as e:
         shell.con.display(
-                shell.con.render_text(f"opening lockfile failed: {str(e)}",
+                shell.con.render_text(f"opening lockfile failed: {e!s}",
                     'red'))
         sys.exit(1)
 
@@ -310,11 +312,11 @@ def main():
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
-    while not shell._exit:
-        try:
+    try:
+        while not shell._exit:
             shell.run_interactive()
-        except (RTSLibError, ExecutionError) as msg:
-            shell.log.error(str(msg))
+    except (RTSLibError, ExecutionError) as msg:
+        shell.log.error(str(msg))
 
     if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")
@@ -324,7 +326,5 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         main()
-    except KeyboardInterrupt:
-        pass

@@ -19,5 +19,3 @@ under the License.
 import importlib.metadata
 
 __version__ = importlib.metadata.version('targetcli-fb')
-
-from .ui_root import UIRoot

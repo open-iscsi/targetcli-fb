@@ -252,7 +252,7 @@ class UIBackstores(UINode):
                                                     'org.kernel.TCMUService1',
                                                     None)
                 yield (k[k.rfind("/")+1:], tcmu_iface, v)
-        except Exception as e:
+        except Exception:
             return
 
     def refresh(self):
@@ -278,7 +278,7 @@ class UIBackstore(UINode):
         self._children = set()
         for so in RTSRoot().storage_objects:
             if so.plugin == self.name:
-                ui_so = self.so_cls(so, self)
+                self.so_cls(so, self)
 
     def summary(self):
         return (f"Storage Objects: {len(self._children)}", None)
@@ -600,7 +600,7 @@ class UIUserBackedBackstore(UIBackstore):
                 idx = so.config.find("/")
                 handler = so.config[:idx]
                 if handler == self.handler:
-                    ui_so = self.so_cls(so, self)
+                    self.so_cls(so, self)
 
     def ui_command_help(self, topic=None):
         super().ui_command_help(topic)

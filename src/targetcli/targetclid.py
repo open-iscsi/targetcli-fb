@@ -19,22 +19,23 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from targetcli import UIRoot
-from targetcli import __version__ as targetcli_version
-from configshell_fb import ConfigShell
-from os import getuid, getenv, unlink
+import contextlib
+import errno
+import fcntl
+import os
+import signal
+import socket
+import stat
+import struct
+import sys
+import tempfile
+from os import getenv, getuid, unlink
 from threading import Thread
 
-import os
-import sys
-import stat
-import socket
-import struct
-import fcntl
-import signal
-import errno
-import tempfile
+from configshell_fb import ConfigShell
 
+from targetcli import __version__ as targetcli_version
+from targetcli.ui_root import UIRoot
 
 err = sys.stderr
 
@@ -66,9 +67,8 @@ class TargetCLI:
             self.pfd = open(self.pid_file, 'w+')
         except OSError as e:
             self.display(
-                self.render(
-                    "opening pidfile failed: %s" %str(e),
-                    'red'))
+                self.render(f"opening pidfile failed: {e!s}", 'red'),
+            )
             sys.exit(1)
 
         self.try_pidfile_lock()
@@ -100,7 +100,7 @@ class TargetCLI:
             self.pfd.close()
 
 
-    def signal_handler(self, signum, frame):
+    def signal_handler(self):
         '''
         signal handler
         '''
@@ -132,9 +132,8 @@ class TargetCLI:
             fcntl.fcntl(self.pfd, fcntl.F_SETLK, lock)
         except Exception as e:
             self.display(
-                self.render(
-                    "fcntl(UNLCK) on pidfile failed: %s" %str(e),
-                    'red'))
+                self.render(f"fcntl(UNLCK) on pidfile failed: {e!s}", 'red'),
+            )
             self.pfd.close()
             sys.exit(1)
         self.pfd.close()
@@ -180,7 +179,7 @@ class TargetCLI:
 
 
 def usage():
-    print("Usage: %s [--version|--help]" % sys.argv[0], file=err)
+    print(f"Usage: {sys.argv[0]} [--version|--help]", file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     sys.exit(0)
@@ -205,7 +204,7 @@ def main():
     '''
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
-        print("unrecognized option: %s" % (sys.argv[1]))
+        print(f"unrecognized option: {sys.argv[1]}")
         sys.exit(-1)
 
     to = TargetCLI()
@@ -223,10 +222,8 @@ def main():
         to.sock = sock
     else:
         # Make sure file doesn't exist already
-        try:
+        with contextlib.suppress(FileNotFoundError):
             unlink(to.socket_path)
-        except:
-            pass
 
         # Create a TCP/IP socket
         try:

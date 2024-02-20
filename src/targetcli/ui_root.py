@@ -23,7 +23,6 @@ import os
 import re
 import shutil
 import stat
-import filecmp
 import gzip
 
 from configshell_fb import ExecutionError
