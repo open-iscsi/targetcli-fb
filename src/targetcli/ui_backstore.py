@@ -556,7 +556,7 @@ class UIBlockBackstore(UIBackstore):
         self.assert_root()
 
         ro_string = self.ui_eval_param(readonly, 'string', None)
-        if ro_string == None:
+        if ro_string is None:
             # attempt to detect block device readonly state via ioctl
             readonly = self._ui_block_ro_check(dev)
         else:
@@ -683,11 +683,13 @@ class UIStorageObject(UIRTSLibNode):
         'emulate_write_cache': ('number', 'If set to 1, turn on Write Cache Enable.'),
         'emulate_pr': ('number', 'If set to 1, enable SCSI Reservations.'),
         'enforce_pr_isids': ('number', 'If set to 1, enforce persistent reservation ISIDs.'),
-        'force_pr_aptpl': ('number', 'If set to 1, force SPC-3 PR Activate Persistence across Target Power Loss operation.'),
+        'force_pr_aptpl': ('number',
+                           'If set to 1, force SPC-3 PR Activate Persistence across Target Power Loss operation.'),
         'fabric_max_sectors': ('number', 'Maximum number of sectors the fabric can transfer at once.'),
         'hw_block_size': ('number', 'Hardware block size in bytes.'),
         'hw_max_sectors': ('number', 'Maximum number of sectors the hardware can transfer at once.'),
-        'control': ('string', 'Comma separated string of control=value tuples that will be passed to kernel control file.'),
+        'control': ('string',
+                    'Comma separated string of control=value tuples that will be passed to kernel control file.'),
         'hw_pi_prot_type': ('number', 'If non-zero, DIF protection is enabled on the underlying hardware.'),
         'hw_queue_depth': ('number', 'Hardware queue depth.'),
         'is_nonrot': ('number', 'If set to 1, the backstore is a non rotational device.'),

@@ -186,7 +186,7 @@ class UIFabricModule(UIRTSLibNode):
 
         target = Target(self.rtsnode, wwn, mode='create')
         wwn = target.wwn
-        if self.rtsnode.wwns != None and wwn not in self.rtsnode.wwns:
+        if self.rtsnode.wwns is not None and wwn not in self.rtsnode.wwns:
             self.shell.log.warning("Hardware missing for this WWN")
 
         if target.has_feature('tpgts'):
@@ -1124,7 +1124,7 @@ class UILUNs(UINode):
                 raise ExecutionError("storage object or path not valid")
             self.get_node("/backstores").refresh()
 
-        if so in (l.storage_object for l in self.parent.rtsnode.luns):
+        if so in (lun.storage_object for lun in self.parent.rtsnode.luns):
             raise ExecutionError(f"lun for storage object {so.plugin}/{so.name} already exists")
 
         if lun and lun.lower().startswith('lun'):
@@ -1407,7 +1407,7 @@ class UIPortals(UINode):
         for portal in self.tpg.network_portals:
             all_ports.add(str(portal.port))
             portal_ip = portal.ip_address.strip('[]')
-            if not portal_ip in portals:
+            if portal_ip not in portals:
                 portals[portal_ip] = []
             portals[portal_ip].append(str(portal.port))
 

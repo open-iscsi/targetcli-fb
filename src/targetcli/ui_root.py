@@ -60,7 +60,7 @@ class UIRoot(UINode):
 
         # only show fabrics present in the system
         for fm in self.rtsroot.fabric_modules:
-            if fm.wwns == None or any(fm.wwns):
+            if fm.wwns is None or any(fm.wwns):
                 UIFabricModule(fm, self)
 
     def _compare_files(self, backupfile, savefile):
@@ -149,7 +149,7 @@ class UIRoot(UINode):
             finally:
                 os.umask(umask_original)
 
-            if backup_error == None:
+            if backup_error is None:
                 # remove excess backups
                 max_backup_files = int(self.shell.prefs['max_backup_files'])
 
