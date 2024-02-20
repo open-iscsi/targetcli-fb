@@ -290,8 +290,7 @@ class UIRoot(UINode):
 
         def print_session(session):
             acl = session['parent_nodeacl']
-            indent_print("alias: %(alias)s\tsid: %(id)i type: " \
-                             "%(type)s session-state: %(state)s" % session,
+            indent_print("alias: %(alias)s\tsid: %(id)i type: %(type)s session-state: %(state)s" % session,
                          base_steps)
 
             if action == 'detail':
@@ -312,9 +311,8 @@ class UIRoot(UINode):
                                  base_steps + 1)
 
                 for connection in session['connections']:
-                    indent_print("address: %(address)s (%(transport)s)  cid: " \
-                                     "%(cid)i connection-state: %(cstate)s" % \
-                                     connection, base_steps + 1)
+                    indent_print("address: %(address)s (%(transport)s)  cid: %(cid)i connection-state: %(cstate)s"
+                                 % connection, base_steps + 1)
 
         if sid:
             printed_sessions = [x for x in self.rtsroot.sessions if x['id'] == int(sid)]

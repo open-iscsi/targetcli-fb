@@ -67,9 +67,8 @@ class TargetCLI:
             self.pfd = open(self.pid_file, 'w+')
         except OSError as e:
             self.display(
-                self.render(
-                    "opening pidfile failed: %s" %str(e),
-                    'red'))
+                self.render(f"opening pidfile failed: {e!s}", 'red'),
+            )
             sys.exit(1)
 
         self.try_pidfile_lock()
@@ -133,9 +132,8 @@ class TargetCLI:
             fcntl.fcntl(self.pfd, fcntl.F_SETLK, lock)
         except Exception as e:
             self.display(
-                self.render(
-                    "fcntl(UNLCK) on pidfile failed: %s" %str(e),
-                    'red'))
+                self.render(f"fcntl(UNLCK) on pidfile failed: {e!s}", 'red'),
+            )
             self.pfd.close()
             sys.exit(1)
         self.pfd.close()
@@ -181,7 +179,7 @@ class TargetCLI:
 
 
 def usage():
-    print("Usage: %s [--version|--help]" % sys.argv[0], file=err)
+    print(f"Usage: {sys.argv[0]} [--version|--help]", file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     sys.exit(0)
@@ -206,7 +204,7 @@ def main():
     '''
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
-        print("unrecognized option: %s" % (sys.argv[1]))
+        print(f"unrecognized option: {sys.argv[1]}")
         sys.exit(-1)
 
     to = TargetCLI()

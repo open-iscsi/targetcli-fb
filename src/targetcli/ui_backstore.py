@@ -501,8 +501,7 @@ class UIFileIOBackstore(UIBackstore):
             else:
                 # create file and extend to given file size
                 if not size:
-                    raise ExecutionError("Attempting to create file for new" +
-                                         " fileio backstore, need a size")
+                    raise ExecutionError("Attempting to create file for new fileio backstore, need a size")
                 size = human_to_bytes(size)
                 self._create_file(file_or_dev, size, sparse)
 

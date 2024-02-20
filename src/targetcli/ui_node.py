@@ -35,8 +35,7 @@ class UINode(ConfigNode):
             'If true, automatically enables TPGTs upon creation.')
         self.define_config_group_param(
             'global', 'auto_add_mapped_luns', 'bool',
-            'If true, automatically create node ACLs mapped LUNs '
-            + 'after creating a new target LUN or a new node ACL')
+            'If true, automatically create node ACLs mapped LUNs after creating a new target LUN or a new node ACL')
         self.define_config_group_param(
             'global', 'auto_cd_after_create', 'bool',
             'If true, changes current path to newly created objects.')
@@ -63,8 +62,7 @@ class UINode(ConfigNode):
         '''
         root_node = self.get_root()
         if hasattr(root_node, 'as_root') and not self.get_root().as_root:
-            raise ExecutionError("This privileged command is disabled: "
-                                 + "you are not root.")
+            raise ExecutionError("This privileged command is disabled: you are not root.")
 
     def new_node(self, new_node):
         '''
@@ -75,7 +73,7 @@ class UINode(ConfigNode):
         self.shell.prefs['bookmarks']['last'] = new_node.path
         self.shell.prefs.save()
         if self.shell.prefs['auto_cd_after_create']:
-            self.shell.log.info("Entering new node %s" % new_node.path)
+            self.shell.log.info(f"Entering new node {new_node.path}")
             # Piggy backs on cd instead of just returning new_node,
             # so we update navigation history.
             return self.ui_command_cd(new_node.path)
