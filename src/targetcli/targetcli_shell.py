@@ -312,11 +312,11 @@ def main():
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
-    while not shell._exit:
-        try:
+    try:
+        while not shell._exit:
             shell.run_interactive()
-        except (RTSLibError, ExecutionError) as msg:
-            shell.log.error(str(msg))
+    except (RTSLibError, ExecutionError) as msg:
+        shell.log.error(str(msg))
 
     if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")

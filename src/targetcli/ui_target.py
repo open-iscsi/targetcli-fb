@@ -945,8 +945,8 @@ class UINodeACL(UIRTSLibNode):
         if current_param == 'tpg_lun_or_backstore':
             completions = []
             for backstore in self.get_node('/backstores').children:
-                for storage_object in backstore.children:
-                    completions.append(storage_object.path)
+                completions = [storage_object.path for storage_object in backstore.children]
+
             completions.extend(lun.name for lun in self.parent.parent.get_node("luns").children)
 
             completions.extend(complete_path(text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x)))
@@ -1159,8 +1159,7 @@ class UILUNs(UINode):
         if current_param == 'storage_object':
             storage_objects = []
             for backstore in self.get_node('/backstores').children:
-                for storage_object in backstore.children:
-                    storage_objects.append(storage_object.path)
+                storage_objects = [storage_object.path for storage_object in backstore.children]
             completions = [so for so in storage_objects if so.startswith(text)]
 
             completions.extend(complete_path(text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x)))
