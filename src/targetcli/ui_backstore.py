@@ -152,7 +152,6 @@ class UIALUATargetPortGroup(UIRTSLibNode):
         setattr(self.rtsnode, alua_attr, value)
 
     def summary(self):
-        self.rtsnode.alua_access_state
         return (f"ALUA state: {alua_state_names[self.rtsnode.alua_access_state]}", True)
 
 class UIALUATargetPortGroups(UINode):
