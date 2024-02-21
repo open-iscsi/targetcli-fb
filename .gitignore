@@ -15,9 +15,11 @@ dist/
 doc/
 *.pyc
 *.swp
-dpkg-buildpackage.log
-dpkg-buildpackage.version
 ./*.spec
 redhat/*.spec
 ./rtsadmin-*
 log/
+venv/
+.idea
+*egg-info/
+targetcli/version.py

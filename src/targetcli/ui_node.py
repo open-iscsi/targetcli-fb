@@ -17,9 +17,9 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-import six
 
 from configshell_fb import ConfigNode, ExecutionError
+
 
 class UINode(ConfigNode):
     '''
@@ -35,8 +35,7 @@ class UINode(ConfigNode):
             'If true, automatically enables TPGTs upon creation.')
         self.define_config_group_param(
             'global', 'auto_add_mapped_luns', 'bool',
-            'If true, automatically create node ACLs mapped LUNs '
-            + 'after creating a new target LUN or a new node ACL')
+            'If true, automatically create node ACLs mapped LUNs after creating a new target LUN or a new node ACL')
         self.define_config_group_param(
             'global', 'auto_cd_after_create', 'bool',
             'If true, changes current path to newly created objects.')
@@ -63,8 +62,7 @@ class UINode(ConfigNode):
         '''
         root_node = self.get_root()
         if hasattr(root_node, 'as_root') and not self.get_root().as_root:
-            raise ExecutionError("This privileged command is disabled: "
-                                 + "you are not root.")
+            raise ExecutionError("This privileged command is disabled: you are not root.")
 
     def new_node(self, new_node):
         '''
@@ -75,12 +73,11 @@ class UINode(ConfigNode):
         self.shell.prefs['bookmarks']['last'] = new_node.path
         self.shell.prefs.save()
         if self.shell.prefs['auto_cd_after_create']:
-            self.shell.log.info("Entering new node %s" % new_node.path)
+            self.shell.log.info(f"Entering new node {new_node.path}")
             # Piggy backs on cd instead of just returning new_node,
             # so we update navigation history.
             return self.ui_command_cd(new_node.path)
-        else:
-            return None
+        return None
 
     def refresh(self):
         '''
@@ -103,8 +100,8 @@ class UINode(ConfigNode):
         ========
         ls
         '''
-        description, is_healthy = self.summary()
-        self.shell.log.info("Status for %s: %s" % (self.path, description))
+        description, _is_healthy = self.summary()
+        self.shell.log.info(f"Status for {self.path}: {description}")
 
     def ui_setgroup_global(self, parameter, value):
         ConfigNode.ui_setgroup_global(self, parameter, value)
@@ -118,20 +115,16 @@ class UINode(ConfigNode):
         if reverse:
             if value is not None:
                 return value
-            else:
-                return 'n/a'
+            return 'n/a'
         type_enum = ('Yes', 'No')
         syntax = '|'.join(type_enum)
         if value is None:
             if enum:
                 return type_enum
-            else:
-                return syntax
-        elif value in type_enum:
+            return syntax
+        if value in type_enum:
             return value
-        else:
-            raise ValueError("Syntax error, '%s' is not %s."
-                             % (value, syntax))
+        raise ValueError(f"Syntax error, '{value}' is not {syntax}.")
 
 
 class UIRTSLibNode(UINode):
@@ -154,18 +147,18 @@ class UIRTSLibNode(UINode):
         parameters_ro = self.rtsnode.list_parameters(writable=False)
         for parameter in parameters:
             writable = parameter not in parameters_ro
-            type, desc = getattr(self.__class__, 'ui_desc_parameters', {}).get(parameter, ('string', ''))
+            param_type, desc = getattr(self.__class__, 'ui_desc_parameters', {}).get(parameter, ('string', ''))
             self.define_config_group_param(
-                'parameter', parameter, type, desc, writable)
+                'parameter', parameter, param_type, desc, writable)
 
         # If the rtsnode has attributes, enable them
         attributes = self.rtsnode.list_attributes()
         attributes_ro = self.rtsnode.list_attributes(writable=False)
         for attribute in attributes:
             writable = attribute not in attributes_ro
-            type, desc = getattr(self.__class__, 'ui_desc_attributes', {}).get(attribute, ('string', ''))
+            param_type, desc = getattr(self.__class__, 'ui_desc_attributes', {}).get(attribute, ('string', ''))
             self.define_config_group_param(
-                'attribute', attribute, type, desc, writable)
+                'attribute', attribute, param_type, desc, writable)
 
     def ui_getgroup_attribute(self, attribute):
         '''
@@ -214,6 +207,6 @@ class UIRTSLibNode(UINode):
         for item in ('attributes', 'parameters'):
             if item in info:
                 del info[item]
-        for name, value in sorted(six.iteritems(info)):
-            if not isinstance (value, (dict, list)):
-                self.shell.log.info("%s: %s" % (name, value))
+        for name, value in sorted(info.items()):
+            if not isinstance(value, (dict, list)):
+                self.shell.log.info(f"{name}: {value}")

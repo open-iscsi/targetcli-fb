@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 '''
 targetclid
 
@@ -19,23 +17,24 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from __future__ import print_function
-from targetcli import UIRoot
-from targetcli import __version__ as targetcli_version
-from configshell_fb import ConfigShell
-from os import getuid, getenv, unlink
+import contextlib
+import errno
+import fcntl
+import os
+import signal
+import socket
+import stat
+import struct
+import sys
+import tempfile
+from os import getenv, getuid
+from pathlib import Path
 from threading import Thread
 
-import os
-import sys
-import stat
-import socket
-import struct
-import fcntl
-import signal
-import errno
-import tempfile
+from configshell_fb import ConfigShell
 
+from targetcli import __version__ as targetcli_version
+from targetcli.ui_root import UIRoot
 
 err = sys.stderr
 
@@ -64,12 +63,11 @@ class TargetCLI:
         signal.signal(signal.SIGHUP, self.signal_handler)
 
         try:
-            self.pfd = open(self.pid_file, 'w+')
-        except IOError as e:
+            self.pfd = open(self.pid_file, 'w+')  # noqa: SIM115
+        except OSError as e:
             self.display(
-                self.render(
-                    "opening pidfile failed: %s" %str(e),
-                    'red'))
+                self.render(f"opening pidfile failed: {e!s}", 'red'),
+            )
             sys.exit(1)
 
         self.try_pidfile_lock()
@@ -101,7 +99,7 @@ class TargetCLI:
             self.pfd.close()
 
 
-    def signal_handler(self, signum, frame):
+    def signal_handler(self):
         '''
         signal handler
         '''
@@ -133,9 +131,8 @@ class TargetCLI:
             fcntl.fcntl(self.pfd, fcntl.F_SETLK, lock)
         except Exception as e:
             self.display(
-                self.render(
-                    "fcntl(UNLCK) on pidfile failed: %s" %str(e),
-                    'red'))
+                self.render(f"fcntl(UNLCK) on pidfile failed: {e!s}", 'red'),
+            )
             self.pfd.close()
             sys.exit(1)
         self.pfd.close()
@@ -163,40 +160,40 @@ class TargetCLI:
                     for cmd in list_data:
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
-                    print(str(e), file=f) # push error to stream
+                    print(str(e), file=f)  # push error to stream
 
                 # Restore
                 self.con._stdout = self.con_stdout_
                 self.con._stderr = self.con_stderr_
                 f.close()
 
-                with open(f.name, 'r') as f:
+                with open(f.name) as f:
                     output = f.read()
                     var = struct.pack('i', len(output))
-                    connection.sendall(var) # length of string
+                    connection.sendall(var)  # length of string
                     if len(output):
-                        connection.sendall(output.encode()) # actual string
+                        connection.sendall(output.encode())  # actual string
 
-                os.unlink(f.name)
+                Path(f.name).unlink()
 
 
 def usage():
-    print("Usage: %s [--version|--help]" % sys.argv[0], file=err)
+    print(f"Usage: {sys.argv[0]} [--version|--help]", file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     sys.exit(0)
 
 
 def version():
-    print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
+    print(f"{sys.argv[0]} version {targetcli_version}", file=err)
     sys.exit(0)
 
 
 def usage_version(cmd):
-    if cmd in ("help", "--help", "-h"):
+    if cmd in {"help", "--help", "-h"}:
         usage()
 
-    if cmd in ("version", "--version", "-v"):
+    if cmd in {"version", "--version", "-v"}:
         version()
 
 
@@ -206,7 +203,7 @@ def main():
     '''
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
-        print("unrecognized option: %s" % (sys.argv[1]))
+        print(f"unrecognized option: {sys.argv[1]}")
         sys.exit(-1)
 
     to = TargetCLI()
@@ -216,7 +213,7 @@ def main():
         fn = sys.stderr.fileno() + 1
         try:
             sock = socket.fromfd(fn, socket.AF_UNIX, socket.SOCK_STREAM)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
 
@@ -224,28 +221,26 @@ def main():
         to.sock = sock
     else:
         # Make sure file doesn't exist already
-        try:
-            unlink(to.socket_path)
-        except:
-            pass
+        with contextlib.suppress(FileNotFoundError):
+            Path(to.socket_path).unlink()
 
         # Create a TCP/IP socket
         try:
             sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
 
         # save socket so a signal can clea it up
         to.sock = sock
 
-        mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+        mode = stat.S_IRUSR | stat.S_IWUSR  # 0o600
         umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
         umask_original = os.umask(umask)
         # Bind the socket path
         try:
             sock.bind(to.socket_path)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
         finally:
@@ -254,15 +249,15 @@ def main():
         # Listen for incoming connections
         try:
             sock.listen(1)
-        except socket.error as err:
+        except OSError as err:
             to.display(to.render(err.strerror, 'red'))
             sys.exit(1)
 
     while to.NoSignal:
         try:
             # Wait for a connection
-            connection, client_address = sock.accept()
-        except socket.error as err:
+            connection, _client_address = sock.accept()
+        except OSError as err:
             if err.errno != errno.EBADF or to.NoSignal:
                 to.display(to.render(err.strerror, 'red'))
             break
@@ -271,7 +266,7 @@ def main():
         thread.start()
         try:
             thread.join()
-        except:
+        except Exception as error:
             to.display(to.render(str(error), 'red'))
 
     to.release_pidfile_lock()
