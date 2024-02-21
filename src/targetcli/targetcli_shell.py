@@ -1,4 +1,3 @@
-#!/usr/bin/python
 '''
 Starts the targetcli CLI shell.
 

@@ -18,4 +18,4 @@ under the License.
 
 import importlib.metadata
 
-__version__ = importlib.metadata.version('targetcli-fb')
+__version__ = importlib.metadata.version('targetcli')
