@@ -77,8 +77,7 @@ class UINode(ConfigNode):
             # Piggy backs on cd instead of just returning new_node,
             # so we update navigation history.
             return self.ui_command_cd(new_node.path)
-        else:
-            return None
+        return None
 
     def refresh(self):
         '''
@@ -116,19 +115,16 @@ class UINode(ConfigNode):
         if reverse:
             if value is not None:
                 return value
-            else:
-                return 'n/a'
+            return 'n/a'
         type_enum = ('Yes', 'No')
         syntax = '|'.join(type_enum)
         if value is None:
             if enum:
                 return type_enum
-            else:
-                return syntax
-        elif value in type_enum:
+            return syntax
+        if value in type_enum:
             return value
-        else:
-            raise ValueError(f"Syntax error, '{value}' is not {syntax}.")
+        raise ValueError(f"Syntax error, '{value}' is not {syntax}.")
 
 
 class UIRTSLibNode(UINode):

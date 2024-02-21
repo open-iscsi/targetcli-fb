@@ -88,7 +88,6 @@ ignore = [
     "RUF012",  # TODO Mutable class attributes should be annotated with `typing.ClassVar`
     "SIM115",  # TODO Use context handler for opening files
     "B904",  # raise-without-from-inside-except
-    "RET505",  # Unnecessary `else` after `return` statement
     "ARG002",  # TODO Unused method argument: `parameters`
     "PLR09",  # Too many branches/statements/arguments
 ]

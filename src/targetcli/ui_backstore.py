@@ -80,8 +80,7 @@ def human_to_bytes(hsize, kilo=1024):
     @type kilo: int
     @return: An int representing the human-readable string converted to bytes
     '''
-    size = hsize.replace('i', '')
-    size = size.lower()
+    size = hsize.replace('i', '').lower()
     if not re.match("^[0-9]+[k|m|g|t]?[b]?$", size):
         raise RTSLibError(f"Cannot interpret size, wrong format: {hsize}")
 
@@ -106,7 +105,7 @@ def bytes_to_human(size):
         return "%d bytes" % size
     size /= kilo
 
-    for x in ['KiB', 'MiB', 'GiB', 'TiB', 'PiB']:
+    for x in ('KiB', 'MiB', 'GiB', 'TiB', 'PiB'):
         if size < kilo:
             return f"{size:3.1f}{x}"
         size /= kilo
@@ -222,8 +221,7 @@ class UIALUATargetPortGroups(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
 class UIBackstores(UINode):
     '''
@@ -335,8 +333,7 @@ class UIBackstore(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def setup_model_alias(self, storageobject):
         if self.shell.prefs['export_backstore_name_as_model']:

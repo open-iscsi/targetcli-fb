@@ -125,8 +125,7 @@ class UIFabricModule(UIRTSLibNode):
         '''
         if auth_attr == 'enable':
             return self.rtsnode.discovery_enable_auth
-        else:
-            return getattr(self.rtsnode, "discovery_" + auth_attr)
+        return getattr(self.rtsnode, "discovery_" + auth_attr)
 
     def ui_setgroup_discovery_auth(self, auth_attr, value):
         '''
@@ -198,10 +197,10 @@ class UIFabricModule(UIRTSLibNode):
             ui_target = UIMultiTPGTarget(target, self)
             self.shell.log.info(f"Created target {wwn}.")
             return ui_target.ui_command_create()
-        else:
-            ui_target = UITarget(target, self)
-            self.shell.log.info(f"Created target {wwn}.")
-            return self.new_node(ui_target)
+
+        ui_target = UITarget(target, self)
+        self.shell.log.info(f"Created target {wwn}.")
+        return self.new_node(ui_target)
 
     def ui_complete_create(self, parameters, text, current_param):
         '''
@@ -225,8 +224,7 @@ class UIFabricModule(UIRTSLibNode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def ui_command_delete(self, wwn):
         '''
@@ -263,8 +261,7 @@ class UIFabricModule(UIRTSLibNode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def ui_command_info(self):
         '''
@@ -325,7 +322,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
         if tag:
             if tag.startswith("tpg"):
-                tag = tag[3:]
+                tag = tag.removeprefix("tpg")
 
             try:
                 tag = int(tag)
@@ -364,7 +361,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
         '''
         self.assert_root()
         if tag.startswith("tpg"):
-            tag = tag[3:]
+            tag = tag.removeprefix("tpg")
         try:
             tag = int(tag)
         except ValueError:
@@ -395,8 +392,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
 
 class UITPG(UIRTSLibNode):
@@ -650,8 +646,7 @@ class UINodeACLs(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def find_tagged(self, name):
         for na in self.tpg.node_acls:
@@ -762,8 +757,7 @@ class UINodeACLs(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     ui_complete_untag = ui_complete_tag
 
@@ -894,7 +888,7 @@ class UINodeACL(UIRTSLibNode):
 
         try:
             if tpg_lun_or_backstore.startswith("lun"):
-                tpg_lun_or_backstore = tpg_lun_or_backstore[3:]
+                tpg_lun_or_backstore = tpg_lun_or_backstore.removeprefix("lun")
             tpg_lun = int(tpg_lun_or_backstore)
         except ValueError:
             try:
@@ -957,8 +951,7 @@ class UINodeACL(UIRTSLibNode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def ui_command_delete(self, mapped_lun):
         '''
@@ -995,8 +988,7 @@ class UINodeACL(UIRTSLibNode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     # Override these four methods to handle multiple NodeACLs
     def ui_getgroup_attribute(self, attribute):
@@ -1129,7 +1121,7 @@ class UILUNs(UINode):
 
         if add_mapped_luns:
             for acl in self.tpg.node_acls:
-                mapped_lun = lun if lun else 0
+                mapped_lun = lun or 0
                 existing_mluns = [mlun.mapped_lun for mlun in acl.mapped_luns]
                 if mapped_lun in existing_mluns:
                     possible_mlun = 0
@@ -1168,8 +1160,7 @@ class UILUNs(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def ui_command_delete(self, lun):
         '''
@@ -1215,8 +1206,7 @@ class UILUNs(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
 
 class UILUN(UIRTSLibNode):
@@ -1360,8 +1350,7 @@ class UIPortals(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
     def ui_command_delete(self, ip_address, ip_port):
         '''
@@ -1420,8 +1409,7 @@ class UIPortals(UINode):
 
         if len(completions) == 1:
             return [completions[0] + ' ']
-        else:
-            return completions
+        return completions
 
 
 class UIPortal(UIRTSLibNode):
@@ -1436,7 +1424,7 @@ class UIPortal(UIRTSLibNode):
     def summary(self):
         if self.rtsnode.iser:
             return('iser', True)
-        elif self.rtsnode.offload:
+        if self.rtsnode.offload:
             return('offload', True)
         return ('', True)
 
