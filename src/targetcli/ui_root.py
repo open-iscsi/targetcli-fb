@@ -29,6 +29,8 @@ from configshell_fb import ExecutionError
 from rtslib_fb import RTSRoot
 from rtslib_fb.utils import ignored
 
+from targetcli import __version__
+
 from .ui_backstore import UIBackstores, complete_path
 from .ui_node import UINode
 from .ui_target import UIFabricModule
@@ -94,7 +96,7 @@ class UIRoot(UINode):
         create directory with permissions 0o600 set
         if directory already exists, set right perms
         '''
-        mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+        mode = stat.S_IRUSR | stat.S_IWUSR  # 0o600
         if not os.path.exists(dirname):
             umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
             umask_original = os.umask(umask)
@@ -132,7 +134,7 @@ class UIRoot(UINode):
 
         # Save backup if backup dir is empty, or savefile is differnt from recent backup copy
         if not backed_files_list or not self._compare_files(backed_files_list[-1], savefile):
-            mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+            mode = stat.S_IRUSR | stat.S_IWUSR  # 0o600
             umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
             umask_original = os.umask(umask)
             try:
@@ -244,8 +246,7 @@ class UIRoot(UINode):
         '''
         Displays the targetcli and support libraries versions.
         '''
-        from targetcli import __version__ as targetcli_version
-        self.shell.log.info(f"targetcli version {targetcli_version}")
+        self.shell.log.info(f"targetcli version {__version__}")
 
     def ui_command_sessions(self, action="list", sid=None):
         '''

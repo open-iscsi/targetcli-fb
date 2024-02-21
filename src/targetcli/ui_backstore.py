@@ -52,7 +52,7 @@ alua_rw_params = ['alua_access_state', 'alua_access_status',
                   'alua_support_unavailable', 'alua_support_active_optimized']
 alua_ro_params = ['tg_pt_gp_id', 'members', 'alua_support_lba_dependent']
 
-alua_state_names = { 0: 'Active/optimized',
+alua_state_names = {0: 'Active/optimized',
                      1: 'Active/non-optimized',
                      2: 'Standby',
                      3: 'Unavailable',
@@ -122,7 +122,7 @@ def complete_path(path, stat_fn):
 
     # Put directories at the end
     return sorted(filtered,
-                  key=lambda s: '~'+s if s.endswith('/') else s)
+                  key=lambda s: '~' + s if s.endswith('/') else s)
 
 
 class UIALUATargetPortGroup(UIRTSLibNode):
@@ -254,7 +254,7 @@ class UIBackstores(UINode):
                                                     k,
                                                     'org.kernel.TCMUService1',
                                                     None)
-                yield (k[k.rfind("/")+1:], tcmu_iface, v)
+                yield (k[k.rfind("/") + 1:], tcmu_iface, v)
         except Exception:
             return
 
@@ -529,7 +529,7 @@ class UIBlockBackstore(UIBackstore):
         UIBackstore.__init__(self, 'block', parent)
 
     def _ui_block_ro_check(self, dev):
-        BLKROGET=0x0000125E  # noqa: N806
+        BLKROGET = 0x0000125E  # noqa: N806
         try:
             f = os.open(dev, os.O_RDONLY)
         except OSError:
@@ -586,7 +586,7 @@ class UIUserBackedBackstore(UIBackstore):
         self.handler = name
         self.iface = iface
         self.prop_dict = prop_dict
-        super().__init__("user:"+name, parent)
+        super().__init__("user:" + name, parent)
 
     def refresh(self):
         self._children = set()
@@ -728,7 +728,7 @@ class UIStorageObject(UIRTSLibNode):
         rn._save_backups(savefile)
 
         rn.rtsroot.save_to_file(savefile,
-                                '/backstores/' + so.plugin  + '/' + so.name)
+                                '/backstores/' + so.plugin + '/' + so.name)
 
         self.shell.log.info(f"Storage Object '{so.plugin}:{so.name}' config saved to {savefile}.")
 
@@ -780,6 +780,6 @@ class UIUserBackedStorageObject(UIStorageObject):
             config_str = "(no config)"
         else:
             idx = so.config.find("/")
-            config_str = so.config[idx+1:]
+            config_str = so.config[idx + 1:]
 
         return (f"{config_str} ({bytes_to_human(so.size)}) {so.status}", True)

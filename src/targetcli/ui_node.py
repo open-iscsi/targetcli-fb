@@ -100,7 +100,7 @@ class UINode(ConfigNode):
         ========
         ls
         '''
-        description, is_healthy = self.summary()
+        description, _is_healthy = self.summary()
         self.shell.log.info(f"Status for {self.path}: {description}")
 
     def ui_setgroup_global(self, parameter, value):
@@ -208,5 +208,5 @@ class UIRTSLibNode(UINode):
             if item in info:
                 del info[item]
         for name, value in sorted(info.items()):
-            if not isinstance (value, (dict, list)):
+            if not isinstance(value, (dict, list)):
                 self.shell.log.info(f"{name}: {value}")

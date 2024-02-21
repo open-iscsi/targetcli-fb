@@ -81,10 +81,10 @@ def version():
     sys.exit(0)
 
 def usage_version(cmd):
-    if cmd in ("help", "--help", "-h"):
+    if cmd in {"help", "--help", "-h"}:
         usage()
 
-    if cmd in ("version", "--version", "-v"):
+    if cmd in {"version", "--version", "-v"}:
         version()
 
 def try_op_lock(shell, lkfd):
@@ -151,7 +151,7 @@ def call_daemon(shell, req, interactive):
             req += "%pwd"
             get_pwd = True
     else:
-        req = "cd /%" + req # Non-interactive modes always consider start at '/'
+        req = "cd /%" + req  # Non-interactive modes always consider start at '/'
 
     try:
         # send request
@@ -160,7 +160,7 @@ def call_daemon(shell, req, interactive):
         shell.con.display(shell.con.render_text(err, 'red'))
         sys.exit(1)
 
-    var = sock.recv(4) # get length of data
+    var = sock.recv(4)  # get length of data
     sending = struct.unpack('i', var)
     amount_expected = sending[0]
     amount_received = 0
@@ -178,12 +178,12 @@ def call_daemon(shell, req, interactive):
         output_split = output.splitlines()
         lines = len(output_split)
         for i in range(lines):
-            if i == lines-1:
+            if i == lines - 1:
                 path = str(output_split[i])
             else:
-                print(str(output_split[i]), end ="\n")
+                print(str(output_split[i]), end="\n")
     else:
-        print(output, end ="")
+        print(output, end="")
 
     sock.send(b'-END@OF@DATA-')
     sock.close()
@@ -218,14 +218,14 @@ def switch_to_daemon(shell, interactive):
 
     prompt_path = "/"
     if interactive:
-        prompt_path = call_daemon(shell, None, interactive) # get the initial path
+        prompt_path = call_daemon(shell, None, interactive)  # get the initial path
 
     inputs = []
-    real_exit=False
+    real_exit = False
     while True:
         command = input(f"{prompt_path}> ")
         if command.lower() == "exit":
-            real_exit=True
+            real_exit = True
         elif not command:
             continue
         if not interactive:
@@ -270,11 +270,11 @@ def main():
     if shell.prefs['auto_use_daemon']:
         use_daemon = True
 
-    disable_daemon=False
+    disable_daemon = False
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
-        if sys.argv[1] in ("disable-daemon", "--disable-daemon"):
-            disable_daemon=True
+        if sys.argv[1] in {"disable-daemon", "--disable-daemon"}:
+            disable_daemon = True
 
     interactive_mode = True
     if shell.prefs['daemon_use_batch_mode']:

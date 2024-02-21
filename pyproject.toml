@@ -88,8 +88,9 @@ ignore = [
     "RUF012",  # TODO Mutable class attributes should be annotated with `typing.ClassVar`
     "SIM115",  # TODO Use context handler for opening files
     "B904",  # raise-without-from-inside-except
-    "ARG002",  # TODO Unused method argument: `parameters`
+    "ARG002", "PLR6301",  # TODO Unused self, parameter in methods definitions
     "PLR09",  # Too many branches/statements/arguments
+    "PLW1514", # TODO `open` in text mode without explicit `encoding` argument
 ]
 [tool.ruff.lint.flake8-quotes]
 # Single quotes are currently prevalent in the codebase. Not being checked.

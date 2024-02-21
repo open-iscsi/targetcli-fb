@@ -159,7 +159,7 @@ class TargetCLI:
                     for cmd in list_data:
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
-                    print(str(e), file=f) # push error to stream
+                    print(str(e), file=f)  # push error to stream
 
                 # Restore
                 self.con._stdout = self.con_stdout_
@@ -169,9 +169,9 @@ class TargetCLI:
                 with open(f.name) as f:
                     output = f.read()
                     var = struct.pack('i', len(output))
-                    connection.sendall(var) # length of string
+                    connection.sendall(var)  # length of string
                     if len(output):
-                        connection.sendall(output.encode()) # actual string
+                        connection.sendall(output.encode())  # actual string
 
                 os.unlink(f.name)
 
@@ -189,10 +189,10 @@ def version():
 
 
 def usage_version(cmd):
-    if cmd in ("help", "--help", "-h"):
+    if cmd in {"help", "--help", "-h"}:
         usage()
 
-    if cmd in ("version", "--version", "-v"):
+    if cmd in {"version", "--version", "-v"}:
         version()
 
 
@@ -233,7 +233,7 @@ def main():
         # save socket so a signal can clea it up
         to.sock = sock
 
-        mode = stat.S_IRUSR | stat.S_IWUSR # 0o600
+        mode = stat.S_IRUSR | stat.S_IWUSR  # 0o600
         umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
         umask_original = os.umask(umask)
         # Bind the socket path
@@ -255,7 +255,7 @@ def main():
     while to.NoSignal:
         try:
             # Wait for a connection
-            connection, client_address = sock.accept()
+            connection, _client_address = sock.accept()
         except OSError as err:
             if err.errno != errno.EBADF or to.NoSignal:
                 to.display(to.render(err.strerror, 'red'))

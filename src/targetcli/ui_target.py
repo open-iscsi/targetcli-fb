@@ -83,7 +83,7 @@ class UIFabricModule(UIRTSLibNode):
 
     # Support late params (see above)
     def list_group_params(self, group, writable=None):
-        if group not in ("parameter", "attribute"):
+        if group not in {"parameter", "attribute"}:
             return super().list_group_params(group,
                                                                  writable)
 
@@ -103,7 +103,7 @@ class UIFabricModule(UIRTSLibNode):
 
     # Support late params (see above)
     def get_group_param(self, group, param):
-        if group not in ("parameter", "attribute"):
+        if group not in {"parameter", "attribute"}:
             return super().get_group_param(group, param)
 
         if param not in self.list_group_params(group):
@@ -650,7 +650,7 @@ class UINodeACLs(UINode):
 
     def find_tagged(self, name):
         for na in self.tpg.node_acls:
-            if name in (na.node_wwn, na.tag):
+            if name in {na.node_wwn, na.tag}:
                 yield na
 
     def all_names(self):
@@ -1020,7 +1020,7 @@ class UINodeACL(UIRTSLibNode):
             if item in info:
                 del info[item]
         for name, value in sorted(info.items()):
-            if not isinstance (value, (dict, list)):
+            if not isinstance(value, (dict, list)):
                 self.shell.log.info(f"{name}: {value}")
         self.shell.log.info("wwns:")
         for na in self.parent.find_tagged(self.name):
@@ -1338,7 +1338,7 @@ class UIPortals(UINode):
                     addrs.add("0.0.0.0")
                 for ip6 in d.get_ipv6_addresses():
                     addrs.add(ip6.address)
-                    addrs.add("::0") # only list ::0 if ipv6 present
+                    addrs.add("::0")  # only list ::0 if ipv6 present
 
             return sorted(addrs)
 
@@ -1423,9 +1423,9 @@ class UIPortal(UIRTSLibNode):
 
     def summary(self):
         if self.rtsnode.iser:
-            return('iser', True)
+            return ('iser', True)
         if self.rtsnode.offload:
-            return('offload', True)
+            return ('offload', True)
         return ('', True)
 
     def ui_command_enable_iser(self, boolean):
