@@ -24,6 +24,7 @@ import shutil
 import stat
 from datetime import datetime
 from glob import glob
+from pathlib import Path, PurePosixPath
 
 from configshell_fb import ExecutionError
 from rtslib_fb import RTSRoot
@@ -69,23 +70,22 @@ class UIRoot(UINode):
         '''
         Compare backfile and saveconfig file
         '''
-        if (os.path.splitext(backupfile)[1] == '.gz'):
+        backupfilepath = Path(backupfile)
+        if PurePosixPath(backupfile).suffix == '.gz':
             try:
-                with gzip.open(backupfile, 'rb') as fbkp:
+                with gzip.open(backupfilepath, 'rb') as fbkp:
                     fdata_bkp = fbkp.read()
             except OSError as e:
                 self.shell.log.warning(f"Could not gzip open backupfile {backupfile}: {e.strerror}")
 
         else:
             try:
-                with open(backupfile, 'rb') as fbkp:
-                    fdata_bkp = fbkp.read()
+                fdata_bkp = backupfilepath.read_bytes()
             except OSError as e:
                 self.shell.log.warning(f"Could not open backupfile {backupfile}: {e.strerror}")
 
         try:
-            with open(savefile, 'rb') as f:
-                fdata = f.read()
+            fdata = Path(savefile).read_bytes()
         except OSError as e:
             self.shell.log.warning(f"Could not open saveconfig file {savefile}: {e.strerror}")
 
@@ -97,11 +97,12 @@ class UIRoot(UINode):
         if directory already exists, set right perms
         '''
         mode = stat.S_IRUSR | stat.S_IWUSR  # 0o600
-        if not os.path.exists(dirname):
+        dir_path = Path(dirname)
+        if not dir_path.exists():
             umask = 0o777 ^ mode  # Prevents always downgrading umask to 0
             umask_original = os.umask(umask)
             try:
-                os.makedirs(dirname, mode)
+                dir_path.mkdir(mode=mode)
             except OSError as exe:
                 raise ExecutionError(f"Cannot create directory [{dirname}] {exe.strerror}.")
             finally:
@@ -126,7 +127,7 @@ class UIRoot(UINode):
         self._create_dir(backup_dir)
 
         # Only save backups if savefile exits
-        if not os.path.exists(savefile):
+        if not Path(savefile).exists():
             return
 
         backed_files_list = sorted(glob(os.path.dirname(savefile) + \
@@ -151,18 +152,18 @@ class UIRoot(UINode):
                 max_backup_files = int(self.shell.prefs['max_backup_files'])
 
                 try:
-                    with open(universal_prefs_file) as prefs:
-                        backups = [line for line in prefs.read().splitlines() if re.match(
-                            r'^max_backup_files\s*=', line)]
-                        if max_backup_files < int(backups[0].split('=')[1].strip()):
-                            max_backup_files = int(backups[0].split('=')[1].strip())
+                    prefs = Path(universal_prefs_file).read_text()
+                    backups = [line for line in prefs.splitlines() if re.match(
+                        r'^max_backup_files\s*=', line)]
+                    if max_backup_files < int(backups[0].split('=')[1].strip()):
+                        max_backup_files = int(backups[0].split('=')[1].strip())
                 except:
                     self.shell.log.debug(f"No universal prefs file '{universal_prefs_file}'.")
 
                 files_to_unlink = list(reversed(backed_files_list))[max_backup_files - 1:]
                 for f in files_to_unlink:
                     with ignored(IOError):
-                        os.unlink(f)
+                        Path(f).unlink()
 
                 self.shell.log.info("Last %d configs saved in %s."
                                     % (max_backup_files, backup_dir))

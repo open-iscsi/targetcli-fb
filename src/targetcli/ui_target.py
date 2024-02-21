@@ -16,12 +16,12 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 '''
+from pathlib import Path
 
 try:
     import ethtool
 except ImportError:
     ethtool = None
-import os
 import stat
 
 from configshell_fb import ExecutionError
@@ -451,8 +451,7 @@ class UITPG(UIRTSLibNode):
         if tpg.has_feature('nps'):
             UIPortals(self.rtsnode, self)
 
-        if self.rtsnode.has_feature('auth') \
-            and os.path.exists(self.rtsnode.path + "/auth"):
+        if self.rtsnode.has_feature('auth') and Path(self.rtsnode.path + "/auth").exists:
             for param in auth_params:
                 self.define_config_group_param('auth', param, 'string')
 

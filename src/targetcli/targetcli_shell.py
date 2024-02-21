@@ -257,7 +257,7 @@ def main():
         is_root = True
 
     try:
-        lkfd = open(lock_file, 'w+')
+        lkfd = open(lock_file, 'w+')  # noqa: SIM115
     except OSError as e:
         shell.con.display(
                 shell.con.render_text(f"opening lockfile failed: {e!s}",

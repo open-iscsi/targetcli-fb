@@ -79,14 +79,13 @@ select = [
     "PL",   # Pylint
     "FLY",  # flynt
     "PERF", # Perflint
-    #"FURB", # refurb
+    "FURB", # refurb
     "RUF",  # Ruff
 ]
 ignore = [
     "E722",  # TODO do not use bare 'except'
     "S104",  # Possible binding to all interfaces (0.0.0.0)
     "RUF012",  # TODO Mutable class attributes should be annotated with `typing.ClassVar`
-    "SIM115",  # TODO Use context handler for opening files
     "B904",  # raise-without-from-inside-except
     "ARG002", "PLR6301",  # TODO Unused self, parameter in methods definitions
     "PLR09",  # Too many branches/statements/arguments

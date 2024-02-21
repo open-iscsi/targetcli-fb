@@ -24,6 +24,7 @@ import os
 import re
 import stat
 import struct
+from pathlib import Path
 
 from configshell_fb import ExecutionError
 from gi.repository import Gio
@@ -417,7 +418,7 @@ class UIFileIOBackstore(UIBackstore):
 
     def _create_file(self, filename, size, sparse=True):
         try:
-            f = open(filename, "w+")
+            f = open(filename, "w+")  # noqa: SIM115
         except OSError:
             raise ExecutionError(f"Could not open {filename}")
         try:
@@ -434,7 +435,7 @@ class UIFileIOBackstore(UIBackstore):
                         f.write("\0" * write_size)
                         size -= write_size
         except OSError:
-            os.remove(filename)
+            Path(filename).unlink()
             raise ExecutionError("Could not expand file to %d bytes" % size)
         except OverflowError:
             raise ExecutionError("The file size is too large (%d bytes)" % size)
@@ -477,9 +478,10 @@ class UIFileIOBackstore(UIBackstore):
         file_or_dev = os.path.expanduser(file_or_dev)
         # can't use is_dev_in_use() on files so just check against other
         # storage object paths
-        if os.path.exists(file_or_dev):
+        file_or_dev_path = Path(file_or_dev)
+        if file_or_dev_path.exists():
             for so in RTSRoot().storage_objects:
-                if so.udev_path and os.path.samefile(file_or_dev, so.udev_path):
+                if so.udev_path and file_or_dev_path.samefile(so.udev_path):
                     raise ExecutionError(f"storage object for {file_or_dev} already exists: {so.name}")
 
         if get_block_type(file_or_dev) is not None:
@@ -487,12 +489,12 @@ class UIFileIOBackstore(UIBackstore):
                 self.shell.log.info("Block device, size parameter ignored")
                 size = None
             self.shell.log.info("Note: block backstore preferred for best results")
-        elif os.path.isfile(file_or_dev):
+        elif Path(file_or_dev).is_file():
             new_size = os.path.getsize(file_or_dev)
             if size:
                 self.shell.log.info(f"{file_or_dev} exists, using its size ({new_size} bytes) instead")
             size = new_size
-        elif os.path.exists(file_or_dev):
+        elif Path(file_or_dev).exists():
             raise ExecutionError(f"Path {file_or_dev} exists but is not a file")
         else:
             # create file and extend to given file size

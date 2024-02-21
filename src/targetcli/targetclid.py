@@ -27,7 +27,8 @@ import stat
 import struct
 import sys
 import tempfile
-from os import getenv, getuid, unlink
+from os import getenv, getuid
+from pathlib import Path
 from threading import Thread
 
 from configshell_fb import ConfigShell
@@ -62,7 +63,7 @@ class TargetCLI:
         signal.signal(signal.SIGHUP, self.signal_handler)
 
         try:
-            self.pfd = open(self.pid_file, 'w+')
+            self.pfd = open(self.pid_file, 'w+')  # noqa: SIM115
         except OSError as e:
             self.display(
                 self.render(f"opening pidfile failed: {e!s}", 'red'),
@@ -173,7 +174,7 @@ class TargetCLI:
                     if len(output):
                         connection.sendall(output.encode())  # actual string
 
-                os.unlink(f.name)
+                Path(f.name).unlink()
 
 
 def usage():
@@ -221,7 +222,7 @@ def main():
     else:
         # Make sure file doesn't exist already
         with contextlib.suppress(FileNotFoundError):
-            unlink(to.socket_path)
+            Path(to.socket_path).unlink()
 
         # Create a TCP/IP socket
         try:
