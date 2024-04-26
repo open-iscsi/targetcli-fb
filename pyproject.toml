@@ -45,6 +45,12 @@ include = [
 [tool.hatch.version]
 source = "vcs"
 
+[tool.hatch.envs.default]
+dependencies = [
+    "ruff",
+    "pre-commit",
+]
+
 [tool.ruff]
 line-length = 120
 
