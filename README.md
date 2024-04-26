@@ -27,6 +27,15 @@ openSUSE, Arch Linux,
 [Gentoo](https://packages.gentoo.org/packages/sys-block/targetcli-fb), and
 [Debian](https://tracker.debian.org/pkg/targetcli-fb).
 
+Contribute
+----------
+targetcli complies with PEP 621 and as such can be built and installed with tools like `build` and `pip`.
+
+For development, consider using [Hatch](https://hatch.pypa.io):
+`hatch shell` to create and enter a Python virtualenv with the project installed in editable mode
+`pre-commit install` to enable pre-commit hooks
+`hatch build` to create tarball and wheel
+
 "fb" -- "free branch"
 ---------------------
 
