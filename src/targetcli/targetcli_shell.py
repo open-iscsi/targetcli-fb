@@ -205,16 +205,14 @@ def switch_to_daemon(shell, interactive):
         sys.exit(0)
 
     if interactive:
-        shell.con.display("targetcli shell version %s\n"
+        shell.con.display(f"targetcli shell version {targetcli_version}\n"
                           "Entering targetcli interactive mode for daemonized approach.\n"
-                          "Type 'exit' to quit.\n"
-                          % targetcli_version)
+                          "Type 'exit' to quit.\n")
     else:
-        shell.con.display("targetcli shell version %s\n"
+        shell.con.display(f"targetcli shell version {targetcli_version}\n"
                           "Entering targetcli batch mode for daemonized approach.\n"
                           "Enter multiple commands separated by newline and "
-                          "type 'exit' to run them all in one go.\n"
-                          % targetcli_version)
+                          "type 'exit' to run them all in one go.\n")
 
     prompt_path = "/"
     if interactive:
@@ -304,10 +302,9 @@ def main():
             sys.exit(1)
         sys.exit(0)
 
-    shell.con.display("targetcli shell version %s\n"
+    shell.con.display(f"targetcli shell version {targetcli_version}\n"
                       "Copyright 2011-2013 by Datera, Inc and others.\n"
-                      "For help on commands, type 'help'.\n"
-                      % targetcli_version)
+                      "For help on commands, type 'help'.\n")
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
