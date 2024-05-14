@@ -1,4 +1,3 @@
-#!/usr/bin/python
 '''
 Starts the targetcli CLI shell.
 
@@ -18,20 +17,20 @@ License for the specific language governing permissions and limitations
 under the License.
 '''
 
-from __future__ import print_function
 
-from os import getuid, getenv
-from targetcli import UIRoot
-from rtslib_fb import RTSLibError
-from configshell_fb import ConfigShell, ExecutionError
-from targetcli import __version__ as targetcli_version
-
-import sys
+import contextlib
+import fcntl
+import readline
 import socket
 import struct
-import readline
-import six
-import fcntl
+import sys
+from os import getenv, getuid
+
+from configshell_fb import ConfigShell, ExecutionError
+from rtslib_fb import RTSLibError
+
+from targetcli import __version__ as targetcli_version
+from targetcli.ui_root import UIRoot
 
 err = sys.stderr
 # lockfile for serializing multiple targetcli requests
@@ -68,7 +67,7 @@ class TargetCLI(ConfigShell):
                     }
 
 def usage():
-    print("Usage: %s [--version|--help|CMD|--disable-daemon]" % sys.argv[0], file=err)
+    print(f"Usage: {sys.argv[0]} [--version|--help|CMD|--disable-daemon]", file=err)
     print("  --version\t\tPrint version", file=err)
     print("  --help\t\tPrint this information", file=err)
     print("  CMD\t\t\tRun targetcli shell command and exit", file=err)
@@ -78,14 +77,14 @@ def usage():
     sys.exit(-1)
 
 def version():
-    print("%s version %s" % (sys.argv[0], targetcli_version), file=err)
+    print(f"{sys.argv[0]} version {targetcli_version}", file=err)
     sys.exit(0)
 
 def usage_version(cmd):
-    if cmd in ("help", "--help", "-h"):
+    if cmd in {"help", "--help", "-h"}:
         usage()
 
-    if cmd in ("version", "--version", "-v"):
+    if cmd in {"version", "--version", "-v"}:
         version()
 
 def try_op_lock(shell, lkfd):
@@ -97,7 +96,7 @@ def try_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                "taking lock on lockfile failed: %s" %str(e),
+                f"taking lock on lockfile failed: {e!s}",
                 'red'))
         sys.exit(1)
 
@@ -110,7 +109,7 @@ def release_op_lock(shell, lkfd):
     except Exception as e:
         shell.con.display(
             shell.con.render_text(
-                "unlock on lockfile failed: %s" %str(e),
+                f"unlock on lockfile failed: {e!s}",
                 'red'))
         sys.exit(1)
     lkfd.close()
@@ -125,13 +124,13 @@ def completer(text, state):
 def call_daemon(shell, req, interactive):
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    except socket.error as err:
+    except OSError as err:
         shell.con.display(shell.con.render_text(err, 'red'))
         sys.exit(1)
 
     try:
         sock.connect(socket_path)
-    except socket.error as err:
+    except OSError as err:
         shell.con.display(shell.con.render_text(err, 'red'))
         shell.con.display(
             shell.con.render_text("Currently auto_use_daemon is true, "
@@ -152,16 +151,16 @@ def call_daemon(shell, req, interactive):
             req += "%pwd"
             get_pwd = True
     else:
-        req = "cd /%" + req # Non-interactive modes always consider start at '/'
+        req = "cd /%" + req  # Non-interactive modes always consider start at '/'
 
     try:
         # send request
         sock.sendall(req.encode())
-    except socket.error as err:
+    except OSError as err:
         shell.con.display(shell.con.render_text(err, 'red'))
         sys.exit(1)
 
-    var = sock.recv(4) # get length of data
+    var = sock.recv(4)  # get length of data
     sending = struct.unpack('i', var)
     amount_expected = sending[0]
     amount_received = 0
@@ -178,13 +177,13 @@ def call_daemon(shell, req, interactive):
     if get_pwd:
         output_split = output.splitlines()
         lines = len(output_split)
-        for i in range(0, lines):
-            if i == lines-1:
+        for i in range(lines):
+            if i == lines - 1:
                 path = str(output_split[i])
             else:
-                print(str(output_split[i]), end ="\n")
+                print(str(output_split[i]), end="\n")
     else:
-        print(output, end ="")
+        print(output, end="")
 
     sock.send(b'-END@OF@DATA-')
     sock.close()
@@ -206,27 +205,25 @@ def switch_to_daemon(shell, interactive):
         sys.exit(0)
 
     if interactive:
-        shell.con.display("targetcli shell version %s\n"
+        shell.con.display(f"targetcli shell version {targetcli_version}\n"
                           "Entering targetcli interactive mode for daemonized approach.\n"
-                          "Type 'exit' to quit.\n"
-                          % targetcli_version)
+                          "Type 'exit' to quit.\n")
     else:
-        shell.con.display("targetcli shell version %s\n"
+        shell.con.display(f"targetcli shell version {targetcli_version}\n"
                           "Entering targetcli batch mode for daemonized approach.\n"
                           "Enter multiple commands separated by newline and "
-                          "type 'exit' to run them all in one go.\n"
-                          % targetcli_version)
+                          "type 'exit' to run them all in one go.\n")
 
     prompt_path = "/"
     if interactive:
-        prompt_path = call_daemon(shell, None, interactive) # get the initial path
+        prompt_path = call_daemon(shell, None, interactive)  # get the initial path
 
     inputs = []
-    real_exit=False
+    real_exit = False
     while True:
-        command = six.moves.input("%s> " %prompt_path)
+        command = input(f"{prompt_path}> ")
         if command.lower() == "exit":
-            real_exit=True
+            real_exit = True
         elif not command:
             continue
         if not interactive:
@@ -258,10 +255,10 @@ def main():
         is_root = True
 
     try:
-        lkfd = open(lock_file, 'w+');
-    except IOError as e:
+        lkfd = open(lock_file, 'w+')  # noqa: SIM115
+    except OSError as e:
         shell.con.display(
-                shell.con.render_text("opening lockfile failed: %s" %str(e),
+                shell.con.render_text(f"opening lockfile failed: {e!s}",
                     'red'))
         sys.exit(1)
 
@@ -271,11 +268,11 @@ def main():
     if shell.prefs['auto_use_daemon']:
         use_daemon = True
 
-    disable_daemon=False
+    disable_daemon = False
     if len(sys.argv) > 1:
         usage_version(sys.argv[1])
-        if sys.argv[1] in ("disable-daemon", "--disable-daemon"):
-            disable_daemon=True
+        if sys.argv[1] in {"disable-daemon", "--disable-daemon"}:
+            disable_daemon = True
 
     interactive_mode = True
     if shell.prefs['daemon_use_batch_mode']:
@@ -305,18 +302,17 @@ def main():
             sys.exit(1)
         sys.exit(0)
 
-    shell.con.display("targetcli shell version %s\n"
+    shell.con.display(f"targetcli shell version {targetcli_version}\n"
                       "Copyright 2011-2013 by Datera, Inc and others.\n"
-                      "For help on commands, type 'help'.\n"
-                      % targetcli_version)
+                      "For help on commands, type 'help'.\n")
     if not is_root:
         shell.con.display("You are not root, disabling privileged commands.\n")
 
-    while not shell._exit:
-        try:
+    try:
+        while not shell._exit:
             shell.run_interactive()
-        except (RTSLibError, ExecutionError) as msg:
-            shell.log.error(str(msg))
+    except (RTSLibError, ExecutionError) as msg:
+        shell.log.error(str(msg))
 
     if shell.prefs['auto_save_on_exit'] and is_root:
         shell.log.info("Global pref auto_save_on_exit=true")
@@ -326,7 +322,5 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         main()
-    except KeyboardInterrupt:
-        pass

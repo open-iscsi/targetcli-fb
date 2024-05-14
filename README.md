@@ -3,10 +3,10 @@ targetcli-fb
 
 A command shell for managing the Linux LIO kernel target
 --------------------------------------------------------
-targetcli-fb is a command-line interface for configuring the LIO generic
-SCSI target, present in 3.x Linux kernel versions.
+An administration shell for configuring iSCSI, FCoE, and other
+SCSI targets, using the TCM/LIO kernel target subsystem. FCoE
+users will also need to install and use fcoe-utils.
 
-Compatible with both Python 2.7 and 3.x by using the python-six library.
 
 targetcli-fb development
 ------------------------
@@ -26,6 +26,15 @@ RHEL,
 openSUSE, Arch Linux,
 [Gentoo](https://packages.gentoo.org/packages/sys-block/targetcli-fb), and
 [Debian](https://tracker.debian.org/pkg/targetcli-fb).
+
+Contribute
+----------
+targetcli complies with PEP 621 and as such can be built and installed with tools like `build` and `pip`.
+
+For development, consider using [Hatch](https://hatch.pypa.io):
+`hatch shell` to create and enter a Python virtualenv with the project installed in editable mode
+`pre-commit install` to enable pre-commit hooks
+`hatch build` to create tarball and wheel
 
 "fb" -- "free branch"
 ---------------------
