@@ -341,7 +341,7 @@ class UIMultiTPGTarget(UIRTSLibNode):
 
         if tpg.has_feature("nps") and self.shell.prefs['auto_add_default_portal']:
             try:
-                NetworkPortal(tpg, default_portal_listen)
+                NetworkPortal(tpg, f"[{default_portal_listen}]")
                 self.shell.log.info("Global pref auto_add_default_portal=true")
                 self.shell.log.info("Created default portal listening on all IPs"
                                     f" ({default_portal_listen}), port 3260.")
