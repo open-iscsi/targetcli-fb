@@ -24,8 +24,8 @@ except ImportError:
     ethtool = None
 import stat
 
-from configshell_fb import ExecutionError
-from rtslib_fb import (
+from configshell import ExecutionError
+from rtslib import (
     LUN,
     TPG,
     MappedLUN,

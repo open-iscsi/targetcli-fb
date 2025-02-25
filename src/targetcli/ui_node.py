@@ -18,7 +18,7 @@ under the License.
 '''
 
 
-from configshell_fb import ConfigNode, ExecutionError
+from configshell import ConfigNode, ExecutionError
 
 
 class UINode(ConfigNode):

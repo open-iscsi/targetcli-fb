@@ -26,9 +26,9 @@ from datetime import datetime
 from glob import glob
 from pathlib import Path, PurePosixPath
 
-from configshell_fb import ExecutionError
-from rtslib_fb import RTSRoot
-from rtslib_fb.utils import ignored
+from configshell import ExecutionError
+from rtslib import RTSRoot
+from rtslib.utils import ignored
 
 from targetcli import __version__
 

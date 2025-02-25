@@ -26,9 +26,9 @@ import stat
 import struct
 from pathlib import Path
 
-from configshell_fb import ExecutionError
+from configshell import ExecutionError
 from gi.repository import Gio
-from rtslib_fb import (
+from rtslib import (
     ALUATargetPortGroup,
     BlockStorageObject,
     FileIOStorageObject,
@@ -38,7 +38,7 @@ from rtslib_fb import (
     RTSRoot,
     UserBackedStorageObject,
 )
-from rtslib_fb.utils import get_block_type
+from rtslib.utils import get_block_type
 
 from .ui_node import UINode, UIRTSLibNode
 

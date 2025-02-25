@@ -26,8 +26,8 @@ import struct
 import sys
 from os import getenv, getuid
 
-from configshell_fb import ConfigShell, ExecutionError
-from rtslib_fb import RTSLibError
+from configshell import ConfigShell, ExecutionError
+from rtslib import RTSLibError
 
 from targetcli import __version__ as targetcli_version
 from targetcli.ui_root import UIRoot

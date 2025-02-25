@@ -31,7 +31,7 @@ from os import getenv, getuid
 from pathlib import Path
 from threading import Thread
 
-from configshell_fb import ConfigShell
+from configshell import ConfigShell
 
 from targetcli import __version__ as targetcli_version
 from targetcli.ui_root import UIRoot
