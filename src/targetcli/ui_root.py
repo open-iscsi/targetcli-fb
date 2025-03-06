@@ -200,8 +200,7 @@ class UIRoot(UINode):
         savefile = os.path.expanduser(savefile)
 
         if not os.path.isfile(savefile):
-            self.shell.log.info(f"Restore file {savefile} not found")
-            return
+            raise ExecutionError(f"Restore file {savefile} not found")
 
         target = self.ui_eval_param(target, 'string', None)
         storage_object = self.ui_eval_param(storage_object, 'string', None)
