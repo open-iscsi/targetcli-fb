@@ -1,0 +1,44 @@
+---
+# Basic configuration for Packit
+# See documentation: https://packit.dev/docs/configuration/
+
+specfile_path: fedora/python-targetcli-fb.spec
+
+upstream_package_name: targetcli-fb
+# In Fedora, Python packages are prefixed with 'python-'
+downstream_package_name: python3-targetcli
+
+# Use hatch to create the source archive
+actions:
+  create-archive:
+    - hatch build -t sdist
+    - bash -c "ls -1t ./dist/*.tar.gz | head -n 1"
+
+srpm_build_deps:
+  - python3-devel
+  - python3-pip
+  - hatch
+  - python3-hatchling
+  - python3-hatch-vcs
+
+jobs:
+  # Test PRs in COPR
+  - job: copr_build
+    trigger: pull_request
+    targets:
+      - fedora-all
+      - epel-9
+
+  # Run tests
+  - job: tests
+    trigger: pull_request
+    targets:
+      - fedora-all
+      - epel-9
+
+  # Sync with Fedora when a new release is created
+  - job: propose_downstream
+    trigger: release
+    dist_git_branches:
+      - fedora-all
+      - epel-9
