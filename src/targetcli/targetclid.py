@@ -181,9 +181,9 @@ class TargetCLI:
                 stderr_file.close()
 
                 # Read contents
-                with open(stdout_file.name, 'r') as f:
+                with open(stdout_file.name) as f:
                     stdout_content = f.read()
-                with open(stderr_file.name, 'r') as f:
+                with open(stderr_file.name) as f:
                     stderr_content = f.read()
 
                 # Create combined output

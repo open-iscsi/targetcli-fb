@@ -186,7 +186,7 @@ def call_daemon(shell, req, interactive):
             if get_pwd:
                 output_split = stdout_content.splitlines()
                 lines = len(output_split)
-                for i in range(0, lines):
+                for i in range(lines):
                     if i == lines-1:
                         path = str(output_split[i])
                     else:
@@ -201,18 +201,16 @@ def call_daemon(shell, req, interactive):
                     print(stderr_content, end="\n", file=sys.stderr)
                     raise_error = True
 
+    elif get_pwd:
+        output_split = output.splitlines()
+        lines = len(output_split)
+        for i in range(lines):
+            if i == lines-1:
+                path = str(output_split[i])
+            else:
+                print(str(output_split[i]), end="\n")
     else:
-        # Handle old format (plain text)
-        if get_pwd:
-            output_split = output.splitlines()
-            lines = len(output_split)
-            for i in range(0, lines):
-                if i == lines-1:
-                    path = str(output_split[i])
-                else:
-                    print(str(output_split[i]), end="\n")
-        else:
-            print(output, end="")
+        print(output, end="")
 
     sock.send(b'-END@OF@DATA-')
     sock.close()
