@@ -40,6 +40,7 @@ hints = ['/', 'backstores/', 'iscsi/', 'loopback/', 'vhost/', 'xen-pvscsi/',
          'cd', 'pwd', 'ls', 'set', 'get', 'help', 'refresh', 'status',
          'clearconfig', 'restoreconfig', 'saveconfig', 'exit']
 
+NUM_PARTS = 2
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
                      'color_command': 'cyan',
@@ -168,17 +169,45 @@ def call_daemon(shell, req, interactive):
     # get the actual data in chunks
     output = ""
     path = ""
+    raise_error = False
     while amount_received < amount_expected:
         data = sock.recv(1024)
         data = data.decode()
         amount_received += len(data)
         output += data
 
-    if get_pwd:
+    # Check if output is in new format (STDOUT/STDERR)
+    if "STDOUT:" in output and "STDERR:" in output:
+        parts = output.split("STDERR:")
+        if len(parts) == NUM_PARTS:
+            stdout_part = parts[0].split("STDOUT:")[1].strip()
+            stderr_content = parts[1].strip()
+            stdout_content = stdout_part
+
+            if get_pwd:
+                output_split = stdout_content.splitlines()
+                lines = len(output_split)
+                for i in range(lines):
+                    if i == lines-1:
+                        path = str(output_split[i])
+                    else:
+                        print(str(output_split[i]), end="\n")
+
+            else:
+                # Print stdout content
+                if stdout_content:
+                    print(stdout_content, end="\n")
+                # Print stderr content
+                if stderr_content:
+                    print(stderr_content, end="\n", file=sys.stderr)
+                    raise_error = True
+
+    # Handle old format (plain text)
+    elif get_pwd:
         output_split = output.splitlines()
         lines = len(output_split)
         for i in range(lines):
-            if i == lines - 1:
+            if i == lines-1:
                 path = str(output_split[i])
             else:
                 print(str(output_split[i]), end="\n")
@@ -187,6 +216,9 @@ def call_daemon(shell, req, interactive):
 
     sock.send(b'-END@OF@DATA-')
     sock.close()
+
+    if raise_error and not interactive:
+        sys.exit(1)
 
     return path
 
