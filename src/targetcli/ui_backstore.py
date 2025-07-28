@@ -549,7 +549,8 @@ class UIBlockBackstore(UIBackstore):
             return False
         return True
 
-    def ui_command_create(self, name, dev, readonly=None, wwn=None):
+    def ui_command_create(self, name, dev, readonly=None, wwn=None,
+                          exclusive=None):
         '''
         Creates an Block Storage object. "dev" is the path to the TYPE_DISK
         block device to use.
@@ -561,7 +562,11 @@ class UIBlockBackstore(UIBackstore):
 
         wwn = self.ui_eval_param(wwn, 'string', None)
 
-        so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn)
+        excl_string = self.ui_eval_param(exclusive, 'string', None)
+        exclusive = True if excl_string is None else self.ui_eval_param(exclusive, "bool", True)
+
+        so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn,
+                                exclusive=exclusive)
         ui_so = UIBlockStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created block storage object {name} using {dev}.")
