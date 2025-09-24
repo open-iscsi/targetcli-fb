@@ -2,7 +2,7 @@
 # Basic configuration for Packit
 # See documentation: https://packit.dev/docs/configuration/
 
-specfile_path: fedora/python-targetcli-fb.spec
+specfile_path: python-targetcli-fb.spec
 
 upstream_package_name: targetcli-fb
 # In Fedora, Python packages are prefixed with 'python-'
@@ -26,14 +26,14 @@ jobs:
   - job: copr_build
     trigger: pull_request
     targets:
-      - fedora-all
+      - fedora-latest-stable
       - epel-9
 
   # Run tests
   - job: tests
     trigger: pull_request
     targets:
-      - fedora-all
+      - fedora-latest-stable
       - epel-9
 
   # Sync with Fedora when a new release is created

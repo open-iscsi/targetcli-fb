@@ -29,8 +29,6 @@ repos:
 
 ci:
   autofix_commit_msg: |
-    [pre-commit.ci] auto fixes from pre-commit.com hooks
-
-    For more information, see https://pre-commit.ci
+    Auto fixes from pre-commit.com hooks
   autofix_prs: false
   autoupdate_schedule: monthly
