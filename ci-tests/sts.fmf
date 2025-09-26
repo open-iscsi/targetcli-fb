@@ -1,0 +1,4 @@
+plan:
+  import:
+    url: https://gitlab.com/rh-kernel-stqe/sts
+    name: /plans/lio/core
