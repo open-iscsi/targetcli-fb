@@ -153,7 +153,7 @@ class TargetCLI:
                 connection.close()
                 still_listen = False
             else:
-                self.con._stdout = self.con._stderr = f = tempfile.NamedTemporaryFile(mode='w', delete=False)
+                self.con._stdout = self.con._stderr = f = tempfile.NamedTemporaryFile(mode='w', delete=False)  # noqa: SIM115
                 try:
                     # extract multiple commands delimited with '%'
                     list_data = data.decode().split('%')
