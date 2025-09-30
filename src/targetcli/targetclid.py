@@ -153,28 +153,51 @@ class TargetCLI:
                 connection.close()
                 still_listen = False
             else:
-                self.con._stdout = self.con._stderr = f = tempfile.NamedTemporaryFile(mode='w', delete=False)
+                # Create separate tempfiles for stdout and stderr
+                stdout_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+                stderr_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+
+                # Save original stdout/stderr
+                orig_stdout = self.con._stdout
+                orig_stderr = self.con._stderr
+
+                # Redirect to tempfiles
+                self.con._stdout = stdout_file
+                self.con._stderr = stderr_file
+
                 try:
                     # extract multiple commands delimited with '%'
                     list_data = data.decode().split('%')
                     for cmd in list_data:
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
-                    print(str(e), file=f)  # push error to stream
+                    print(str(e), file=stderr_file)
+                # Restore original stdout/stderr
+                self.con._stdout = orig_stdout
+                self.con._stderr = orig_stderr
 
-                # Restore
-                self.con._stdout = self.con_stdout_
-                self.con._stderr = self.con_stderr_
-                f.close()
+                # Close tempfiles
+                stdout_file.close()
+                stderr_file.close()
 
-                with open(f.name) as f:
-                    output = f.read()
-                    var = struct.pack('i', len(output))
-                    connection.sendall(var)  # length of string
-                    if len(output):
-                        connection.sendall(output.encode())  # actual string
+                # Read contents
+                with open(stdout_file.name) as f:
+                    stdout_content = f.read()
+                with open(stderr_file.name) as f:
+                    stderr_content = f.read()
 
-                Path(f.name).unlink()
+                # Create combined output
+                combined_output = f"STDOUT: {stdout_content}\nSTDERR: {stderr_content}"
+
+                # Send combined output
+                var = struct.pack('i', len(combined_output))
+                connection.sendall(var)  # length of string
+                if len(combined_output):
+                    connection.sendall(combined_output.encode())  # actual string
+
+                # Cleanup tempfiles
+                Path(stdout_file.name).unlink()
+                Path(stderr_file.name).unlink()
 
 
 def usage():
