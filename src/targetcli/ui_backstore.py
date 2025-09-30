@@ -516,7 +516,9 @@ class UIFileIOBackstore(UIBackstore):
         '''
         if current_param != 'file_or_dev':
             return []
-        completions = complete_path(text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x))
+        completions = complete_path(
+            text, lambda x: stat.S_ISREG(x) or stat.S_ISBLK(x),
+        ) if text else []
         if len(completions) == 1 and not completions[0].endswith('/'):
             completions = [completions[0] + ' ']
         return completions
@@ -578,7 +580,7 @@ class UIBlockBackstore(UIBackstore):
         '''
         if current_param != 'dev':
             return []
-        completions = complete_path(text, stat.S_ISBLK)
+        completions = complete_path(text, stat.S_ISBLK) if text else []
         if len(completions) == 1 and not completions[0].endswith('/'):
             completions = [completions[0] + ' ']
         return completions
