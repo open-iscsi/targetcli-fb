@@ -155,8 +155,7 @@ class UIRoot(UINode):
                     prefs = Path(universal_prefs_file).read_text()
                     backups = [line for line in prefs.splitlines() if re.match(
                         r'^max_backup_files\s*=', line)]
-                    if max_backup_files < int(backups[0].split('=')[1].strip()):
-                        max_backup_files = int(backups[0].split('=')[1].strip())
+                    max_backup_files = max(max_backup_files, int(backups[0].split('=')[1].strip()))
                 except:
                     self.shell.log.debug(f"No universal prefs file '{universal_prefs_file}'.")
 

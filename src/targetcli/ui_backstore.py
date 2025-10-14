@@ -547,9 +547,7 @@ class UIBlockBackstore(UIBackstore):
             return False
 
         os.close(f)
-        if struct.unpack('I', buf)[0] == 0:
-            return False
-        return True
+        return struct.unpack('I', buf)[0] != 0
 
     def ui_command_create(self, name, dev, readonly=None, wwn=None,
                           exclusive=None):
