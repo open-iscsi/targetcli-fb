@@ -1,12 +1,12 @@
 repos:
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.11.13
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.7
     hooks:
       - id: ruff
         args: [--fix]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-case-conflict
       - id: check-ast
