@@ -318,7 +318,7 @@ class UIRoot(UINode):
         else:
             printed_sessions = list(self.rtsroot.sessions)
 
-        if len(printed_sessions):
+        if printed_sessions:
             for session in printed_sessions:
                 print_session(session)
         elif sid is None:
