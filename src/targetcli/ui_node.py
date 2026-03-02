@@ -105,6 +105,7 @@ class UINode(ConfigNode):
 
     def ui_setgroup_global(self, parameter, value):
         ConfigNode.ui_setgroup_global(self, parameter, value)
+        self.shell.prefs.save()
         self.get_root().refresh()
 
     def ui_type_yesno(self, value=None, enum=False, reverse=False):
