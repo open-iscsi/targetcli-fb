@@ -382,7 +382,7 @@ class UIRDMCPBackstore(UIBackstore):
         self.so_cls = UIRamdiskStorageObject
         UIBackstore.__init__(self, 'ramdisk', parent)
 
-    def ui_command_create(self, name, size, nullio=None, wwn=None):
+    def ui_command_create(self, name, size, nullio=None, wwn=None, vendor_id=None):
         '''
         Creates an RDMCP storage object. "size" is the size of the ramdisk.
 
@@ -400,8 +400,10 @@ class UIRDMCPBackstore(UIBackstore):
 
         nullio = self.ui_eval_param(nullio, 'bool', False)
         wwn = self.ui_eval_param(wwn, 'string', None)
+        vendor_id = self.ui_eval_param(vendor_id, 'string', None)
 
-        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio, wwn=wwn)
+        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio, wwn=wwn,
+                                vendor_id=vendor_id)
         ui_so = UIRamdiskStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created ramdisk {name} with size {size}.")
@@ -443,7 +445,7 @@ class UIFileIOBackstore(UIBackstore):
             f.close()
 
     def ui_command_create(self, name, file_or_dev, size=None, write_back=None,
-                          sparse=None, wwn=None):
+                          sparse=None, wwn=None, vendor_id=None):
         '''
         Creates a FileIO storage object. If "file_or_dev" is a path
         to a regular file to be used as backend, then the "size"
@@ -472,6 +474,7 @@ class UIFileIOBackstore(UIBackstore):
         sparse = self.ui_eval_param(sparse, 'bool', True)
         write_back = self.ui_eval_param(write_back, 'bool', True)
         wwn = self.ui_eval_param(wwn, 'string', None)
+        vendor_id = self.ui_eval_param(vendor_id, 'string', None)
 
         self.shell.log.debug(f"Using params size={size} write_back={write_back} sparse={sparse}")
 
@@ -504,7 +507,8 @@ class UIFileIOBackstore(UIBackstore):
             self._create_file(file_or_dev, size, sparse)
 
         so = FileIOStorageObject(name, file_or_dev, size,
-                                 write_back=write_back, wwn=wwn)
+                                 write_back=write_back, wwn=wwn,
+                                 vendor_id=vendor_id)
         ui_so = UIFileioStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created fileio {name} with size {so.size}")
@@ -550,7 +554,7 @@ class UIBlockBackstore(UIBackstore):
         return struct.unpack('I', buf)[0] != 0
 
     def ui_command_create(self, name, dev, readonly=None, wwn=None,
-                          exclusive=None):
+                          exclusive=None, vendor_id=None):
         '''
         Creates an Block Storage object. "dev" is the path to the TYPE_DISK
         block device to use.
@@ -561,12 +565,13 @@ class UIBlockBackstore(UIBackstore):
         readonly = self._ui_block_ro_check(dev) if ro_string is None else self.ui_eval_param(readonly, "bool", False)
 
         wwn = self.ui_eval_param(wwn, 'string', None)
+        vendor_id = self.ui_eval_param(vendor_id, 'string', None)
 
         excl_string = self.ui_eval_param(exclusive, 'string', None)
         exclusive = True if excl_string is None else self.ui_eval_param(exclusive, "bool", True)
 
         so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn,
-                                exclusive=exclusive)
+                                exclusive=exclusive, vendor_id=vendor_id)
         ui_so = UIBlockStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created block storage object {name} using {dev}.")
@@ -614,7 +619,7 @@ class UIUserBackedBackstore(UIBackstore):
             print()
 
     def ui_command_create(self, name, size, cfgstring, wwn=None,
-                          hw_max_sectors=None, control=None):
+                          hw_max_sectors=None, control=None, vendor_id=None):
         '''
         Creates a User-backed storage object.
 
@@ -631,6 +636,7 @@ class UIUserBackedBackstore(UIBackstore):
 
         size = human_to_bytes(size)
         wwn = self.ui_eval_param(wwn, 'string', None)
+        vendor_id = self.ui_eval_param(vendor_id, 'string', None)
 
         config = self.handler + "/" + cfgstring
 
@@ -641,7 +647,7 @@ class UIUserBackedBackstore(UIBackstore):
         try:
             so = UserBackedStorageObject(name, size=size, config=config,
                                          wwn=wwn, hw_max_sectors=hw_max_sectors,
-                                         control=control)
+                                         control=control, vendor_id=vendor_id)
         except:
             raise ExecutionError("UserBackedStorageObject creation failed.")
 
