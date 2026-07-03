@@ -291,6 +291,14 @@ class UIBackstore(UINode):
     def summary(self):
         return (f"Storage Objects: {len(self._children)}", None)
 
+    def _vendor_id_kwargs(self, vendor_id):
+        '''
+        Only pass vendor_id to rtslib when it is set, so that rtslib versions
+        without vendor_id support keep working.
+        '''
+        vendor_id = self.ui_eval_param(vendor_id, 'string', None)
+        return {} if vendor_id is None else {'vendor_id': vendor_id}
+
     def ui_command_delete(self, name, save=None):
         '''
         Recursively deletes the storage object having the specified name. If
@@ -386,9 +394,13 @@ class UIRDMCPBackstore(UIBackstore):
         self.so_cls = UIRamdiskStorageObject
         UIBackstore.__init__(self, 'ramdisk', parent)
 
-    def ui_command_create(self, name, size, nullio=None, wwn=None):
+    def ui_command_create(self, name, size, nullio=None, wwn=None, vendor_id=None):
         '''
         Creates an RDMCP storage object. "size" is the size of the ramdisk.
+
+        The optional "vendor_id" parameter sets the T10 Vendor ID (up to 8
+        ASCII characters) reported in the INQUIRY data. If omitted, the kernel
+        default "LIO-ORG" is used.
 
         SIZE SYNTAX
         ===========
@@ -405,7 +417,8 @@ class UIRDMCPBackstore(UIBackstore):
         nullio = self.ui_eval_param(nullio, 'bool', False)
         wwn = self.ui_eval_param(wwn, 'string', None)
 
-        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio, wwn=wwn)
+        so = RDMCPStorageObject(name, human_to_bytes(size), nullio=nullio, wwn=wwn,
+                                **self._vendor_id_kwargs(vendor_id))
         ui_so = UIRamdiskStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created ramdisk {name} with size {size}.")
@@ -447,7 +460,7 @@ class UIFileIOBackstore(UIBackstore):
             f.close()
 
     def ui_command_create(self, name, file_or_dev, size=None, write_back=None,
-                          sparse=None, wwn=None):
+                          sparse=None, wwn=None, vendor_id=None):
         '''
         Creates a FileIO storage object. If "file_or_dev" is a path
         to a regular file to be used as backend, then the "size"
@@ -460,6 +473,10 @@ class UIFileIOBackstore(UIBackstore):
         only applicable when creating a new backing file. It is a
         boolean stating if the created file should be created as a
         sparse file (the default), or fully initialized.
+
+        The optional "vendor_id" parameter sets the T10 Vendor ID (up to 8
+        ASCII characters) reported in the INQUIRY data. If omitted, the kernel
+        default "LIO-ORG" is used.
 
         SIZE SYNTAX
         ===========
@@ -508,7 +525,8 @@ class UIFileIOBackstore(UIBackstore):
             self._create_file(file_or_dev, size, sparse)
 
         so = FileIOStorageObject(name, file_or_dev, size,
-                                 write_back=write_back, wwn=wwn)
+                                 write_back=write_back, wwn=wwn,
+                                 **self._vendor_id_kwargs(vendor_id))
         ui_so = UIFileioStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created fileio {name} with size {so.size}")
@@ -554,10 +572,14 @@ class UIBlockBackstore(UIBackstore):
         return struct.unpack('I', buf)[0] != 0
 
     def ui_command_create(self, name, dev, readonly=None, wwn=None,
-                          exclusive=None):
+                          exclusive=None, vendor_id=None):
         '''
         Creates an Block Storage object. "dev" is the path to the TYPE_DISK
         block device to use.
+
+        The optional "vendor_id" parameter sets the T10 Vendor ID (up to 8
+        ASCII characters) reported in the INQUIRY data. If omitted, the kernel
+        default "LIO-ORG" is used.
         '''
         self.assert_root()
 
@@ -570,7 +592,8 @@ class UIBlockBackstore(UIBackstore):
         exclusive = True if excl_string is None else self.ui_eval_param(exclusive, "bool", True)
 
         so = BlockStorageObject(name, dev, readonly=readonly, wwn=wwn,
-                                exclusive=exclusive)
+                                exclusive=exclusive,
+                                **self._vendor_id_kwargs(vendor_id))
         ui_so = UIBlockStorageObject(so, self)
         self.setup_model_alias(so)
         self.shell.log.info(f"Created block storage object {name} using {dev}.")
@@ -618,9 +641,13 @@ class UIUserBackedBackstore(UIBackstore):
             print()
 
     def ui_command_create(self, name, size, cfgstring, wwn=None,
-                          hw_max_sectors=None, control=None):
+                          hw_max_sectors=None, control=None, vendor_id=None):
         '''
         Creates a User-backed storage object.
+
+        The optional "vendor_id" parameter sets the T10 Vendor ID (up to 8
+        ASCII characters) reported in the INQUIRY data. If omitted, the kernel
+        default "LIO-ORG" is used.
 
         SIZE SYNTAX
         ===========
@@ -645,7 +672,8 @@ class UIUserBackedBackstore(UIBackstore):
         try:
             so = UserBackedStorageObject(name, size=size, config=config,
                                          wwn=wwn, hw_max_sectors=hw_max_sectors,
-                                         control=control)
+                                         control=control,
+                                         **self._vendor_id_kwargs(vendor_id))
         except:
             raise ExecutionError("UserBackedStorageObject creation failed.")
 
