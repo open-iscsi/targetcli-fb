@@ -99,7 +99,7 @@ class TargetCLI:
             self.pfd.close()
 
 
-    def signal_handler(self):
+    def signal_handler(self, signum, frame):
         '''
         signal handler
         '''
