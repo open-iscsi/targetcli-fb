@@ -17,11 +17,14 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "PyGObject",
     "configshell-fb",
     "rtslib-fb",
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+# Discovery of tcmu-runner handlers (user:* backstores) over D-Bus
+tcmu = ["PyGObject"]
 
 [project.scripts]
 targetcli = "targetcli.targetcli_shell:main"
