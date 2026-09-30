@@ -15,8 +15,6 @@ dist/
 doc/
 *.pyc
 *.swp
-./*.spec
-redhat/*.spec
 ./rtsadmin-*
 log/
 venv/
