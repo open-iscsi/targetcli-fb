@@ -1,8 +1,8 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+    rev: v0.15.20
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -11,11 +11,8 @@ repos:
       - id: check-case-conflict
       - id: check-ast
       - id: check-docstring-first
-      - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-builtin-literals
-      - id: check-docstring-first
-      - id: check-merge-conflict
       - id: check-toml
       - id: debug-statements
       - id: end-of-file-fixer
