@@ -23,9 +23,6 @@ dependencies = [
 ]
 dynamic = ["version"]
 
-[project.license-files]
-paths = ["COPYING"]
-
 [project.scripts]
 targetcli = "targetcli.targetcli_shell:main"
 targetclid = "targetcli.targetclid:main"
