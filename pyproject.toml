@@ -31,7 +31,7 @@ targetcli = "targetcli.targetcli_shell:main"
 targetclid = "targetcli.targetclid:main"
 
 [project.urls]
-Homepage = "http://github.com/open-iscsi/targetcli-fb"
+Homepage = "https://github.com/open-iscsi/targetcli-fb"
 
 [tool.hatch.build.targets.sdist]
 include = [
