@@ -17,21 +17,21 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "PyGObject",
     "configshell-fb",
     "rtslib-fb",
 ]
 dynamic = ["version"]
 
-[project.license-files]
-paths = ["COPYING"]
+[project.optional-dependencies]
+# Discovery of tcmu-runner handlers (user:* backstores) over D-Bus
+tcmu = ["PyGObject"]
 
 [project.scripts]
 targetcli = "targetcli.targetcli_shell:main"
 targetclid = "targetcli.targetclid:main"
 
 [project.urls]
-Homepage = "http://github.com/open-iscsi/targetcli-fb"
+Homepage = "https://github.com/open-iscsi/targetcli-fb"
 
 [tool.hatch.build.targets.sdist]
 include = [

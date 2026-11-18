@@ -27,7 +27,6 @@ import struct
 from pathlib import Path
 
 from configshell import ExecutionError
-from gi.repository import Gio
 from rtslib import (
     ALUATargetPortGroup,
     BlockStorageObject,
@@ -237,8 +236,13 @@ class UIBackstores(UINode):
         tcmu-runner (or other daemon providing the same service) exposes a
         DBus ObjectManager-based iface to find handlers it supports.
         '''
-        bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         try:
+            # PyGObject is optional, it is only needed for user backstores
+            from gi.repository import Gio  # noqa: PLC0415
+        except ImportError:
+            return
+        try:
+            bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
             mgr_iface = Gio.DBusProxy.new_sync(bus,
                                                Gio.DBusProxyFlags.NONE,
                                                None,
