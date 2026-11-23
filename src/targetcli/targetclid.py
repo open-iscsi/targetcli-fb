@@ -145,7 +145,7 @@ class TargetCLI:
         # Receive the data in small chunks and retransmit it
         while still_listen:
             data = connection.recv(65535)
-            if b'-END@OF@DATA-' in data:
+            if not data or b'-END@OF@DATA-' in data:
                 connection.close()
                 still_listen = False
             else:

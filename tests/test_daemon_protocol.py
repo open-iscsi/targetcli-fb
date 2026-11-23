@@ -121,6 +121,13 @@ class ClientThreadTest(unittest.TestCase):
         self.addCleanup(self.assertIs, targetcli.con._stderr, orig_err)
         return targetcli, connection
 
+    def test_client_disconnect_ends_the_session(self):
+        targetcli, connection = self.start_daemon([b''], None)
+        targetcli.client_thread(connection)
+        connection.sendall.assert_not_called()
+        targetcli.shell.run_cmdline.assert_not_called()
+        connection.close.assert_called_once_with()
+
     def test_streams_are_recorded_in_order(self):
         def run(con, cmd):
             con._stdout.write(f"out {cmd}\n")
