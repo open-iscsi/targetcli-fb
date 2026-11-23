@@ -22,7 +22,6 @@ import contextlib
 import fcntl
 import readline
 import socket
-import struct
 import sys
 from os import getenv, getuid
 
@@ -30,6 +29,7 @@ from configshell import ConfigShell, ExecutionError
 from rtslib import RTSLibError
 
 from targetcli import __version__ as targetcli_version
+from targetcli.daemon_protocol import STDERR, ProtocolError, read_reply
 from targetcli.ui_root import UIRoot
 
 err = sys.stderr
@@ -40,7 +40,6 @@ hints = ['/', 'backstores/', 'iscsi/', 'loopback/', 'vhost/', 'xen-pvscsi/',
          'cd', 'pwd', 'ls', 'set', 'get', 'help', 'refresh', 'status',
          'clearconfig', 'restoreconfig', 'saveconfig', 'exit']
 
-NUM_PARTS = 2
 class TargetCLI(ConfigShell):
     default_prefs = {'color_path': 'magenta',
                      'color_command': 'cyan',
@@ -122,22 +121,15 @@ def completer(text, state):
     except IndexError:
         return None
 
+def _show_daemon_error(shell, *messages):
+    for message in messages:
+        shell.con.display(shell.con.render_text(str(message), 'red'), error=True)
+
 def call_daemon(shell, req, interactive):
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     except OSError as err:
-        shell.con.display(shell.con.render_text(str(err), 'red'), error=True)
-        sys.exit(1)
-
-    try:
-        sock.connect(socket_path)
-    except OSError as err:
-        shell.con.display(shell.con.render_text(str(err), 'red'), error=True)
-        shell.con.display(
-            shell.con.render_text("Currently auto_use_daemon is true, "
-                "hence please make sure targetclid daemon is running ...\n"
-                "(or)\nIncase if you wish to turn auto_use_daemon to false "
-                "then run '#targetcli --disable-daemon'", 'red'), error=True)
+        _show_daemon_error(shell, err)
         sys.exit(1)
 
     # Two cases where we want to get pwd:
@@ -154,73 +146,61 @@ def call_daemon(shell, req, interactive):
     else:
         req = "cd /%" + req  # Non-interactive modes always consider start at '/'
 
-    try:
-        # send request
-        sock.sendall(req.encode())
-    except OSError as err:
-        shell.con.display(shell.con.render_text(str(err), 'red'), error=True)
-        sys.exit(1)
+    with sock:
+        try:
+            sock.connect(socket_path)
+        except OSError as err:
+            _show_daemon_error(shell, err,
+                               "Currently auto_use_daemon is true, "
+                               "hence please make sure targetclid daemon is running ...\n"
+                               "(or)\nIncase if you wish to turn auto_use_daemon to false "
+                               "then run '#targetcli --disable-daemon'")
+            sys.exit(1)
 
-    var = sock.recv(4)  # get length of data
-    sending = struct.unpack('i', var)
-    amount_expected = sending[0]
-    amount_received = 0
+        try:
+            sock.sendall(req.encode())
+            records = read_reply(sock)
+        except (OSError, ProtocolError) as err:
+            _show_daemon_error(shell, err)
+            sys.exit(1)
 
-    # get the actual data in chunks
-    output = ""
+        # The reply is complete; failing to say goodbye changes nothing
+        with contextlib.suppress(OSError):
+            sock.sendall(b'-END@OF@DATA-')
+
+    # Replay the output in the order it was produced. When the prompt path
+    # was requested, hold stdout back until the end so its last line (the
+    # output of 'pwd') can be taken as the path instead of being printed.
+    failed = False
+    held_stdout = ""
+    for tag, text in records:
+        if tag == STDERR:
+            failed = True
+            _write(sys.stdout, held_stdout)
+            held_stdout = ""
+            _write(sys.stderr, text)
+        elif get_pwd:
+            held_stdout += text
+        else:
+            _write(sys.stdout, text)
+
     path = ""
-    raise_error = False
-    while amount_received < amount_expected:
-        data = sock.recv(1024)
-        data = data.decode()
-        amount_received += len(data)
-        output += data
+    if held_stdout:
+        lines = held_stdout.splitlines(keepends=True)
+        # If 'cd' failed, 'pwd' never ran and the last line is not a path
+        if lines[-1].startswith("/"):
+            path = lines.pop().rstrip("\n")
+        _write(sys.stdout, "".join(lines))
 
-    # Check if output is in new format (STDOUT/STDERR)
-    if "STDOUT:" in output and "STDERR:" in output:
-        parts = output.split("STDERR:")
-        if len(parts) == NUM_PARTS:
-            stdout_part = parts[0].split("STDOUT:")[1].strip()
-            stderr_content = parts[1].strip()
-            stdout_content = stdout_part
-
-            if get_pwd:
-                output_split = stdout_content.splitlines()
-                lines = len(output_split)
-                for i in range(lines):
-                    if i == lines-1:
-                        path = str(output_split[i])
-                    else:
-                        print(str(output_split[i]), end="\n")
-
-            else:
-                # Print stdout content
-                if stdout_content:
-                    print(stdout_content, end="\n")
-                # Print stderr content
-                if stderr_content:
-                    print(stderr_content, end="\n", file=sys.stderr)
-                    raise_error = True
-
-    # Handle old format (plain text)
-    elif get_pwd:
-        output_split = output.splitlines()
-        lines = len(output_split)
-        for i in range(lines):
-            if i == lines-1:
-                path = str(output_split[i])
-            else:
-                print(str(output_split[i]), end="\n")
-    else:
-        print(output, end="")
-
-    sock.send(b'-END@OF@DATA-')
-    sock.close()
-
-    if raise_error and not interactive:
+    if failed and not interactive:
         sys.exit(1)
 
     return path
+
+def _write(stream, text):
+    if text:
+        stream.write(text)
+        stream.flush()
 
 def switch_to_daemon(shell, interactive):
     readline.set_completer(completer)
@@ -269,10 +249,7 @@ def switch_to_daemon(shell, interactive):
                 break
             path = call_daemon(shell, command, interactive)
             if path:
-                if path[0] == "/":
-                    prompt_path = path
-                else:
-                    print(path)  # Error No Path ...
+                prompt_path = path
 
     sys.exit(0)
 

@@ -26,7 +26,6 @@ import socket
 import stat
 import struct
 import sys
-import tempfile
 from os import getenv, getuid
 from pathlib import Path
 from threading import Thread
@@ -34,6 +33,7 @@ from threading import Thread
 from configshell import ConfigShell
 
 from targetcli import __version__ as targetcli_version
+from targetcli.daemon_protocol import STDERR, STDOUT, StreamRecorder, encode_reply
 from targetcli.ui_root import UIRoot
 
 err = sys.stderr
@@ -85,10 +85,6 @@ class TargetCLI:
                 self.display(self.render("Retry as root.", 'red'))
             self.pfd.close()
             sys.exit(1)
-
-        # Keep track, for later use
-        self.con_stdout_ = self.con._stdout
-        self.con_stderr_ = self.con._stderr
 
 
     def __del__(self):
@@ -153,51 +149,21 @@ class TargetCLI:
                 connection.close()
                 still_listen = False
             else:
-                # Create separate tempfiles for stdout and stderr
-                stdout_file = tempfile.NamedTemporaryFile(mode='w', delete=False)  # noqa: SIM115
-                stderr_file = tempfile.NamedTemporaryFile(mode='w', delete=False)  # noqa: SIM115
-
-                # Save original stdout/stderr
-                orig_stdout = self.con._stdout
-                orig_stderr = self.con._stderr
-
-                # Redirect to tempfiles
-                self.con._stdout = stdout_file
-                self.con._stderr = stderr_file
-
+                # Record stdout and stderr separately, keeping their order
+                records = []
+                orig_stdout, orig_stderr = self.con._stdout, self.con._stderr
+                self.con._stdout = StreamRecorder(STDOUT, records)
+                self.con._stderr = StreamRecorder(STDERR, records)
                 try:
                     # extract multiple commands delimited with '%'
-                    list_data = data.decode().split('%')
-                    for cmd in list_data:
+                    for cmd in data.decode().split('%'):
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
-                    print(str(e), file=stderr_file)
-                # Restore original stdout/stderr
-                self.con._stdout = orig_stdout
-                self.con._stderr = orig_stderr
+                    print(str(e), file=self.con._stderr)
+                finally:
+                    self.con._stdout, self.con._stderr = orig_stdout, orig_stderr
 
-                # Close tempfiles
-                stdout_file.close()
-                stderr_file.close()
-
-                # Read contents
-                with open(stdout_file.name) as f:
-                    stdout_content = f.read()
-                with open(stderr_file.name) as f:
-                    stderr_content = f.read()
-
-                # Create combined output
-                combined_output = f"STDOUT: {stdout_content}\nSTDERR: {stderr_content}"
-
-                # Send combined output
-                var = struct.pack('i', len(combined_output))
-                connection.sendall(var)  # length of string
-                if len(combined_output):
-                    connection.sendall(combined_output.encode())  # actual string
-
-                # Cleanup tempfiles
-                Path(stdout_file.name).unlink()
-                Path(stderr_file.name).unlink()
+                connection.sendall(encode_reply(records))
 
 
 def usage():
