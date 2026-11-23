@@ -126,18 +126,18 @@ def call_daemon(shell, req, interactive):
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     except OSError as err:
-        shell.con.display(shell.con.render_text(err, 'red'))
+        shell.con.display(shell.con.render_text(str(err), 'red'), error=True)
         sys.exit(1)
 
     try:
         sock.connect(socket_path)
     except OSError as err:
-        shell.con.display(shell.con.render_text(err, 'red'))
+        shell.con.display(shell.con.render_text(str(err), 'red'), error=True)
         shell.con.display(
             shell.con.render_text("Currently auto_use_daemon is true, "
                 "hence please make sure targetclid daemon is running ...\n"
                 "(or)\nIncase if you wish to turn auto_use_daemon to false "
-                "then run '#targetcli --disable-daemon'", 'red'))
+                "then run '#targetcli --disable-daemon'", 'red'), error=True)
         sys.exit(1)
 
     # Two cases where we want to get pwd:
@@ -158,7 +158,7 @@ def call_daemon(shell, req, interactive):
         # send request
         sock.sendall(req.encode())
     except OSError as err:
-        shell.con.display(shell.con.render_text(err, 'red'))
+        shell.con.display(shell.con.render_text(str(err), 'red'), error=True)
         sys.exit(1)
 
     var = sock.recv(4)  # get length of data
