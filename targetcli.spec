@@ -5,7 +5,10 @@
 Name:           targetcli
 License:        Apache-2.0
 Summary:        An administration shell for storage targets
-Version:        3.0.2
+# Not a version: the version comes from the git tag (hatch-vcs). Packit
+# fills it in for pull request builds and releases, so build this spec
+# with Packit, e.g. "packit srpm" or "packit build".
+Version:        0.0.0
 Release:        %autorelease
 URL:            https://github.com/open-iscsi/targetcli-fb
 Source:         %{pypi_source targetcli}
