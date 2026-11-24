@@ -26,7 +26,6 @@ import socket
 import stat
 import struct
 import sys
-import tempfile
 from os import getenv, getuid
 from pathlib import Path
 from threading import Thread
@@ -34,6 +33,7 @@ from threading import Thread
 from configshell import ConfigShell
 
 from targetcli import __version__ as targetcli_version
+from targetcli.daemon_protocol import STDERR, STDOUT, StreamRecorder, encode_reply
 from targetcli.ui_root import UIRoot
 
 err = sys.stderr
@@ -85,10 +85,6 @@ class TargetCLI:
                 self.display(self.render("Retry as root.", 'red'))
             self.pfd.close()
             sys.exit(1)
-
-        # Keep track, for later use
-        self.con_stdout_ = self.con._stdout
-        self.con_stderr_ = self.con._stderr
 
 
     def __del__(self):
@@ -149,32 +145,25 @@ class TargetCLI:
         # Receive the data in small chunks and retransmit it
         while still_listen:
             data = connection.recv(65535)
-            if b'-END@OF@DATA-' in data:
+            if not data or b'-END@OF@DATA-' in data:
                 connection.close()
                 still_listen = False
             else:
-                self.con._stdout = self.con._stderr = f = tempfile.NamedTemporaryFile(mode='w', delete=False)  # noqa: SIM115
+                # Record stdout and stderr separately, keeping their order
+                records = []
+                orig_stdout, orig_stderr = self.con._stdout, self.con._stderr
+                self.con._stdout = StreamRecorder(STDOUT, records)
+                self.con._stderr = StreamRecorder(STDERR, records)
                 try:
                     # extract multiple commands delimited with '%'
-                    list_data = data.decode().split('%')
-                    for cmd in list_data:
+                    for cmd in data.decode().split('%'):
                         self.shell.run_cmdline(cmd)
                 except Exception as e:
-                    print(str(e), file=f)  # push error to stream
+                    print(str(e), file=self.con._stderr)
+                finally:
+                    self.con._stdout, self.con._stderr = orig_stdout, orig_stderr
 
-                # Restore
-                self.con._stdout = self.con_stdout_
-                self.con._stderr = self.con_stderr_
-                f.close()
-
-                with open(f.name) as f:
-                    output = f.read()
-                    var = struct.pack('i', len(output))
-                    connection.sendall(var)  # length of string
-                    if len(output):
-                        connection.sendall(output.encode())  # actual string
-
-                Path(f.name).unlink()
+                connection.sendall(encode_reply(records))
 
 
 def usage():
