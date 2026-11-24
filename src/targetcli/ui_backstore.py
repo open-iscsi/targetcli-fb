@@ -314,43 +314,40 @@ class UIBackstore(UINode):
         if save:
             root_node._save_backups(default_save_file)
 
-        ui_nodes_to_refresh = set()
-        fabrics = {}
-        for lun in child.rtsnode.attached_luns:
-            fabric_name = lun.parent_tpg.parent_target.fabric_module.name
-            target_name = lun.parent_tpg.parent_target.wwn
-            try:
-                if fabric_name not in fabrics:
-                    fabrics[fabric_name] = root_node.get_child(fabric_name)
+        # Deleting the storage object also deletes its LUNs and the mapped
+        # LUNs in the ACLs, so find the UI nodes caching them beforehand.
+        stale_nodes = {self._find_tpg_node(root_node, lun.parent_tpg)
+                       for lun in child.rtsnode.attached_luns}
+        stale_nodes.discard(None)
 
-                target_node = fabrics[fabric_name].get_child(target_name)
-
-                target_children = [child.name for child in target_node.children]
-                tpg_name = 'tpg' + str(lun.parent_tpg.tag)
-                if tpg_name in target_children:
-                    stale_node = target_node.get_child(tpg_name).get_child('luns')
-                elif 'luns' in target_children:
-                    stale_node = target_node.get_child('luns')
-                else:
-                    stale_node = target_node
-
-                ui_nodes_to_refresh.add(stale_node)
-            except ValueError as error:
-                self.shell.log.debug("Failed to retrieve cached configuration data for %s target %s LUN %d: %s"
-                                     % (fabric_name, target_name, lun.lun, error))
-                # If any errors occurred while looking up cached configuration data, refresh everything.
-                ui_nodes_to_refresh.clear()
-                ui_nodes_to_refresh.add(root_node)
-                break
-
-        child.rtsnode.delete(save=save)
-        self.remove_child(child)
-
-        for ui_node in ui_nodes_to_refresh:
-            # Refresh cached configuration data to prevent 'This LUN does not exist in configFS'
-            ui_node.refresh()
+        try:
+            child.rtsnode.delete(save=save)
+            self.remove_child(child)
+        finally:
+            # rtslib deletes the LUNs first, so refresh even if it failed later
+            for node in stale_nodes:
+                node.refresh()
 
         self.shell.log.info(f"Deleted storage object {name}.")
+
+    @staticmethod
+    def _find_tpg_node(root_node, tpg):
+        '''
+        Returns the UI node of tpg, whose refresh() rebuilds its luns and
+        acls children, or None if the TPG is not in the cached tree (for
+        example because another process created it), as then nothing
+        cached for it can be stale.
+        '''
+        target = tpg.parent_target
+        try:
+            node = root_node.get_child(target.fabric_module.name)
+            node = node.get_child(target.wwn)
+            # Single-TPG targets are shown merged with their TPG
+            if target.has_feature('tpgts'):
+                node = node.get_child(f"tpg{tpg.tag}")
+        except ValueError:
+            return None
+        return node
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
