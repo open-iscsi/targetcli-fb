@@ -308,14 +308,42 @@ class UIBackstore(UINode):
         except ValueError:
             raise ExecutionError(f"No storage object named {name}.")
 
+        root_node = self.get_root()
+
         save = self.ui_eval_param(save, 'bool', False)
         if save:
-            rn = self.get_root()
-            rn._save_backups(default_save_file)
+            root_node._save_backups(default_save_file)
 
-        child.rtsnode.delete(save=save)
-        self.remove_child(child)
+        try:
+            child.rtsnode.delete(save=save)
+            self.remove_child(child)
+        finally:
+            # rtslib also deleted the storage object's LUNs, even if it failed
+            # later, and with them their mapped LUNs in the ACLs
+            for node in self._find_tpgs_with_deleted_luns(root_node):
+                node.refresh()
+
         self.shell.log.info(f"Deleted storage object {name}.")
+
+    @staticmethod
+    def _find_tpgs_with_deleted_luns(root_node):
+        '''
+        Returns the cached UI nodes of the TPGs that have a cached LUN whose
+        configFS directory no longer exists. Refreshing them rebuilds their
+        luns and acls children.
+
+        This costs one stat() per cached LUN, whereas asking rtslib for the
+        storage object's attached_luns beforehand scans all of configFS.
+        '''
+        from .ui_target import UITPG  # noqa: PLC0415 - ui_target imports this module
+        tpgs = []
+        for fabric in root_node.children:
+            for target in fabric.children:
+                # Single-TPG targets are shown merged with their TPG
+                tpgs += [target] if isinstance(target, UITPG) else target.children
+        return [tpg for tpg in tpgs
+                if isinstance(tpg, UITPG)
+                and not all(lun.rtsnode.exists for lun in tpg.get_child('luns').children)]
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
