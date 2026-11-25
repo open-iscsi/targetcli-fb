@@ -4,83 +4,87 @@ from unittest.mock import MagicMock, Mock
 from configshell.node import ConfigNode
 
 from targetcli.ui_backstore import UIBackstore
+from targetcli.ui_target import UITPG
 
 
-def make_node(name, parent):
-    node = ConfigNode(name, parent)
+def make_node(name, parent, cls=ConfigNode):
+    # Bypass the UI classes' constructors, which read configFS
+    node = cls.__new__(cls)
+    ConfigNode.__init__(node, name, parent)
     node.refresh = Mock()
     return node
 
 
-def make_lun(fabric, wwn, tag, multi_tpg):
-    target = Mock(wwn=wwn)
-    target.fabric_module.name = fabric
-    target.has_feature.side_effect = lambda feature: multi_tpg and feature == 'tpgts'
-    return Mock(parent_tpg=Mock(parent_target=target, tag=tag))
+def make_tpg(name, parent, n_luns):
+    tpg = make_node(name, parent, UITPG)
+    luns = make_node('luns', tpg)
+    for i in range(n_luns):
+        make_node(f'lun{i}', luns).rtsnode = Mock(exists=True)
+    return tpg
 
 
 class BackstoreDeleteTest(unittest.TestCase):
     '''
     Deleting a storage object deletes its LUNs and their mapped LUNs, so the
-    UI nodes of the TPGs that used it must be refreshed.
+    cached UI nodes of the TPGs that had those LUNs must be refreshed.
 
     Cached tree:
-        /loopback/naa.single         single-TPG target (merged with its TPG)
-        /iscsi/iqn.multi/tpg1        multi-TPG target
-        /backstores/fileio/disk1     the storage object to delete
+        /loopback/naa.single              single-TPG target (merged with its TPG)
+        /iscsi/iqn.multi/tpg1, tpg2       multi-TPG target
+        /backstores/fileio/disk1          the storage object to delete
     '''
 
     def setUp(self):
         self.root = ConfigNode('/', shell=MagicMock())
-        self.root.refresh = Mock()
-        self.loopback = make_node('loopback', self.root)
-        self.single = make_node('naa.single', self.loopback)
-        self.iscsi = make_node('iscsi', self.root)
-        self.multi = make_node('iqn.multi', self.iscsi)
-        self.tpg1 = make_node('tpg1', self.multi)
+        self.single = make_tpg('naa.single', make_node('loopback', self.root), 1)
+        multi = make_node('iqn.multi', make_node('iscsi', self.root))
+        self.tpg1 = make_tpg('tpg1', multi, 1)
+        self.tpg2 = make_tpg('tpg2', multi, 2)
 
-        backstores = make_node('backstores', self.root)
-        self.backstore = UIBackstore.__new__(UIBackstore)
-        ConfigNode.__init__(self.backstore, 'fileio', backstores)
+        self.backstore = make_node('fileio', make_node('backstores', self.root), UIBackstore)
         self.storage = make_node('disk1', self.backstore)
         self.storage.rtsnode = Mock()
 
-        self.all_nodes = [self.root, self.loopback, self.single,
-                          self.iscsi, self.multi, self.tpg1]
-
     def delete(self, *luns):
-        self.storage.rtsnode.attached_luns = list(luns)
+        '''Runs the delete command, with rtslib deleting the given LUNs.'''
+        def rts_delete(**_):
+            for lun in luns:
+                lun.rtsnode.exists = False
+
+        if not self.storage.rtsnode.delete.side_effect:
+            self.storage.rtsnode.delete.side_effect = rts_delete
         self.backstore.ui_command_delete('disk1')
 
-    def refreshed(self):
-        return [node for node in self.all_nodes if node.refresh.called]
+    def lun(self, tpg, index):
+        return tpg.get_child('luns').get_child(f'lun{index}')
 
-    def test_refreshes_each_tpg_once(self):
-        self.delete(make_lun('loopback', 'naa.single', 1, False),
-                    make_lun('iscsi', 'iqn.multi', 1, True),
-                    make_lun('iscsi', 'iqn.multi', 1, True))
-        self.assertEqual(self.refreshed(), [self.single, self.tpg1])
-        self.tpg1.refresh.assert_called_once_with()
+    def refreshed(self):
+        tpgs = [self.single, self.tpg1, self.tpg2]
+        return [tpg for tpg in tpgs if tpg.refresh.called]
+
+    def test_refreshes_tpgs_that_lost_a_lun(self):
+        self.delete(self.lun(self.single, 0), self.lun(self.tpg2, 0), self.lun(self.tpg2, 1))
+        self.assertEqual(self.refreshed(), [self.single, self.tpg2])
+        self.tpg2.refresh.assert_called_once_with()
         self.storage.rtsnode.delete.assert_called_once_with(save=False)
         self.assertNotIn(self.storage, self.backstore.children)
 
-    def test_uncached_tpgs_are_skipped(self):
-        self.delete(make_lun('vhost', 'naa.x', 1, True),           # no fabric
-                    make_lun('loopback', 'naa.other', 1, False),   # no target
-                    make_lun('iscsi', 'iqn.multi', 2, True))       # no TPG
-        self.assertEqual(self.refreshed(), [])
-        self.assertNotIn(self.storage, self.backstore.children)
-
-    def test_no_attached_luns(self):
+    def test_unused_storage_object_refreshes_nothing(self):
         self.delete()
         self.assertEqual(self.refreshed(), [])
         self.assertNotIn(self.storage, self.backstore.children)
 
     def test_refreshes_even_if_delete_fails(self):
-        self.storage.rtsnode.delete.side_effect = OSError("busy")
+        lun = self.lun(self.tpg1, 0)
+
+        def rts_delete(**_):
+            lun.rtsnode.exists = False
+            raise OSError("busy")
+
+        self.storage.rtsnode.delete.side_effect = rts_delete
         with self.assertRaises(OSError):
-            self.delete(make_lun('loopback', 'naa.single', 1, False))
-        self.assertEqual(self.refreshed(), [self.single])
+            self.delete()
+        self.assertEqual(self.refreshed(), [self.tpg1])
         self.assertIn(self.storage, self.backstore.children)
 
 

@@ -314,40 +314,36 @@ class UIBackstore(UINode):
         if save:
             root_node._save_backups(default_save_file)
 
-        # Deleting the storage object also deletes its LUNs and the mapped
-        # LUNs in the ACLs, so find the UI nodes caching them beforehand.
-        stale_nodes = {self._find_tpg_node(root_node, lun.parent_tpg)
-                       for lun in child.rtsnode.attached_luns}
-        stale_nodes.discard(None)
-
         try:
             child.rtsnode.delete(save=save)
             self.remove_child(child)
         finally:
-            # rtslib deletes the LUNs first, so refresh even if it failed later
-            for node in stale_nodes:
+            # rtslib also deleted the storage object's LUNs, even if it failed
+            # later, and with them their mapped LUNs in the ACLs
+            for node in self._find_tpgs_with_deleted_luns(root_node):
                 node.refresh()
 
         self.shell.log.info(f"Deleted storage object {name}.")
 
     @staticmethod
-    def _find_tpg_node(root_node, tpg):
+    def _find_tpgs_with_deleted_luns(root_node):
         '''
-        Returns the UI node of tpg, whose refresh() rebuilds its luns and
-        acls children, or None if the TPG is not in the cached tree (for
-        example because another process created it), as then nothing
-        cached for it can be stale.
+        Returns the cached UI nodes of the TPGs that have a cached LUN whose
+        configFS directory no longer exists. Refreshing them rebuilds their
+        luns and acls children.
+
+        This costs one stat() per cached LUN, whereas asking rtslib for the
+        storage object's attached_luns beforehand scans all of configFS.
         '''
-        target = tpg.parent_target
-        try:
-            node = root_node.get_child(target.fabric_module.name)
-            node = node.get_child(target.wwn)
-            # Single-TPG targets are shown merged with their TPG
-            if target.has_feature('tpgts'):
-                node = node.get_child(f"tpg{tpg.tag}")
-        except ValueError:
-            return None
-        return node
+        from .ui_target import UITPG  # noqa: PLC0415 - ui_target imports this module
+        tpgs = []
+        for fabric in root_node.children:
+            for target in fabric.children:
+                # Single-TPG targets are shown merged with their TPG
+                tpgs += [target] if isinstance(target, UITPG) else target.children
+        return [tpg for tpg in tpgs
+                if isinstance(tpg, UITPG)
+                and not all(lun.rtsnode.exists for lun in tpg.get_child('luns').children)]
 
     def ui_complete_delete(self, parameters, text, current_param):
         '''
